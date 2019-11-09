@@ -15,6 +15,10 @@
 ;; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 ;; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+(setf *features* (remove :3D-VECTORS-DOUBLE-FLOATS *features*))
 (defpackage :newgl
-  (:use #:cl #:j-utils #:alexandria)
-  (:export ))
+  (:use #:cl #:j-utils #:alexandria #:glfw #:3d-vectors #:3d-matrices)
+  (:export #:opengl-object
+           #:primitives
+           #:show
+           #:hello))

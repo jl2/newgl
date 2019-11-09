@@ -17,7 +17,93 @@
 
 (in-package :newgl)
 
-(defun hello ()
-  (format t "Hello!~%")
-  t)
+(deftype point ()
+  '(or vec3))
 
+(deftype normal ()
+  '(or vec3))
+
+(deftype color ()
+  '(or vec4))
+
+(defun red (color)
+  (vx color))
+
+(defun green (color)
+  (vy color))
+
+(defun blue (color)
+  (vz color))
+
+(defun alpha (color)
+  (vw color))
+
+(def-key-callback quit-on-escape (window key scancode action mod-keys)
+  (declare (ignorable window scancode mod-keys))
+  (format t "Keypress: ~a ~a ~a ~a ~a~%" window key scancode action mod-keys)
+  (cond ((and (eq key :escape) (eq action :press))
+         (set-window-should-close))))
+
+(def-mouse-button-callback mouse-handler (window button action mod-keys)
+  (declare (ignorable window button action mod-keys))
+  (let ((cpos (glfw:get-cursor-position window)))
+    (format t "Mouse click at ~a ~a ~a ~a ~a~%" cpos window button action mod-keys)))
+
+(def-scroll-callback scroll-handler (window x y)
+  (let ((cpos (glfw:get-cursor-position window)))
+    (format t "Scroll at ~a ~a ~a ~a ~%" cpos window x y)))
+
+(def-error-callback error-callback (message)
+  (format t "Error: ~a~%" message))
+
+(defun viewer-thread-function ( object )
+  (with-init
+    (let* ((monitor (glfw:get-primary-monitor))
+           (cur-mode (glfw:get-video-mode monitor))
+           (cur-width (getf cur-mode '%cl-glfw3:width))
+           (cur-height (getf cur-mode '%cl-glfw3:height)))
+      (with-window (:title "OpenGL Scene Viewer"
+                           :width (/ cur-width 2)
+                           :height (/ cur-height 2)
+                           :decorated t
+                           ;; :monitor monitor
+                           :opengl-profile :opengl-core-profile
+                           :context-version-major 3
+                           :context-version-minor 3
+                           :opengl-forward-compat t
+                           :resizable t)
+        (setf %gl:*gl-get-proc-address* #'get-proc-address)
+        (set-key-callback 'quit-on-escape)
+        (set-error-callback 'error-callback)
+        (set-mouse-button-callback 'mouse-handler)
+        (set-scroll-callback 'scroll-handler)
+        (gl:enable :line-smooth
+                   :polygon-smooth
+                   :depth-test)
+        (gl:depth-func :less)
+
+        (gl:clear-color 0.2f0 0.2f0 0.2f0 1.0)
+        (fill-buffers object)
+        (rebuild-shaders object)
+        ;; The event loop
+        (loop
+           until (window-should-close-p)
+           do
+             (gl:clear :color-buffer :depth-buffer)
+             (render object)
+           do (swap-buffers)
+           do (poll-events))))))
+
+(defun show (object &optional (in-thread nil))
+  (if in-thread
+      (viewer-thread-function object)
+      (trivial-main-thread:with-body-in-main-thread ()
+        (viewer-thread-function object))))
+
+(defun hello ()
+  (let ((tri (make-instance 'primitives )))
+    (add-filled-triangle tri (vec3 0.0 0.5 0.0)
+                  (vec3 0.5 -0.5 0.0)
+                  (vec3 -0.5 -0.5 0.0)
+                  (vec4 0.0 1.0 0.0 1.0))
+    (show tri)))

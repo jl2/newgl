@@ -15,6 +15,8 @@
 ;; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 ;; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+(setf *features* (remove :3D-VECTORS-DOUBLE-FLOATS *features*))
+
 (asdf:defsystem #:newgl
   :description "New opengl graphics library."
   :author "Jeremiah LaRocco <jeremiah_larocco@fastmail.com>"
@@ -25,8 +27,16 @@
                #:j-utils
                #:cl-glfw3
                #:cl-opengl
+
+               #:3d-vectors
+               #:3d-matrices
+
                #:bordeaux-threads
                #:trivial-main-thread)
   :components ((:file "package")
-               (:file "newgl"))
+               (:file "newgl")
+               (:file "opengl-object")
+               (:file "shaders")
+               (:file "primitives")
+               )
   :in-order-to ((test-op (test-op newgl.test))))
