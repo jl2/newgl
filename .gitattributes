@@ -1,1 +1,3 @@
 *.lisp linguist-language=Common-Lisp
+*.asd linguist-language=Common-Lisp
+*.org linguist-language=org-mode
