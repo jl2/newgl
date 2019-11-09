@@ -40,8 +40,7 @@
   (gl:bind-vertex-array 0))
 
 (defmethod cleanup ((object opengl-object))
-  (declare (ignorable object))
-  (format t "Cleanuing up ~a~%" object)
+  (format t "~%Cleaning up ~a~%" object)
   (with-slots (vao vbos ebos) object
     (when (/= 0 vao)
       (when vbos

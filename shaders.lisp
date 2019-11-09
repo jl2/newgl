@@ -8,8 +8,8 @@
 
 (defclass shader-program ()
   ((layout :initarg :inputs)
-   (vertex-text :initarg :vertex)
-   (fragment-text :initarg :fragment)
+   (vertex-source :initarg :vertex)
+   (fragment-source :initarg :fragment)
    (vertex-shader :initform 0)
    (fragment-shader :initform 0)
    (program :initform 0)))
@@ -36,19 +36,19 @@
     (format t "info-log ~a~%" (gl:get-shader-info-log shader))))
 
 (defun build-program (program)
-  (with-slots (vertex-text fragment-text vertex-shader fragment-shader program) program
+  (with-slots (vertex-source fragment-source vertex-shader fragment-shader program) program
 
     (if (zerop vertex-shader)
         (setf vertex-shader (gl:create-shader :vertex-shader))
         (when (not (zerop program))
           (gl:detach-shader program vertex-shader)))
-    (compile-shader vertex-shader vertex-text)
+    (compile-shader vertex-shader (read-file vertex-source))
 
     (if (zerop fragment-shader)
         (setf fragment-shader (gl:create-shader :fragment-shader))
         (when (not (zerop program))
           (gl:detach-shader program fragment-shader)))
-    (compile-shader fragment-shader fragment-text)
+    (compile-shader fragment-shader (read-file fragment-source))
 
     (when (zerop program)
       (setf program (gl:create-program)))

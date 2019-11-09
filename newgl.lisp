@@ -38,11 +38,18 @@
 (defun alpha (color)
   (vw color))
 
+(defparameter *rebuild-shaders* nil)
+(defparameter *refill-buffers* nil)
+
 (def-key-callback quit-on-escape (window key scancode action mod-keys)
   (declare (ignorable window scancode mod-keys))
   (format t "Keypress: ~a ~a ~a ~a ~a~%" window key scancode action mod-keys)
   (cond ((and (eq key :escape) (eq action :press))
-         (set-window-should-close))))
+         (set-window-should-close))
+        ((and (eq key :r) (eq action :press))
+         (setf *rebuild-shaders* t))
+        ((and (eq key :f) (eq action :press))
+         (setf *refill-buffers* t))))
 
 (def-mouse-button-callback mouse-handler (window button action mod-keys)
   (declare (ignorable window button action mod-keys))
@@ -82,12 +89,26 @@
                    :depth-test)
         (gl:depth-func :less)
 
-        (gl:clear-color 0.2f0 0.2f0 0.2f0 1.0)
-        (fill-buffers object)
+        (gl:clear-color 0.7f0 0.7f0 0.7f0 1.0)
         (rebuild-shaders object)
+        (fill-buffers object)
         ;; The event loop
         (loop
            until (window-should-close-p)
+
+           when *rebuild-shaders* do
+             (format t "Rebuilding shaders...")
+             (rebuild-shaders object)
+             (format t " Done.~%")
+             (setf *rebuild-shaders* nil)
+
+           when *refill-buffers* do
+             (format t "Refilling buffers...")
+             (cleanup object)
+             (fill-buffers object)
+             (format t " Done.~%")
+             (setf *refill-buffers* nil)
+
            do
              (gl:clear :color-buffer :depth-buffer)
              (render object)
@@ -102,8 +123,9 @@
 
 (defun hello ()
   (let ((tri (make-instance 'primitives )))
-    (add-filled-triangle tri (vec3 0.0 0.5 0.0)
-                  (vec3 0.5 -0.5 0.0)
-                  (vec3 -0.5 -0.5 0.0)
-                  (vec4 0.0 1.0 0.0 1.0))
+    (add-filled-triangle tri
+                         (vec3 0.0 0.5 0.0)
+                         (vec3 0.5 -0.5 0.0)
+                         (vec3 -0.5 -0.5 0.0)
+                         (vec4 0.0 1.0 0.0 1.0))
     (show tri)))

@@ -10,7 +10,7 @@ layout(location = 2) in vec4 color;
 
 void main()
 {
-     gl_Position = vec4(position.x, position.y+0.5, position.z, 1.0);
+     gl_Position = vec4(position.x-0.4, position.y+0.3, position.z, 1.0);
 
      // gl_Position = vec4 (position, 1.0);
     // vec4 transformedPosition = transformationMatrix * vec4(position.xyz, 0.0);

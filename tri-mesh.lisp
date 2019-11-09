@@ -4,7 +4,7 @@
 
 (in-package #:newgl)
 
-(defclass primitives (opengl-object)
+(defclass tri-mesh (opengl-object)
   ((line-vertex-data   :initform (make-array 0
                                              :element-type 'single-float
                                              :initial-contents '()
@@ -45,118 +45,117 @@
                         :inputs '(("position" . 3) ("normal" . 3) ("color" . 4))
                         :vertex (merge-pathnames *shader-dir* "default-filled-vertex.glsl")
                         :fragment (merge-pathnames *shader-dir* "default-fragment.glsl"))))
-  (:documentation "A set of primitives that all use the same shaders."))
+  (:documentation "A set of tri-mesh that all use the same shaders."))
 
-(defmethod rebuild-shaders ((object primitives))
+(defmethod rebuild-shaders ((object tri-mesh))
   (with-slots (vao line-program fill-program) object
-    
     (when vao
       (gl:bind-vertex-array vao)
       (build-program line-program)
       (build-program fill-program))))
 
-(defun tol-equal (a b &optional (tolerance 0.001))
-  (< (abs (- a b )) tolerance))
+;; (defun tol-equal (a b &optional (tolerance 0.001))
+;;   (< (abs (- a b )) tolerance))
 
-(defun insert-vect (buffer pt)
-  (vector-push-extend (coerce (vx pt) 'single-float) buffer)
-  (vector-push-extend (coerce (vy pt) 'single-float) buffer)
-  (vector-push-extend (coerce (vz pt) 'single-float) buffer)
-  (typecase pt
-    (vec4
-     (vector-push-extend (coerce (vw pt) 'single-float) buffer))))
+;; (defun insert-vect (buffer pt)
+;;   (vector-push-extend (coerce (vx pt) 'single-float) buffer)
+;;   (vector-push-extend (coerce (vy pt) 'single-float) buffer)
+;;   (vector-push-extend (coerce (vz pt) 'single-float) buffer)
+;;   (typecase pt
+;;     (vec4
+;;      (vector-push-extend (coerce (vw pt) 'single-float) buffer))))
 
-(defun insert-pc-in-buffer (buffer pt color)
-  (let ((olen (length buffer)))
-    (insert-vect buffer pt)
-    (insert-vect buffer color)
-    (floor (/ olen 7))))
+;; (defun insert-pc-in-buffer (buffer pt color)
+;;   (let ((olen (length buffer)))
+;;     (insert-vect buffer pt)
+;;     (insert-vect buffer color)
+;;     (floor (/ olen 7))))
 
-(defun insert-pnc-in-buffer (buffer pt normal color)
-  (let ((olen (length buffer)))
-    (insert-vect buffer pt)
-    (insert-vect buffer normal)
-    (insert-vect buffer color)
-    (floor (/ olen 10))))
+;; (defun insert-pnc-in-buffer (buffer pt normal color)
+;;   (let ((olen (length buffer)))
+;;     (insert-vect buffer pt)
+;;     (insert-vect buffer normal)
+;;     (insert-vect buffer color)
+;;     (floor (/ olen 10))))
 
-(defun add-point (object pt color)
-  (declare (type primitives object)
-           (type point pt)
-           (type color color))
-  (with-slots (line-vertex-data points) object
-    (vector-push-extend (insert-pc-in-buffer line-vertex-data
-                                             pt
-                                             color)
-                        points)))
+;; (defun add-point (object pt color)
+;;   (declare (type tri-mesh object)
+;;            (type point pt)
+;;            (type color color))
+;;   (with-slots (line-vertex-data points) object
+;;     (vector-push-extend (insert-pc-in-buffer line-vertex-data
+;;                                              pt
+;;                                              color)
+;;                         points)))
 
-(defun add-line (object pt1 pt2 color)
-  (declare (type primitives object)
-           (type point pt1 pt2)
-           (type color color))
-  (with-slots (line-vertex-data lines) object
-    (vector-push-extend (insert-pc-in-buffer line-vertex-data
-                                             pt1
-                                             color)
-                        lines)
-    (vector-push-extend (insert-pc-in-buffer line-vertex-data
-                                             pt2
-                                             color)
-                        lines)))
+;; (defun add-line (object pt1 pt2 color)
+;;   (declare (type tri-mesh object)
+;;            (type point pt1 pt2)
+;;            (type color color))
+;;   (with-slots (line-vertex-data lines) object
+;;     (vector-push-extend (insert-pc-in-buffer line-vertex-data
+;;                                              pt1
+;;                                              color)
+;;                         lines)
+;;     (vector-push-extend (insert-pc-in-buffer line-vertex-data
+;;                                              pt2
+;;                                              color)
+;;                         lines)))
 
-(defun triangle-normal (pt1 pt2 pt3)
-  "Compute the normal of a triangle."
-  (declare (type point pt1 pt2 pt3))
-  (vc (v- pt2 pt1) (v- pt1 pt3)))
+;; (defun triangle-normal (pt1 pt2 pt3)
+;;   "Compute the normal of a triangle."
+;;   (declare (type point pt1 pt2 pt3))
+;;   (vc (v- pt2 pt1) (v- pt1 pt3)))
 
-(defun add-triangle (object pt1 pt2 pt3 color)
-  (declare (type primitives object)
-           (type point pt1 pt2 pt3)
-           (type color color))
-  ;;  (let ((normal (triangle-normal pt1 pt2 pt3)))
-  (with-slots (line-vertex-data triangles) object
-    (vector-push-extend (insert-pc-in-buffer line-vertex-data
-                                             pt1
-                                             ;; normal
-                                             color)
-                        triangles)
-    (vector-push-extend (insert-pc-in-buffer line-vertex-data
-                                             pt2
-                                             ;; normal
-                                             color)
-                        triangles)
-    (vector-push-extend (insert-pc-in-buffer line-vertex-data
-                                             pt3
-                                             ;; normal
-                                             color)
-                        triangles)))
+;; (defun add-triangle (object pt1 pt2 pt3 color)
+;;   (declare (type tri-mesh object)
+;;            (type point pt1 pt2 pt3)
+;;            (type color color))
+;;   ;;  (let ((normal (triangle-normal pt1 pt2 pt3)))
+;;   (with-slots (line-vertex-data triangles) object
+;;     (vector-push-extend (insert-pc-in-buffer line-vertex-data
+;;                                              pt1
+;;                                              ;; normal
+;;                                              color)
+;;                         triangles)
+;;     (vector-push-extend (insert-pc-in-buffer line-vertex-data
+;;                                              pt2
+;;                                              ;; normal
+;;                                              color)
+;;                         triangles)
+;;     (vector-push-extend (insert-pc-in-buffer line-vertex-data
+;;                                              pt3
+;;                                              ;; normal
+;;                                              color)
+;;                         triangles)))
 ;;)
 
-(defun add-filled-triangle (object pt1 pt2 pt3 color)
+;; (defun add-filled-triangle (object pt1 pt2 pt3 color)
 
-  (declare (type primitives object)
-           (type point pt1 pt2)
-           (type color color))
+;;   (declare (type tri-mesh object)
+;;            (type point pt1 pt2)
+;;            (type color color))
 
-  (let ((normal (triangle-normal pt1 pt2 pt3)))
-    (with-slots (filled-vertex-data filled-triangles) object
-      (vector-push-extend (insert-pnc-in-buffer filled-vertex-data
-                                                pt1
-                                                normal
-                                                color)
-                          filled-triangles)
-      (vector-push-extend (insert-pnc-in-buffer filled-vertex-data
-                                                pt2
-                                                normal
-                                                color)
-                          filled-triangles)
-      (vector-push-extend (insert-pnc-in-buffer filled-vertex-data
-                                                pt3
-                                                normal
-                                                color)
-                          filled-triangles))))
+;;   (let ((normal (triangle-normal pt1 pt2 pt3)))
+;;     (with-slots (filled-vertex-data filled-triangles) object
+;;       (vector-push-extend (insert-pnc-in-buffer filled-vertex-data
+;;                                                 pt1
+;;                                                 normal
+;;                                                 color)
+;;                           filled-triangles)
+;;       (vector-push-extend (insert-pnc-in-buffer filled-vertex-data
+;;                                                 pt2
+;;                                                 normal
+;;                                                 color)
+;;                           filled-triangles)
+;;       (vector-push-extend (insert-pnc-in-buffer filled-vertex-data
+;;                                                 pt3
+;;                                                 normal
+;;                                                 color)
+;;                           filled-triangles))))
 
 
-(defmethod fill-buffers ((object primitives))
+(defmethod fill-buffers ((object tri-mesh))
   (call-next-method)
   (with-slots (vao vbos ebos
                    points lines
@@ -191,7 +190,7 @@
            (gl:buffer-data :element-array-buffer :static-draw gl-indices)
            (gl:free-gl-array gl-indices)))))
 
-(defmethod render ((object primitives))
+(defmethod render ((object tri-mesh))
   (call-next-method)
   (with-slots (vbos ebos transformation points lines triangles filled-triangles line-program fill-program) object
     (when (and vbos ebos)
