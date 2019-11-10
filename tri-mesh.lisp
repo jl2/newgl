@@ -5,25 +5,9 @@
 (in-package #:newgl)
 
 (defclass tri-mesh (opengl-object)
-  ((line-vertex-data   :initform (make-array 0
-                                             :element-type 'single-float
-                                             :initial-contents '()
-                                             :adjustable t
-                                             :fill-pointer 0))
+  (
    (filled-vertex-data :initform (make-array 0
                                              :element-type 'single-float
-                                             :initial-contents '()
-                                             :adjustable t
-                                             :fill-pointer 0))
-   (points             :initform (make-array 0 :element-type 'fixnum
-                                             :initial-contents '()
-                                             :adjustable t
-                                             :fill-pointer 0))
-   (lines              :initform (make-array 0 :element-type 'fixnum
-                                             :initial-contents '()
-                                             :adjustable t
-                                             :fill-pointer 0))
-   (triangles          :initform (make-array 0 :element-type 'fixnum
                                              :initial-contents '()
                                              :adjustable t
                                              :fill-pointer 0))
@@ -31,13 +15,6 @@
                                              :initial-contents '()
                                              :adjustable t
                                              :fill-pointer 0))
-   (line-program       :initarg :line-program
-                       :initform (make-instance
-                                  'shader-program
-                                  :inputs '(("position" . 3) ("color" . 4))
-                                  :vertex (merge-pathnames *shader-dir* "default-line-vertex.glsl")
-                                  :fragment(merge-pathnames *shader-dir* "default-fragment.glsl")))
-
    (fill-program       :initarg :fill-program
                        :initform
                        (make-instance
@@ -45,7 +22,7 @@
                         :inputs '(("position" . 3) ("normal" . 3) ("color" . 4))
                         :vertex (merge-pathnames *shader-dir* "default-filled-vertex.glsl")
                         :fragment (merge-pathnames *shader-dir* "default-fragment.glsl"))))
-  (:documentation "A set of tri-mesh that all use the same shaders."))
+  (:documentation "A triangle mesh."))
 
 (defmethod rebuild-shaders ((object tri-mesh))
   (with-slots (vao line-program fill-program) object
@@ -157,13 +134,10 @@
 
 (defmethod fill-buffers ((object tri-mesh))
   (call-next-method)
-  (with-slots (vao vbos ebos
-                   points lines
-                   triangles filled-triangles
-                   line-vertex-data filled-vertex-data) object
+  (with-slots (vao vbos ebos filled-triangles filled-vertex-data) object
     (when (null vbos)
-      (setf vbos (gl:gen-buffers 2))
-      (setf ebos (gl:gen-buffers 4)))
+      (setf vbos (gl:gen-buffers 1))
+      (setf ebos (gl:gen-buffers 1)))
 
     (let ((gl-vertices (to-gl-float-array line-vertex-data)))
       (gl:bind-buffer :array-buffer (car vbos))
@@ -194,27 +168,6 @@
   (call-next-method)
   (with-slots (vbos ebos transformation points lines triangles filled-triangles line-program fill-program) object
     (when (and vbos ebos)
-      (when (> (length points) 0)
-        (gl:bind-buffer :array-buffer (car vbos))
-        (use-program line-program transformation)
-        (gl:bind-buffer :element-array-buffer (point-ebo ebos))
-        (gl:polygon-mode :front-and-back :line)
-        (gl:draw-elements :points (gl:make-null-gl-array :unsigned-int) :count (length points)))
-
-      (when (> (length lines) 0)
-        (gl:bind-buffer :array-buffer (car vbos))
-        (use-program line-program transformation)
-        (gl:bind-buffer :element-array-buffer (line-ebo ebos))
-        (gl:polygon-mode :front-and-back :line)
-        (gl:draw-elements :lines (gl:make-null-gl-array :unsigned-int) :count (length lines)))
-
-      (when (> (length triangles) 0)
-        (gl:bind-buffer :array-buffer (car vbos))
-        (use-program line-program transformation)
-        (gl:bind-buffer :element-array-buffer (triangle-ebo ebos))
-        (gl:polygon-mode :front-and-back :line)
-        (gl:draw-elements :triangles (gl:make-null-gl-array :unsigned-int) :count (length triangles)))
-
       (when (> (length filled-triangles) 0)
         (gl:bind-buffer :array-buffer (cadr vbos))
         (use-program fill-program transformation)

@@ -37,8 +37,6 @@
 
 (defun build-program (program)
   (with-slots (vertex-source fragment-source vertex-shader fragment-shader program) program
-    (format t "Building ~a and ~a~%" vertex-source fragment-source)
-    (format  t "vertex-shader: ~a~%" vertex-shader)
     (if (zerop vertex-shader)
         (setf vertex-shader (gl:create-shader :vertex-shader))
         (when (not (zerop program))

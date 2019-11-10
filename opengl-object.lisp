@@ -56,7 +56,6 @@
 
 
 (defmethod cleanup ((object opengl-object))
-  (format t "~%Cleaning up ~a~%" object)
   (with-slots (vao vbos ebos) object
     (when (/= 0 vao)
       (when vbos
