@@ -24,20 +24,36 @@
   (cadddr ebos))
 
 
-(defgeneric fill-buffers (object))
 (defgeneric render (object))
 
-(defgeneric rebuild-shaders (object))
-(defmethod rebuild-shaders ((object opengl-object)))
-
-(defmethod fill-buffers ((object opengl-object))
+(defun ensure-vao-bound (object)
   (with-slots (vao) object
     (when (= 0 vao)
       (setf vao (gl:gen-vertex-array)))
     (gl:bind-vertex-array vao)))
 
+
+(defgeneric rebuild-shaders (object))
+
+(defmethod rebuild-shaders :after ((object opengl-object))
+  (gl:bind-vertex-array 0))
+
+(defmethod rebuild-shaders ((object opengl-object)))
+
+(defmethod rebuild-shaders :before ((object opengl-object))
+  (ensure-vao-bound object))
+
+
+(defgeneric fill-buffers (object))
+
+(defmethod fill-buffers :before ((object opengl-object))
+  (ensure-vao-bound object))
+
+(defmethod fill-buffers ((object opengl-object)))
+
 (defmethod fill-buffers :after ((object opengl-object))
   (gl:bind-vertex-array 0))
+
 
 (defmethod cleanup ((object opengl-object))
   (format t "~%Cleaning up ~a~%" object)
@@ -51,11 +67,11 @@
     (setf vao 0)
     (setf vbos nil)))
 
-(defmethod render ((object opengl-object))
-  (with-slots (vao transformation) object
-    (when (/= 0 vao)
-      (gl:bind-vertex-array vao))))
+(defmethod render :before ((object opengl-object))
+  (ensure-vao-bound object))
 
+(defmethod render ((object opengl-object)))
+  
 (defmethod render :after ((object opengl-object))
   (gl:bind-vertex-array 0))
 

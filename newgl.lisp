@@ -90,8 +90,8 @@
         (gl:depth-func :less)
 
         (gl:clear-color 0.7f0 0.7f0 0.7f0 1.0)
-        (rebuild-shaders object)
         (fill-buffers object)
+        (rebuild-shaders object)
         ;; The event loop
         (loop
            until (window-should-close-p)

@@ -37,7 +37,8 @@
 
 (defun build-program (program)
   (with-slots (vertex-source fragment-source vertex-shader fragment-shader program) program
-
+    (format t "Building ~a and ~a~%" vertex-source fragment-source)
+    (format  t "vertex-shader: ~a~%" vertex-shader)
     (if (zerop vertex-shader)
         (setf vertex-shader (gl:create-shader :vertex-shader))
         (when (not (zerop program))
@@ -71,17 +72,19 @@
   (with-slots (layout program) shader-program
     (let* ((float-size   (cffi:foreign-type-size :float))
            (stride       (* (apply #'+ (mapcar #'cdr layout)) float-size)))
-      (loop for offset = 0 then (incf offset (cdr entry))
+      (loop
+         for offset = 0 then (incf offset (cdr entry))
          for entry in layout
          for count from 0
-         do
-           (let* ((attrib-name (car entry))
-                  (attrib-size (cdr entry))
-                  (position-offset offset)
-                  (position-attrib (gl:get-attrib-location program attrib-name)))
-             (when (>= position-attrib 0)
-               (gl:enable-vertex-attrib-array position-attrib)
-               (gl:vertex-attrib-pointer position-attrib attrib-size :float :false stride (* float-size position-offset))))))
+         do (let* ((attrib-name (car entry))
+                   (attrib-size (cdr entry))
+                   (position-offset offset)
+                   (position-attrib (gl:get-attrib-location program attrib-name)))
+              (when (>= position-attrib 0)
+                (gl:enable-vertex-attrib-array position-attrib)
+                (gl:vertex-attrib-pointer position-attrib attrib-size
+                                          :float :false
+                                          stride (* float-size position-offset))))))
 
     (gl:use-program program)
     (let ((xform-location (gl:get-uniform-location program "transformationMatrix")))

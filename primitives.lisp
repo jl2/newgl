@@ -19,15 +19,18 @@
                                              :initial-contents '()
                                              :adjustable t
                                              :fill-pointer 0))
-   (lines              :initform (make-array 0 :element-type 'fixnum
+   (lines              :initform (make-array 0
+                                             :element-type 'fixnum
                                              :initial-contents '()
                                              :adjustable t
                                              :fill-pointer 0))
-   (triangles          :initform (make-array 0 :element-type 'fixnum
+   (triangles          :initform (make-array 0
+                                             :element-type 'fixnum
                                              :initial-contents '()
                                              :adjustable t
                                              :fill-pointer 0))
-   (filled-triangles   :initform (make-array 0 :element-type 'fixnum
+   (filled-triangles   :initform (make-array 0
+                                             :element-type 'fixnum
                                              :initial-contents '()
                                              :adjustable t
                                              :fill-pointer 0))
@@ -158,9 +161,7 @@
 
 (defmethod fill-buffers ((object primitives))
   (call-next-method)
-  (with-slots (vao vbos ebos
-                   points lines
-                   triangles filled-triangles
+  (with-slots (vao vbos ebos points lines triangles filled-triangles
                    line-vertex-data filled-vertex-data) object
     (when (null vbos)
       (setf vbos (gl:gen-buffers 2))

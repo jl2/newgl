@@ -6,11 +6,11 @@ layout(location = 2) in vec4 color;
 
 // uniform mat4 transformationMatrix;
 
-// out vec4 Color;
-
+out vec4 Color;
 void main()
 {
      gl_Position = vec4(position.x-0.4, position.y+0.3, position.z, 1.0);
+     Color = color;
 
      // gl_Position = vec4 (position, 1.0);
     // vec4 transformedPosition = transformationMatrix * vec4(position.xyz, 0.0);
