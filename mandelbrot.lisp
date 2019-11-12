@@ -24,8 +24,8 @@
                        (make-instance
                         'shader-program
                         :inputs '(("position" . 3) ("uv" . 2))
-                        :vertex (merge-pathnames *shader-dir* "mandelbrot-vertex.glsl")
-                        :fragment (merge-pathnames *shader-dir* "mandelbrot-fragment.glsl"))))
+                        :vertex (merge-pathnames *shader-dir* "mandel-vertex.glsl")
+                        :fragment (merge-pathnames *shader-dir* "mandel-fragment.glsl"))))
   (:documentation "A Mandelbrot set."))
 
 (defmethod rebuild-shaders ((object mandelbrot))

@@ -220,6 +220,5 @@
       (when (> (length filled-triangles) 0)
         (gl:bind-buffer :array-buffer (cadr vbos))
         (use-program fill-program transformation)
-        (gl:polygon-mode :front-and-back :fill)
         (gl:bind-buffer :element-array-buffer (filled-ebo ebos))
         (gl:draw-elements :triangles (gl:make-null-gl-array :unsigned-int) :count (length filled-triangles))))))
