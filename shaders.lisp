@@ -76,10 +76,12 @@
          for entry in layout
          for attrib-name = (car entry)
          for attrib-size = (cdr entry)
-         for position-offset = 0 then (+ position-offset attrib-size)
+         for position-offset = 0 then (+ position-offset (cdr last-entry))
+         for last-entry = entry
          for position-attrib = (gl:get-attrib-location program attrib-name)
          for count from 0
          do
+           ;; (format t "~a is at ~a~%" attrib-name position-offset)
            (when (>= position-attrib 0)
              (gl:enable-vertex-attrib-array position-attrib)
              (gl:vertex-attrib-pointer position-attrib

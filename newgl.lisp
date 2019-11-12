@@ -49,7 +49,7 @@
   "Toggle filled or wireframe drawing.")
 
 (defparameter *cull-face* :cull-face)
-(defparameter *front-face* :cw)
+(defparameter *front-face* :ccw)
 
 (defun show-gl-state ()
   (loop

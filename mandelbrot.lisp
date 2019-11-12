@@ -9,10 +9,10 @@
    (vertices :initform (make-array
                         20
                         :element-type 'single-float
-                        :initial-contents '(-1.0f0  1.0f0  0.0f0 -2.0f0 1.5f0
-                                            -1.0f0 -1.0f0  0.0f0 -2.0f0 -1.5f0
-                                            1.0f0  1.0f0  0.0f0 2.0f0 1.5f0
-                                            1.0f0 -1.0f0  0.0f0 2.0f0 1.5f0)))
+                        :initial-contents '(-0.8f0  0.8f0  0.0f0 -2.0f0 1.5f0
+                                            -0.8f0 -0.8f0  0.0f0 -2.0f0 -1.5f0
+                                            0.8f0  0.8f0  0.0f0 1.0f0 1.5f0
+                                            0.8f0 -0.8f0  0.0f0 1.0f0 -1.5f0)))
 
    (indices :initform (make-array
                        6
