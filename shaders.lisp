@@ -7,10 +7,10 @@
 (defparameter *shader-dir* (asdf:system-relative-pathname :newgl "shaders/"))
 
 (defclass gl-shader ()
-  ((layout :initarg layout :initform nil :type (or null list))
+  ((layout :initarg :layout :initform nil :type (or null list))
    (shader :initform 0 :type fixnum)
-   (source-file :initform "" :type string)
-   (shader-type :initarg :type))
+   (source-file :initarg :source-file :initform "" :type string)
+   (shader-type :initarg :shader-type))
   (:documentation "An opengl shader class."))
 
 (defclass shader-program ()
@@ -22,9 +22,9 @@
   (:documentation "Read source from source file and compile shader"))
 
 (defmethod compile-shader ((shader gl-shader))
-  (with-slots (shader source-file type) shader
+  (with-slots (shader source-file shader-type) shader
     (when (zerop shader)
-      (setf shader (gl:create-shader type)))
+      (setf shader (gl:create-shader shader-type)))
     (gl:shader-source shader (read-file source-file))
     (gl:compile-shader shader)
     (when (not (eq t (gl:get-shader shader :compile-status)))
@@ -52,13 +52,11 @@
 
 (defmethod build-shader-program ((program shader-program))
   (with-slots (shaders program) program
-    (dolist (shader shaders)
-      (with-slots (shader) shader
-        (if (zerop shader)
-            (compile-shader shader)
-            (when (not (zerop program))
-              (gl:detach-shader program shader)))
-        (compile-shader shader)))
+    (dolist (gl-shader shaders)
+      (with-slots (shader) gl-shader
+        (when (and (not (zerop shader)) (not (zerop program)))
+          (gl:detach-shader program shader))
+        (compile-shader gl-shader)))
     (when (zerop program)
       (setf program (gl:create-program)))
     (dolist (shader shaders)

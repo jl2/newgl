@@ -140,7 +140,6 @@
 
 (def-framebuffer-size-callback resize-handler (window width height)
   (declare (ignorable window))
-  (format t "Resize...~%")
   (gl:viewport 0 0 width height))
 
 (defun viewer-thread-function ( object )
@@ -227,7 +226,29 @@
       (trivial-main-thread:with-body-in-main-thread ()
         (viewer-thread-function object))))
 
-(defun hello ()
-  (let ((mandel (make-instance 'mandelbrot)))
+(defun hello ( &key (show-traces nil) (in-thread nil))
 
-    (show mandel)))
+  ;; Some traces that are helpful for debugging
+  (when show-traces
+    (trace
+     gl:bind-buffer
+     gl:bind-vertex-array
+     gl:draw-elements
+     gl:enable-vertex-attrib-array
+     gl:gen-vertex-array
+     gl:get-attrib-location
+     gl:polygon-mode
+     gl:use-program
+     gl:vertex-attrib-pointer
+
+     newgl::build-shader-program
+     newgl::ensure-vao-bound
+     newgl::fill-buffers
+     newgl::render
+     newgl::use-layout
+     newgl::use-program))
+
+  (let ((mandel (make-instance 'mandelbrot)))
+    (show mandel in-thread))
+  (when show-traces
+    (untrace)))

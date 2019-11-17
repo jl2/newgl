@@ -35,13 +35,14 @@
 
 (defgeneric rebuild-shaders (object))
 
-(defmethod rebuild-shaders :after ((object opengl-object))
-  (gl:bind-vertex-array 0))
-
-(defmethod rebuild-shaders ((object opengl-object)))
 
 (defmethod rebuild-shaders :before ((object opengl-object))
   (ensure-vao-bound object))
+
+(defmethod rebuild-shaders ((object opengl-object)))
+
+(defmethod rebuild-shaders :after ((object opengl-object))
+  (gl:bind-vertex-array 0))
 
 
 (defgeneric fill-buffers (object))

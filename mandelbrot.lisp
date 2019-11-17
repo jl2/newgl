@@ -4,35 +4,87 @@
 
 (in-package #:newgl)
 
+(defclass mandel-vertex-shader (gl-shader)
+  ((layout :initform
+           '(((:name . "position")
+              (:count . 3)
+              (:type . :float))
+
+             ((:name . "uv")
+              (:count . 2)
+              (:type . :float)))
+           :type (or null list))
+
+   (shader :initform 0 :type fixnum)
+   (source-file :initform (merge-pathnames *shader-dir* "mandel-vertex.glsl") :type string)
+   (shader-type :initform :vertex-shader)))
+
+(defclass mandel-fragment-shader (gl-shader)
+  ((shader-type :initform :fragment-shader)
+   (source-file :initform (merge-pathnames *shader-dir* "mandel-fragment.glsl"))))
+
+(defclass mandel-program (shader-program)
+  ((shaders :initform (list
+                       (make-instance 'mandel-vertex-shader)
+                       (make-instance 'mandel-fragment-shader)))))
+
+(defun use-layout (program layout)
+  (let ((stride (loop for entry in layout summing
+                     (* (assoc-value entry :count)
+                        (cffi:foreign-type-size (assoc-value entry :type))))))
+    (loop
+       for cur-offset = 0 then (incf cur-offset entry-count)
+       for entry in layout
+       for entry-count = (assoc-value entry :count)
+       for entry-type = (assoc-value entry :type)
+       for entry-name = (assoc-value entry :name)
+       for count from 0
+       do
+         (let* (
+                (entry-offset cur-offset)
+                (entry-attrib (gl:get-attrib-location program entry-name)))
+           (when (>= entry-attrib 0)
+             (gl:enable-vertex-attrib-array entry-attrib)
+             (gl:vertex-attrib-pointer count
+                                       entry-count
+                                       entry-type
+                                       :false
+                                       stride
+                                       (* entry-offset
+                                          (cffi:foreign-type-size (assoc-value entry :type)))))))))
+
+(defmethod use-program ((shader-program mandel-program))
+  (call-next-method)
+  (with-slots (program shaders) shader-program
+    (dolist (shader shaders)
+      (with-slots (layout) shader
+        (when layout
+          (use-layout program layout))))
+    (gl:use-program program)))
+
 (defclass mandelbrot (opengl-object)
-  (
-   (vertices :initform (make-array
+
+   ((vertices :initform (make-array
                         20
                         :element-type 'single-float
-                        :initial-contents '(-0.8f0  0.8f0  0.0f0 -2.0f0 1.5f0
-                                            -0.8f0 -0.8f0  0.0f0 -2.0f0 -1.5f0
-                                            0.8f0  0.8f0  0.0f0 1.0f0 1.5f0
-                                            0.8f0 -0.8f0  0.0f0 1.0f0 -1.5f0)))
+                        :initial-contents '(-1.0f0  1.0f0  0.0f0 -2.0f0 1.5f0
+                                            -1.0f0 -1.0f0  0.0f0 -2.0f0 -1.5f0
+                                            1.0f0  1.0f0  0.0f0 1.0f0 1.5f0
+                                            1.0f0 -1.0f0  0.0f0 1.0f0 -1.5f0)))
 
    (indices :initform (make-array
                        6
                        :element-type 'fixnum
                        :initial-contents '(0 1 2 1 3 2)))
 
-   (fill-program :initarg :fill-program
-                 :initform
-                       (make-instance
-                        'shader-program
-                        :inputs '(("position" . 3) ("uv" . 2))
-                        :vertex (merge-pathnames *shader-dir* "mandel-vertex.glsl")
-                        :fragment (merge-pathnames *shader-dir* "mandel-fragment.glsl"))))
+    (fill-program :initform (make-instance 'mandel-program)))
+
   (:documentation "A Mandelbrot set."))
 
 (defmethod rebuild-shaders ((object mandelbrot))
-  (with-slots (vao fill-program) object
-    (when vao
-      (gl:bind-vertex-array vao)
-      (build-program fill-program))))
+  (call-next-method)
+  (with-slots (fill-program) object
+    (build-shader-program fill-program)))
 
 (defmethod fill-buffers ((object mandelbrot))
   (call-next-method)
