@@ -7,9 +7,9 @@
 (defparameter *shader-dir* (asdf:system-relative-pathname :newgl "shaders/"))
 
 (defclass gl-shader ()
-  ((shader :initform 0 :type fixnum)
+  ((layout :initarg layout :initform nil :type (or null list))
+   (shader :initform 0 :type fixnum)
    (source-file :initform "" :type string)
-   (layout :initarg :inputs :initform nil)
    (shader-type :initarg :type))
   (:documentation "An opengl shader class."))
 
@@ -17,7 +17,6 @@
   ((shaders :initarg :shaders :initform nil :type (or null list))
    (program :initform 0))
   (:documentation "An opengl shader program."))
-
 
 (defgeneric compile-shader (shader)
   (:documentation "Read source from source file and compile shader"))
@@ -92,32 +91,37 @@
         (format t "validate-program: ~a~%~a~%" status (gl:get-program-info-log program))))))
 
 (defgeneric use-program (shader-program)
-  (:documentation "Use shader program."))
+  (:documentation "Set uniform and layout variables."))
 
-(defmethod use-program ((shader-program shader-program))
+(defmethod use-program (shader-program))
+
+(defmethod use-program :after ((shader-program shader-program))
   (with-slots (program) shader-program
-    (let* ((float-size   (cffi:foreign-type-size :float))
-           (stride       (* (apply #'+ (mapcar #'cdr layout)) float-size)))
-      (loop
-         for entry in layout
-         for attrib-name = (car entry)
-         for attrib-size = (cdr entry)
-         for position-offset = 0 then (+ position-offset (cdr last-entry))
-         for last-entry = entry
-         for position-attrib = (gl:get-attrib-location program attrib-name)
-         for count from 0
-         do
-           ;; (format t "~a is at ~a~%" attrib-name position-offset)
-           (when (>= position-attrib 0)
-             (gl:enable-vertex-attrib-array position-attrib)
-             (gl:vertex-attrib-pointer position-attrib
-                                       attrib-size
-                                       :float :false
-                                       stride
-                                       (* float-size position-offset)))))
-
     (gl:use-program program)))
-    ;; (let ((xform-location (gl:get-uniform-location program "transformationMatrix")))
+
+;; (let* ((float-size   (cffi:foreign-type-size :float))
+    ;;        (stride       (* (apply #'+ (mapcar #'cdr layout)) float-size)))
+    ;;   (loop
+    ;;      for entry in layout
+    ;;      for attrib-name = (car entry)
+    ;;      for attrib-size = (cdr entry)
+    ;;      for position-offset = 0 then (+ position-offset (cdr last-entry))
+    ;;      for last-entry = entry
+    ;;      for position-attrib = (gl:get-attrib-location program attrib-name)
+    ;;      for count from 0
+    ;;      do
+    ;;        ;; (format t "~a is at ~a~%" attrib-name position-offset)
+    ;;        (when (>= position-attrib 0)
+    ;;          (gl:enable-vertex-attrib-array position-attrib)
+    ;;          (gl:vertex-attrib-pointer position-attrib
+    ;;                                    attrib-size
+    ;;                                    :float :false
+    ;;                                    stride
+    ;;                                    (* float-size position-offset)))))
+
+
+
+;; (let ((xform-location (gl:get-uniform-location program "transformationMatrix")))
     ;;   (when (> 0 xform-location)
     ;;     (gl:uniform-matrix xform-location
     ;;                        4
