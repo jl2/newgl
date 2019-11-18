@@ -10,7 +10,7 @@ void main (void)
      float tmpval;
      float tmpval2;
      int iter;
-     int maxIterations = 400;
+     int maxIterations = 200;
      float tempreal, tempimag, Creal, Cimag;
      float r2;
      vec2 pos = complexCoordinate;
@@ -38,9 +38,9 @@ void main (void)
      }
      else
      {
-          tmpval = fract(iter / 64.0);
+          tmpval = fract(iter / 35.0);
           tmpval2 = fract(iter / 28.0);
-          color = vec4 (tmpval2, (1.0 - tmpval), (1.0 - tmpval), 1.0);
+          color = vec4 (tmpval2, (1.0 - tmpval), tmpval, 1.0);
      }
      Color = color;
      // Color = vec4(complexCoordinate.y, complexCoordinate.x, 0.0, 1.0);
