@@ -28,31 +28,6 @@
                        (make-instance 'mandel-vertex-shader)
                        (make-instance 'mandel-fragment-shader)))))
 
-(defun use-layout (program layout)
-  (let ((stride (loop for entry in layout summing
-                     (* (assoc-value entry :count)
-                        (cffi:foreign-type-size (assoc-value entry :type))))))
-    (loop
-       for cur-offset = 0 then (incf cur-offset entry-count)
-       for entry in layout
-       for entry-count = (assoc-value entry :count)
-       for entry-type = (assoc-value entry :type)
-       for entry-name = (assoc-value entry :name)
-       for count from 0
-       do
-         (let* (
-                (entry-offset cur-offset)
-                (entry-attrib (gl:get-attrib-location program entry-name)))
-           (when (>= entry-attrib 0)
-             (gl:enable-vertex-attrib-array entry-attrib)
-             (gl:vertex-attrib-pointer count
-                                       entry-count
-                                       entry-type
-                                       :false
-                                       stride
-                                       (* entry-offset
-                                          (cffi:foreign-type-size (assoc-value entry :type)))))))))
-
 (defmethod use-program ((shader-program mandel-program))
   (call-next-method)
   (with-slots (program shaders) shader-program

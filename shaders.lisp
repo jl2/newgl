@@ -71,6 +71,32 @@
       (when (not (eq status t))
         (format t "validate-program: ~a~%~a~%" status (gl:get-program-info-log program))))))
 
+(defun use-layout (program layout)
+  (loop
+     with stride = (loop for entry in layout summing
+                        (* (assoc-value entry :count)
+                           (cffi:foreign-type-size (assoc-value entry :type))))
+
+     for cur-offset = 0 then (incf cur-offset entry-count)
+
+     for entry in layout
+     for entry-count = (assoc-value entry :count)
+     for entry-type = (assoc-value entry :type)
+     for entry-name = (assoc-value entry :name)
+     for count from 0
+     do
+       (let* ((entry-offset cur-offset)
+              (entry-attrib (gl:get-attrib-location program entry-name))
+              (type-size (cffi:foreign-type-size (assoc-value entry :type))))
+         (when (>= entry-attrib 0)
+           (gl:enable-vertex-attrib-array entry-attrib)
+           (gl:vertex-attrib-pointer count
+                                     entry-count
+                                     entry-type
+                                     :false
+                                     stride
+                                     (* entry-offset type-size))))))
+
 (defgeneric use-program (shader-program)
   (:documentation "Set uniform and layout variables."))
 

@@ -37,7 +37,6 @@
                (:file "newgl")
                (:file "opengl-object")
                (:file "shaders")
-               (:file "primitives")
                (:file "mandelbrot")
                (:file "tri-mesh")
                )
