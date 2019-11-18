@@ -97,11 +97,17 @@
                                      stride
                                      (* entry-offset type-size))))))
 
-(defgeneric use-program (shader-program)
+(defgeneric use-shader-program (shader-program)
   (:documentation "Set uniform and layout variables."))
 
-(defmethod use-program (shader-program))
+(defmethod use-shader-program ((shader-program shader-program))
+  (call-next-method)
+  (with-slots (program shaders) shader-program
+    (dolist (shader shaders)
+      (with-slots (layout) shader
+        (when layout
+          (use-layout program layout))))))
 
-(defmethod use-program :after ((shader-program shader-program))
+(defmethod use-shader-program :after ((shader-program shader-program))
   (with-slots (program) shader-program
     (gl:use-program program)))

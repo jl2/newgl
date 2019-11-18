@@ -108,4 +108,6 @@
         (use-program fill-program :transformation transformation)
         (gl:polygon-mode :front-and-back :fill)
         (gl:bind-buffer :element-array-buffer (car ebos))
-        (gl:draw-elements :triangles (gl:make-null-gl-array :unsigned-int) :count (length filled-triangles))))))
+        (gl:draw-elements :triangles
+                          (gl:make-null-gl-array :unsigned-int)
+                          :count (length filled-triangles))))))

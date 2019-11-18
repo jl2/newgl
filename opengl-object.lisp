@@ -8,21 +8,8 @@
   ((vao :initform 0 :type fixnum)
    (vbos :initform nil :type (or null cons))
    (ebos :initform nil :type (or null cons))
-   (transformation :initform (meye 4) :type mat4))
+   (shader-program :initarg :program))
   (:documentation "Base class for all objects that can be rendered in a scene."))
-
-(defun point-ebo (ebos)
-  (car ebos))
-
-(defun line-ebo (ebos)
-  (cadr ebos))
-
-(defun triangle-ebo (ebos)
-  (caddr ebos))
-
-(defun filled-ebo (ebos)
-  (cadddr ebos))
-
 
 (defgeneric render (object))
 

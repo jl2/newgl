@@ -242,7 +242,7 @@
      newgl::fill-buffers
      newgl::render
      newgl::use-layout
-     newgl::use-program))
+     newgl::use-shader-program))
 
   (let ((mandel (make-instance 'mandelbrot)))
     (show mandel in-thread))

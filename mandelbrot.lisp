@@ -28,15 +28,6 @@
                        (make-instance 'mandel-vertex-shader)
                        (make-instance 'mandel-fragment-shader)))))
 
-(defmethod use-program ((shader-program mandel-program))
-  (call-next-method)
-  (with-slots (program shaders) shader-program
-    (dolist (shader shaders)
-      (with-slots (layout) shader
-        (when layout
-          (use-layout program layout))))
-    (gl:use-program program)))
-
 (defclass mandelbrot (opengl-object)
 
    ((vertices :initform (make-array
@@ -52,14 +43,14 @@
                        :element-type 'fixnum
                        :initial-contents '(0 1 2 1 3 2)))
 
-    (fill-program :initform (make-instance 'mandel-program)))
+    (shader-program :initform (make-instance 'mandel-program)))
 
   (:documentation "A Mandelbrot set."))
 
 (defmethod rebuild-shaders ((object mandelbrot))
   (call-next-method)
-  (with-slots (fill-program) object
-    (build-shader-program fill-program)))
+  (with-slots (shader-program) object
+    (build-shader-program shader-program)))
 
 (defmethod fill-buffers ((object mandelbrot))
   (call-next-method)
@@ -83,11 +74,11 @@
 
 (defmethod render ((object mandelbrot))
   (call-next-method)
-  (with-slots (vbos ebos indices fill-program) object
+  (with-slots (vbos ebos indices shader-program) object
     (when (and vbos ebos)
       (when (> (length indices) 0)
         (gl:bind-buffer :array-buffer (car vbos))
-        (use-program fill-program)
+        (use-shader-program shader-program)
         (gl:polygon-mode :front-and-back :fill)
         (gl:bind-buffer :element-array-buffer (car ebos))
         (gl:draw-elements :triangles (gl:make-null-gl-array :unsigned-int) :count (length indices))))))
