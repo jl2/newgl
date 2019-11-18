@@ -26,30 +26,27 @@
 (deftype color ()
   '(or vec4))
 
-(defun red (color)
-  (vx color))
-
-(defun green (color)
-  (vy color))
-
-(defun blue (color)
-  (vz color))
-
-(defun alpha (color)
-  (vw color))
-
+;; Flags to communicate between handlers and main loop.
 (defparameter *rebuild-shaders* nil
-  "Flag set by keyboard handler to signal rebuilding shaders.")
+  "Flag set by keyboard handler to signal rebuilding shaders.  Trigger with 'r' key.")
+
 (defparameter *refill-buffers* nil
-  "Flag set by keyboard handler to signal refill buffers.")
+  "Flag set by keyboard handler to signal refill buffers.  Trigger with 'f' key.")
+
 (defparameter *show-fps* nil
-  "Flag to turn on or off printing FPS.")
+  "Flag to turn on or off printing FPS.  Toggle with 'c' key.")
 
 (defparameter *wire-frame* t
-  "Toggle filled or wireframe drawing.")
+  "Toggle filled or wireframe drawing. Trigger with 'w' key.")
 
-(defparameter *cull-face* :cull-face)
-(defparameter *front-face* :ccw)
+(defparameter *cull-face* :cull-face
+  "Enable face culling when non-nil.  Toggle with 'F1' key.")
+
+(defparameter *front-face* :ccw
+  "Front face direction setting.  Toggle between :ccw (default) and :cw with 'F2' key.")
+
+#+(or windows linux) (defparameter *want-forward-context* nil)
+#+darwin (defparameter *want-forward-context* t)
 
 (defun show-gl-state ()
   (loop
@@ -63,12 +60,11 @@
      do
        (format t "~a : ~a~%" field (gl:get-integer field))))
 
-;; (defun show-program-state (program)
-;;   (loop
-;;      for field in '(:link-status
-;;                     :attached-shaders)
-;;      do
-;;        (format t "~a : ~a~%" field (gl:get-program program field))))
+(defun show-program-state (program)
+  (loop
+     for field in '(:link-status :attached-shaders)
+     do
+       (format t "~a : ~a~%" field (gl:get-program program field))))
 
 (defun show-open-gl-info ()
   (loop
@@ -77,7 +73,7 @@
                     :max-draw-buffers
                     :max-fragment-uniform-components
                     :max-texture-size
-                    ;; :max-varying-floats
+                    #-darwin :max-varying-floats
                     :max-vertex-attribs
                     :max-vertex-texture-image-units
                     :max-vertex-uniform-components
@@ -159,7 +155,7 @@
                            :opengl-profile :opengl-core-profile
                            :context-version-major 3
                            :context-version-minor 3
-                           :opengl-forward-compat t
+                           :opengl-forward-compat *want-forward-context*
                            :samples 4
                            :resizable t)
         (setf %gl:*gl-get-proc-address* #'get-proc-address)
