@@ -4,6 +4,36 @@
 
 (in-package #:newgl)
 
+
+(defclass plastic-vertex-shader (gl-shader)
+  ((layout :initform
+           '(((:name . "position")
+              (:count . 3)
+              (:type . :float))
+
+             ((:name . "normal")
+              (:count . 3)
+              (:type . :float))
+
+             ((:name . "color")
+              (:count . 4)
+              (:type . :float)))
+           :type (or null list))
+
+   (shader :initform 0 :type fixnum)
+   (source-file :initform (merge-pathnames *shader-dir* "plastic-vertex.glsl") :type string)
+   (shader-type :initform :vertex-shader)))
+
+(defclass plastic-fragment-shader (gl-shader)
+  ((shader-type :initform :fragment-shader)
+   (source-file :initform (merge-pathnames *shader-dir* "plastic-fragment.glsl"))))
+
+(defclass plastic-program (shader-program)
+  ((shaders :initform (list
+                       (make-instance 'plastic-vertex-shader)
+                       (make-instance 'plastic-fragment-shader)))))
+
+
 (defclass tri-mesh (opengl-object)
   (
    (filled-vertex-data :initform (make-array 0
@@ -15,24 +45,25 @@
                                              :initial-contents '()
                                              :adjustable t
                                              :fill-pointer 0))
-   (fill-program       :initarg :fill-program
-                       :initform
-                       (make-instance
-                        'shader-program
-                        :inputs '(("position" . 3) ("normal" . 3) ("color" . 4))
-                        :vertex (merge-pathnames *shader-dir* "default-filled-vertex.glsl")
-                        :fragment (merge-pathnames *shader-dir* "default-fragment.glsl")))
+   (shader-program :initform (make-instance 'mandel-program))
    (changed :initform t))
   (:documentation "A triangle mesh."))
 
 (defmethod rebuild-shaders ((object tri-mesh))
-  (with-slots (vao fill-program) object
-    (when vao
-      (gl:bind-vertex-array vao)
-      (build-program fill-program))))
+  (call-next-method)
+  (with-slots (shader-program) object
+    (build-shader-program shader-program)))
 
 ;; (defun tol-equal (a b &optional (tolerance 0.001))
 ;;   (< (abs (- a b )) tolerance))
+
+(defun insert-vect (buffer pt)
+  (vector-push-extend (coerce (vx pt) 'single-float) buffer)
+  (vector-push-extend (coerce (vy pt) 'single-float) buffer)
+  (vector-push-extend (coerce (vz pt) 'single-float) buffer)
+  (typecase pt
+    (vec4
+     (vector-push-extend (coerce (vw pt) 'single-float) buffer))))
 
 (defun insert-pnc-in-buffer (buffer pt normal color)
   (let ((olen (length buffer)))
@@ -99,15 +130,9 @@
          (gl:free-gl-array gl-indices))))
     (setf changed nil)))
 
-(defmethod render ((object tri-mesh))
-  (call-next-method)
-  (with-slots (vbos ebos transformation filled-triangles fill-program) object
-    (when (and vbos ebos)
-      (when (> (length filled-triangles) 0)
-        (gl:bind-buffer :array-buffer (car vbos))
-        (use-program fill-program :transformation transformation)
-        (gl:polygon-mode :front-and-back :fill)
-        (gl:bind-buffer :element-array-buffer (car ebos))
-        (gl:draw-elements :triangles
-                          (gl:make-null-gl-array :unsigned-int)
-                          :count (length filled-triangles))))))
+(defmethod render ((object opengl-object))
+  (with-slots (filled-triangles) object
+    (gl:polygon-mode :front-and-back :fill)
+    (gl:draw-elements :triangles
+                      (gl:make-null-gl-array :unsigned-int)
+                      :count (length filled-triangles))))

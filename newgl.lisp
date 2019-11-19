@@ -45,6 +45,10 @@
 (defparameter *front-face* :ccw
   "Front face direction setting.  Toggle between :ccw (default) and :cw with 'F2' key.")
 
+(defgeneric cleanup (obj)
+  (:documentation "Cleanup any OpenGL resources owned by obj."))
+
+
 #+(or windows linux) (defparameter *want-forward-context* nil)
 #+darwin (defparameter *want-forward-context* t)
 

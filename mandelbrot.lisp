@@ -73,12 +73,6 @@
            (gl:bind-buffer :element-array-buffer (car ebos))))))
 
 (defmethod render ((object mandelbrot))
-  (call-next-method)
-  (with-slots (vbos ebos indices shader-program) object
-    (when (and vbos ebos)
-      (when (> (length indices) 0)
-        (gl:bind-buffer :array-buffer (car vbos))
-        (use-shader-program shader-program)
-        (gl:polygon-mode :front-and-back :fill)
-        (gl:bind-buffer :element-array-buffer (car ebos))
-        (gl:draw-elements :triangles (gl:make-null-gl-array :unsigned-int) :count (length indices))))))
+  (with-slots (indices) object
+    (gl:polygon-mode :front-and-back :fill)
+    (gl:draw-elements :triangles (gl:make-null-gl-array :unsigned-int) :count (length indices))))

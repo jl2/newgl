@@ -11,7 +11,15 @@
    (shader-program :initarg :program))
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
-(defgeneric render (object))
+(defgeneric render (object)
+  (:documentation "Make OpenGL API calls to render the object.  Binding correct VAO is handled by before and after methods."))
+
+(defgeneric rebuild-shaders (object)
+  (:documentation "Rebuild this object's shader programs.  Binding correct VAO is handled by before and after methods."))
+
+(defgeneric fill-buffers (object)
+  (:documentation "Copy this objects data into OpenGL buffers.  Binding correct VAO is handled by before and after methods."))
+
 
 (defun ensure-vao-bound (object)
   (with-slots (vao) object
@@ -20,7 +28,6 @@
     (gl:bind-vertex-array vao)))
 
 
-(defgeneric rebuild-shaders (object))
 
 
 (defmethod rebuild-shaders :before ((object opengl-object))
@@ -32,7 +39,6 @@
   (gl:bind-vertex-array 0))
 
 
-(defgeneric fill-buffers (object))
 
 (defmethod fill-buffers :before ((object opengl-object))
   (ensure-vao-bound object))
@@ -55,12 +61,18 @@
     (setf vbos nil)))
 
 (defmethod render :before ((object opengl-object))
-  (ensure-vao-bound object))
+  (ensure-vao-bound object)
+  (with-slots (vbos ebos indices shader-program) object
+    (when (and vbos ebos)
+      (gl:bind-buffer :array-buffer (car vbos))
+      (use-shader-program shader-program)
+      (gl:bind-buffer :element-array-buffer (car ebos)))))
 
 (defmethod render ((object opengl-object)))
   
 (defmethod render :after ((object opengl-object))
   (gl:bind-vertex-array 0))
+
 
 (defun to-gl-float-array (arr)
   "Create an OpenGL float array from a CL array of numbers.

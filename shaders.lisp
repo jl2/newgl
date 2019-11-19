@@ -13,13 +13,27 @@
    (shader-type :initarg :shader-type))
   (:documentation "An opengl shader class."))
 
+(defgeneric compile-shader (shader)
+  (:documentation "Read source from source file and compile shader"))
+
 (defclass shader-program ()
   ((shaders :initarg :shaders :initform nil :type (or null list))
    (program :initform 0))
   (:documentation "An opengl shader program."))
 
-(defgeneric compile-shader (shader)
-  (:documentation "Read source from source file and compile shader"))
+
+(defgeneric build-shader-program (program)
+  (:documentation "Build a shader program and all of its corresponding programs."))
+
+(defgeneric use-shader-program (shader-program)
+  (:documentation "Set uniform and layout variables."))
+
+
+(defmethod cleanup ((shader gl-shader))
+  (with-slots (shader) shader
+    (when (> 0 shader)
+      (gl:delete-shader shader))
+    (setf shader 0)))
 
 (defmethod compile-shader ((shader gl-shader))
   (with-slots (shader source-file shader-type) shader
@@ -32,11 +46,6 @@
       (format t "info-log ~a~%" (gl:get-shader-info-log shader)))))
 
 
-(defmethod cleanup ((shader gl-shader))
-  (with-slots (shader) shader
-    (when (> 0 shader)
-      (gl:delete-shader shader))
-    (setf shader 0)))
 
 (defmethod cleanup ((obj shader-program))
   "Delete a shader on the GPU."
@@ -46,9 +55,6 @@
     (when (> 0 program)
       (gl:delete-program program))
     (setf program 0)))
-
-(defgeneric build-shader-program (program)
-  (:documentation "Build a shader program and all of its corresponding programs."))
 
 (defmethod build-shader-program ((program shader-program))
   (with-slots (shaders program) program
@@ -97,9 +103,6 @@
                                      stride
                                      (* entry-offset type-size))))))
 
-(defgeneric use-shader-program (shader-program)
-  (:documentation "Set uniform and layout variables."))
-
 (defmethod use-shader-program ((shader-program shader-program))
   (with-slots (program shaders) shader-program
     (dolist (shader shaders)
@@ -110,3 +113,4 @@
 (defmethod use-shader-program :after ((shader-program shader-program))
   (with-slots (program) shader-program
     (gl:use-program program)))
+
