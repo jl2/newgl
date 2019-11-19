@@ -73,7 +73,7 @@
                     :max-draw-buffers
                     :max-fragment-uniform-components
                     :max-texture-size
-                    #-darwin :max-varying-floats
+                    ;; :max-varying-floats
                     :max-vertex-attribs
                     :max-vertex-texture-image-units
                     :max-vertex-uniform-components
@@ -185,7 +185,7 @@
              (setf previous-seconds current-seconds)
              (when *show-fps*
                (format t "OpenGL Scene Viewer (~,3f)~%" (/ frame-count elapsed-seconds)))
-             (set-window-title (format nil "OpenGL Scene Viewer (~,3f)" (/ elapsed-seconds frame-count)))
+             (set-window-title (format nil "OpenGL Scene Viewer (~,3f)" (/ frame-count elapsed-seconds)))
              (setf frame-count 0)
 
 

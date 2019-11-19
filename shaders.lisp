@@ -101,7 +101,6 @@
   (:documentation "Set uniform and layout variables."))
 
 (defmethod use-shader-program ((shader-program shader-program))
-  (call-next-method)
   (with-slots (program shaders) shader-program
     (dolist (shader shaders)
       (with-slots (layout) shader
