@@ -62,11 +62,11 @@
                  (gl-indices (to-gl-array indices :unsigned-int)))
 
              (gl:bind-buffer :array-buffer (car vbos))
-             (gl:buffer-data :array-buffer :static-draw gl-vertices)
+             (gl:buffer-data :array-buffer :dynamic-draw gl-vertices)
              (gl:free-gl-array gl-vertices)
 
              (gl:bind-buffer :element-array-buffer (car ebos))
-             (gl:buffer-data :element-array-buffer :static-draw gl-indices)
+             (gl:buffer-data :element-array-buffer :dynamic-draw gl-indices)
              (gl:free-gl-array gl-indices)))
           (t
            (gl:bind-buffer :array-buffer (car vbos))
@@ -76,3 +76,66 @@
   (with-slots (indices) object
     (gl:polygon-mode :front-and-back :fill)
     (gl:draw-elements :triangles (gl:make-null-gl-array :unsigned-int) :count (length indices))))
+
+(defmethod handle-key ((object mandelbrot) window key scancode action mod-keys)
+  (declare (ignorable window key scancode action mod-keys))
+  (cond
+    ((and (eq key :f5) (eq action :press))
+     (with-slots (vertices) object
+       (setf vertices (make-array
+                      20
+                      :element-type 'single-float
+                        :initial-contents '(-1.0f0  1.0f0  0.0f0 -2.0f0 1.5f0
+                                            -1.0f0 -1.0f0  0.0f0 -2.0f0 -1.5f0
+                                            1.0f0  1.0f0  0.0f0 1.0f0 1.5f0
+                                            1.0f0 -1.0f0  0.0f0 1.0f0 -1.5f0)))
+     (setf *refill-buffers* t)
+     t)
+     nil)))
+
+(defmethod handle-scroll ((object mandelbrot) window x-pos y-pos x-scroll y-scroll)
+  (with-slots (vertices) object
+    (let* ((win-size (glfw:get-window-size))
+           (cur-width (car win-size))
+           (cur-height (cadr win-size))
+
+           (real-min (aref vertices 3))
+           (real-max (aref vertices 13))
+           (imag-min (aref vertices 9))
+           (imag-max (aref vertices 4))
+
+           (real-diff (- real-max real-min))
+           (imag-diff (- imag-max imag-min))
+
+           (mag (if (< 0 y-scroll)
+                    0.95
+                    1.05))
+
+           (new-real-diff (* mag 0.5 real-diff))
+           (new-imag-diff (* mag 0.5 imag-diff))
+
+           (real-mouse (ju:map-val x-pos 0.0 cur-width real-min real-max))
+           (imag-mouse (ju:map-val (- cur-height y-pos) 0.0 cur-height imag-min imag-max))
+
+           (new-real-min (coerce (- real-mouse new-real-diff) 'single-float))
+           (new-real-max (coerce (+ real-mouse new-real-diff) 'single-float))
+
+           (new-imag-min (coerce (- imag-mouse new-imag-diff) 'single-float))
+           (new-imag-max (coerce (+ imag-mouse new-imag-diff) 'single-float)))
+
+      (format t "real-min ~a real-max ~a imag-min ~a imag-max ~a real-diff ~a imag-diff ~a~%"
+               real-min real-max imag-min imag-max real-diff imag-diff)
+      (format t "new-real-diff ~a new-imag-diff ~a~%" new-real-diff new-imag-diff)
+      (format t "real-mouse ~a imag-mouse ~a~%" real-mouse imag-mouse)
+      (format t "new-real-min ~a new-real-max ~a new-imag-min ~a new-imag-max ~a~%" new-real-min new-real-max new-imag-min new-imag-max)
+      (setf vertices (make-array
+                      20
+                      :element-type 'single-float
+                      :initial-contents (list
+                                         -1.0f0  1.0f0  0.0f0 new-real-min new-imag-max
+                                          -1.0f0 -1.0f0  0.0f0 new-real-min new-imag-min
+                                          1.0f0  1.0f0  0.0f0 new-real-max new-imag-max
+                                          1.0f0 -1.0f0  0.0f0 new-real-max new-imag-min)))
+      (glfw:set-cursor-position (/ cur-width 2.0) (/ cur-height 2.0))
+      (cleanup object)
+      (fill-buffers object))))

@@ -19,6 +19,6 @@
 (defpackage :newgl
   (:use #:cl #:j-utils #:alexandria #:glfw #:3d-vectors #:3d-matrices)
   (:export #:opengl-object
-           #:primitives
-           #:show
-           #:hello))
+           #:mandelbrot
+           #:tri-mesh
+           #:viewer))

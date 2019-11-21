@@ -48,6 +48,8 @@
 (defgeneric cleanup (obj)
   (:documentation "Cleanup any OpenGL resources owned by obj."))
 
+(defparameter *objects* nil
+  "Objects being displayed.")
 
 #+(or windows linux) (defparameter *want-forward-context* nil)
 #+darwin (defparameter *want-forward-context* t)
@@ -86,54 +88,74 @@
      do
        (format t "~a : ~a~%" field (gl:get-integer field))))
 
-(def-key-callback quit-on-escape (window key scancode action mod-keys)
-  (declare (ignorable window scancode mod-keys))
-  (format t "Keypress: ~a ~a ~a ~a ~a~%" window key scancode action mod-keys)
+(defun top-key-handler (window key scancode action mod-keys)
+  (declare (ignorable window key scancode action mod-keys))
   (cond
 
     ;; ESC to exit
     ((and (eq key :escape) (eq action :press))
-     (set-window-should-close))
+     (set-window-should-close)
+     t)
 
     ;; r to rebuild shaders
     ((and (eq key :r) (eq action :press))
-     (setf *rebuild-shaders* t))
+     (setf *rebuild-shaders* t)
+     t)
 
     ;; f to refill buffers
     ((and (eq key :f) (eq action :press))
-     (setf *refill-buffers* t))
+     (setf *refill-buffers* t)
+     t)
 
     ;; i to show gl info
     ((and (eq key :i) (eq action :press))
-     (show-open-gl-info))
+     (show-open-gl-info)
+     t)
 
     ;; s to show gl state
     ((and (eq key :s) (eq action :press))
-     (show-gl-state))
+     (show-gl-state)
+     t)
 
     ;; c to toggle printing fps
     ((and (eq key :c) (eq action :press))
-     (setf *show-fps* (if *show-fps* nil t)))
+     (setf *show-fps* (if *show-fps* nil t))
+     t)
 
     ;; w to toggle wireframe
     ((and (eq key :w) (eq action :press))
-     (setf *wire-frame* (if *wire-frame* nil t)))
+     (setf *wire-frame* (if *wire-frame* nil t))
+     t)
 
     ((and (eq key :f1) (eq action :press))
-     (setf *cull-face* (if (eq *cull-face* :cull-face) nil :cull-face)))
+     (setf *cull-face* (if (eq *cull-face* :cull-face) nil :cull-face))
+     t)
 
     ((and (eq key :f2) (eq action :press))
-     (setf *front-face* (if (eq *front-face* :cw) :ccw :cw)))
-    ))
+     (setf *front-face* (if (eq *front-face* :cw) :ccw :cw))
+     t)
+    (t
+     nil)))
+
+(def-key-callback quit-on-escape (window key scancode action mod-keys)
+  (declare (ignorable window scancode mod-keys))
+  (format t "Keypress: ~a ~a ~a ~a ~a~%" window key scancode action mod-keys)
+  (when (not (top-key-handler window key scancode action mod-keys))
+    (loop for object in *objects*
+       until (handle-key object window key scancode action mod-keys))))
 
 (def-mouse-button-callback mouse-handler (window button action mod-keys)
   (declare (ignorable window button action mod-keys))
   (let ((cpos (glfw:get-cursor-position window)))
-    (format t "Mouse click at ~a ~a ~a ~a ~a~%" cpos window button action mod-keys)))
+    (format t "Mouse click at ~a ~a ~a ~a ~a~%" cpos window button action mod-keys)
+    (loop for object in *objects*
+       until (handle-click object window button (car cpos) (cadr cpos) action mod-keys))))
 
-(def-scroll-callback scroll-handler (window x y)
+(def-scroll-callback scroll-handler (window x-scroll y-scroll)
   (let ((cpos (glfw:get-cursor-position window)))
-    (format t "Scroll at ~a ~a ~a ~a ~%" cpos window x y)))
+    (format t "Scroll at ~a ~a ~a ~a ~%" cpos window x-scroll y-scroll)
+    (loop for object in *objects*
+       until (handle-scroll object window (car cpos) (cadr cpos) x-scroll y-scroll))))
 
 (def-error-callback error-callback (message)
   (format t "Error: ~a~%" message))
@@ -142,8 +164,10 @@
   (declare (ignorable window))
   (gl:viewport 0 0 width height))
 
-(defun viewer-thread-function ( object )
+(defun viewer-thread-function ( objects )
   (set-error-callback 'error-callback)
+  (setf *objects* (ensure-list objects))
+
   (with-init
     (let* ((monitor (glfw:get-primary-monitor))
            (cur-mode (glfw:get-video-mode monitor))
@@ -151,14 +175,15 @@
            (cur-height (getf cur-mode '%cl-glfw3:height))
            (previous-seconds 0.0)
            (frame-count 1))
+
       (with-window (:title (format nil "OpenGL Scene Viewer (~,3f)" 0.0)
                            :width (/ cur-width 2)
                            :height (/ cur-height 2)
                            :decorated t
                            ;; :monitor monitor
                            :opengl-profile :opengl-core-profile
-                           :context-version-major 3
-                           :context-version-minor 3
+                           :context-version-major 4
+                           :context-version-minor 0
                            :opengl-forward-compat *want-forward-context*
                            :samples 4
                            :resizable t)
@@ -168,16 +193,15 @@
         (set-scroll-callback 'scroll-handler)
         (set-framebuffer-size-callback 'resize-handler)
 
-        ;; (gl:viewport 0 0 cur-width cur-height)
-
         (gl:enable :line-smooth
                    :polygon-smooth
                    :depth-test)
         (gl:depth-func :less)
 
         (gl:clear-color 0.7f0 0.7f0 0.7f0 1.0)
-        (fill-buffers object)
-        (rebuild-shaders object)
+        (dolist (object *objects*)
+          (fill-buffers object)
+          (rebuild-shaders object))
         ;; The event loop
         (loop
            until (window-should-close-p)
@@ -195,14 +219,16 @@
 
            when *rebuild-shaders* do
              (format t "Rebuilding shaders...")
-             (rebuild-shaders object)
+             (dolist (object *objects*)
+               (rebuild-shaders object))
              (format t " Done.~%")
              (setf *rebuild-shaders* nil)
 
            when *refill-buffers* do
              (format t "Refilling buffers...")
-             (cleanup object)
-             (fill-buffers object)
+             (dolist (object *objects*)
+               (cleanup object)
+               (fill-buffers object))
              (format t " Done.~%")
              (setf *refill-buffers* nil)
 
@@ -215,19 +241,16 @@
              (if *wire-frame*
                  (gl:polygon-mode :front-and-back :line)
                  (gl:polygon-mode :front-and-back :fill))
-             (render object)
+
+             (dolist (object *objects*)
+               (render object))
              (incf frame-count)
            do (swap-buffers)
-           do (poll-events))))))
+           do (poll-events))
+        (dolist (object *objects*)
+          (cleanup object))))))
 
-(defun show (object &optional (in-thread nil))
-  (if in-thread
-      (viewer-thread-function object)
-      (trivial-main-thread:with-body-in-main-thread ()
-        (viewer-thread-function object))))
-
-(defun hello ( &key (show-traces nil) (in-thread nil))
-
+(defun viewer (&key (objects (make-instance 'mandelbrot)) (in-thread nil) (show-traces nil))
   ;; Some traces that are helpful for debugging
   (when show-traces
     (trace
@@ -248,7 +271,8 @@
      newgl::use-layout
      newgl::use-shader-program))
 
-  (let ((mandel (make-instance 'mandelbrot)))
-    (show mandel in-thread))
-  (when show-traces
-    (untrace)))
+  (if in-thread
+      (viewer-thread-function objects)
+      (trivial-main-thread:with-body-in-main-thread ()
+        (viewer-thread-function objects))))
+

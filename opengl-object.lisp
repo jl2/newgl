@@ -20,14 +20,30 @@
 (defgeneric fill-buffers (object)
   (:documentation "Copy this objects data into OpenGL buffers.  Binding correct VAO is handled by before and after methods."))
 
+(defgeneric handle-key (object window key scancode action mod-keys)
+  (:documentation "Handle a GLFW key press.  Return non-nil if handled."))
+
+(defgeneric handle-click (object window button x-pos y-pos action mod-keys)
+  (:documentation "Handle mouse move."))
+
+(defgeneric handle-scroll (object window x-pos y-pos x-scroll y-scroll)
+  (:documentation "Handle scrolling."))
+
+
+(defmethod handle-key ((object opengl-object) window key scancode action mod-keys)
+  nil)
+
+(defmethod handle-click (object window button x-pos y-pos action mod-keys)
+  nil)
+
+(defmethod handle-scroll (object window x-pos y-pos x-scroll y-scroll)
+  nil)
 
 (defun ensure-vao-bound (object)
   (with-slots (vao) object
     (when (= 0 vao)
       (setf vao (gl:gen-vertex-array)))
     (gl:bind-vertex-array vao)))
-
-
 
 
 (defmethod rebuild-shaders :before ((object opengl-object))
