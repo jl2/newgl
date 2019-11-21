@@ -10,7 +10,7 @@ void main (void)
      float tmpval;
      float tmpval2;
      int iter;
-     int maxIterations = 400;
+     int maxIterations = 1600;
      float tempreal, tempimag, Creal, Cimag;
      float r2;
      vec2 pos = complexCoordinate;

@@ -51,6 +51,9 @@
 (defparameter *objects* nil
   "Objects being displayed.")
 
+(defparameter *debug-stream* nil
+  "Show or hide debug messages.  Toggle with 'd' key.")
+
 #+(or windows linux) (defparameter *want-forward-context* nil)
 #+darwin (defparameter *want-forward-context* t)
 
@@ -64,13 +67,13 @@
                     :vertex-array-binding
                     :viewport)
      do
-       (format t "~a : ~a~%" field (gl:get-integer field))))
+       (when *debug-stream* (format *debug-stream* "~a : ~a~%" field (gl:get-integer field)))))
 
 (defun show-program-state (program)
   (loop
      for field in '(:link-status :attached-shaders)
      do
-       (format t "~a : ~a~%" field (gl:get-program program field))))
+       (when *debug-stream* (format *debug-stream* "~a : ~a~%" field (gl:get-program program field)))))
 
 (defun show-open-gl-info ()
   (loop
@@ -86,7 +89,7 @@
                     :max-viewport-dims
                     :stereo)
      do
-       (format t "~a : ~a~%" field (gl:get-integer field))))
+       (when *debug-stream* (format *debug-stream* "~a : ~a~%" field (gl:get-integer field)))))
 
 (defun top-key-handler (window key scancode action mod-keys)
   (declare (ignorable window key scancode action mod-keys))
@@ -110,6 +113,11 @@
     ;; i to show gl info
     ((and (eq key :i) (eq action :press))
      (show-open-gl-info)
+     t)
+
+    ;; d to toggle debug printing
+    ((and (eq key :d) (eq action :press))
+     (setf *debug-stream* (if *debug-stream* nil t))
      t)
 
     ;; s to show gl state
@@ -137,9 +145,9 @@
     (t
      nil)))
 
-(def-key-callback quit-on-escape (window key scancode action mod-keys)
+(def-key-callback keyboard-handler (window key scancode action mod-keys)
   (declare (ignorable window scancode mod-keys))
-  (format t "Keypress: ~a ~a ~a ~a ~a~%" window key scancode action mod-keys)
+  (when *debug-stream* (format *debug-stream* "Keypress: ~a ~a ~a ~a ~a~%" window key scancode action mod-keys))
   (when (not (top-key-handler window key scancode action mod-keys))
     (loop for object in *objects*
        until (handle-key object window key scancode action mod-keys))))
@@ -147,18 +155,18 @@
 (def-mouse-button-callback mouse-handler (window button action mod-keys)
   (declare (ignorable window button action mod-keys))
   (let ((cpos (glfw:get-cursor-position window)))
-    (format t "Mouse click at ~a ~a ~a ~a ~a~%" cpos window button action mod-keys)
+    (when *debug-stream* (format *debug-stream* "Mouse click at ~a ~a ~a ~a ~a~%" cpos window button action mod-keys))
     (loop for object in *objects*
        until (handle-click object window button (car cpos) (cadr cpos) action mod-keys))))
 
 (def-scroll-callback scroll-handler (window x-scroll y-scroll)
   (let ((cpos (glfw:get-cursor-position window)))
-    (format t "Scroll at ~a ~a ~a ~a ~%" cpos window x-scroll y-scroll)
+    (when *debug-stream* (format *debug-stream* "Scroll at ~a ~a ~a ~a ~%" cpos window x-scroll y-scroll))
     (loop for object in *objects*
        until (handle-scroll object window (car cpos) (cadr cpos) x-scroll y-scroll))))
 
 (def-error-callback error-callback (message)
-  (format t "Error: ~a~%" message))
+  (when *debug-stream* (format *debug-stream* "Error: ~a~%" message)))
 
 (def-framebuffer-size-callback resize-handler (window width height)
   (declare (ignorable window))
@@ -185,10 +193,10 @@
                            :context-version-major 4
                            :context-version-minor 0
                            :opengl-forward-compat *want-forward-context*
-                           :samples 4
+                           :samples 1
                            :resizable t)
         (setf %gl:*gl-get-proc-address* #'get-proc-address)
-        (set-key-callback 'quit-on-escape)
+        (set-key-callback 'keyboard-handler)
         (set-mouse-button-callback 'mouse-handler)
         (set-scroll-callback 'scroll-handler)
         (set-framebuffer-size-callback 'resize-handler)

@@ -83,14 +83,19 @@
     ((and (eq key :f5) (eq action :press))
      (with-slots (vertices) object
        (setf vertices (make-array
-                      20
-                      :element-type 'single-float
-                        :initial-contents '(-1.0f0  1.0f0  0.0f0 -2.0f0 1.5f0
-                                            -1.0f0 -1.0f0  0.0f0 -2.0f0 -1.5f0
-                                            1.0f0  1.0f0  0.0f0 1.0f0 1.5f0
-                                            1.0f0 -1.0f0  0.0f0 1.0f0 -1.5f0)))
-     (setf *refill-buffers* t)
+                       20
+                       :element-type 'single-float
+                       :initial-contents '(-1.0f0  1.0f0  0.0f0 -2.0f0 1.5f0
+                                           -1.0f0 -1.0f0  0.0f0 -2.0f0 -1.5f0
+                                           1.0f0  1.0f0  0.0f0 1.0f0 1.5f0
+                                           1.0f0 -1.0f0  0.0f0 1.0f0 -1.5f0)))
+       (setf *refill-buffers* t)
+       t))
+    ((and (eq key :m) (eq action :press))
+     (with-slots (vertices) object
+       (format t "Mandelbrot set vertices:~%~a~%" vertices))
      t)
+    (t
      nil)))
 
 (defmethod handle-scroll ((object mandelbrot) window x-pos y-pos x-scroll y-scroll)
