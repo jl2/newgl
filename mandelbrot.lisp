@@ -98,9 +98,55 @@
     (t
      nil)))
 
-(defmethod handle-scroll ((object mandelbrot) window x-pos y-pos x-scroll y-scroll)
+(defmethod handle-click (object window button cpos action mod-keys)
+  (cond ((eq action :release)
+         (with-slots (vertices) object
+           (let* (
+                  (win-size (glfw:get-window-size))
+                  (cur-width (car win-size))
+                  (cur-height (cadr win-size))
+                  (real-min (aref vertices 3))
+                  (real-max (aref vertices 13))
+                  (imag-min (aref vertices 9))
+                  (imag-max (aref vertices 4))
+
+                  (old-x-pos (car *mouse-press-position*))
+                  (old-y-pos (cadr *mouse-press-position*))
+                  (new-x-pos (car cpos))
+                  (new-y-pos (cadr cpos))
+
+                  (new-real-mouse (ju:map-val old-x-pos 0.0 cur-width real-min real-max))
+                  (new-imag-mouse (ju:map-val (- cur-height old-y-pos) 0.0 cur-height imag-min imag-max))
+
+                  (old-real-mouse (ju:map-val new-x-pos 0.0 cur-width real-min real-max))
+                  (old-imag-mouse (ju:map-val (- cur-height new-y-pos) 0.0 cur-height imag-min imag-max))
+
+                  (mouse-real-diff (- new-real-mouse old-real-mouse))
+                  (mouse-imag-diff (- new-imag-mouse old-imag-mouse))
+
+                  (new-real-min (coerce (+ mouse-real-diff (aref vertices 3)) 'single-float))
+                  (new-real-max (coerce (+ mouse-real-diff (aref vertices 13)) 'single-float))
+                  (new-imag-min (coerce (+ mouse-imag-diff (aref vertices 9)) 'single-float))
+                  (new-imag-max (coerce (+ mouse-imag-diff (aref vertices 4)) 'single-float)))
+             (setf vertices (make-array
+                             20
+                             :element-type 'single-float
+                             :initial-contents (list
+                                                -1.0f0  1.0f0  0.0f0 new-real-min new-imag-max
+                                                -1.0f0 -1.0f0  0.0f0 new-real-min new-imag-min
+                                                1.0f0  1.0f0  0.0f0 new-real-max new-imag-max
+                                                1.0f0 -1.0f0  0.0f0 new-real-max new-imag-min)))
+             (reload-object object)
+             nil)))
+        (t nil)))
+
+(defmethod handle-scroll ((object mandelbrot) window cpos x-scroll y-scroll)
   (with-slots (vertices) object
-    (let* ((win-size (glfw:get-window-size))
+    (let* (
+           (x-pos (car cpos))
+           (y-pos (cadr cpos))
+
+           (win-size (glfw:get-window-size))
            (cur-width (car win-size))
            (cur-height (cadr win-size))
 
@@ -142,5 +188,4 @@
                                           1.0f0  1.0f0  0.0f0 new-real-max new-imag-max
                                           1.0f0 -1.0f0  0.0f0 new-real-max new-imag-min)))
       (glfw:set-cursor-position (/ cur-width 2.0) (/ cur-height 2.0))
-      (cleanup object)
-      (fill-buffers object))))
+      (reload-object object))))

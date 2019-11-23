@@ -45,14 +45,21 @@
 (defparameter *front-face* :ccw
   "Front face direction setting.  Toggle between :ccw (default) and :cw with 'F2' key.")
 
-(defgeneric cleanup (obj)
-  (:documentation "Cleanup any OpenGL resources owned by obj."))
+(defparameter *debug-stream* nil
+  "Show or hide debug messages.  Toggle with 'd' key.")
+
+(defparameter *mouse-press-position* nil
+  "Location of last mouse press.")
+
+(defparameter *mouse-release-position* nil
+  "Location of last mouse release.")
+
 
 (defparameter *objects* nil
   "Objects being displayed.")
 
-(defparameter *debug-stream* nil
-  "Show or hide debug messages.  Toggle with 'd' key.")
+(defgeneric cleanup (obj)
+  (:documentation "Cleanup any OpenGL resources owned by obj."))
 
 #+(or windows linux) (defparameter *want-forward-context* nil)
 #+darwin (defparameter *want-forward-context* t)
@@ -156,14 +163,21 @@
   (declare (ignorable window button action mod-keys))
   (let ((cpos (glfw:get-cursor-position window)))
     (when *debug-stream* (format *debug-stream* "Mouse click at ~a ~a ~a ~a ~a~%" cpos window button action mod-keys))
+
+    (when (eq action :press)
+      (setf *mouse-press-position* cpos))
+
+    (when (eq action :release)
+      (setf *mouse-release-position* cpos))
+
     (loop for object in *objects*
-       until (handle-click object window button (car cpos) (cadr cpos) action mod-keys))))
+       until (handle-click object window button cpos action mod-keys))))
 
 (def-scroll-callback scroll-handler (window x-scroll y-scroll)
   (let ((cpos (glfw:get-cursor-position window)))
     (when *debug-stream* (format *debug-stream* "Scroll at ~a ~a ~a ~a ~%" cpos window x-scroll y-scroll))
     (loop for object in *objects*
-       until (handle-scroll object window (car cpos) (cadr cpos) x-scroll y-scroll))))
+       until (handle-scroll object window cpos x-scroll y-scroll))))
 
 (def-error-callback error-callback (message)
   (when *debug-stream* (format *debug-stream* "Error: ~a~%" message)))
@@ -193,7 +207,7 @@
                            :context-version-major 4
                            :context-version-minor 0
                            :opengl-forward-compat *want-forward-context*
-                           :samples 1
+                           :samples 4
                            :resizable t)
         (setf %gl:*gl-get-proc-address* #'get-proc-address)
         (set-key-callback 'keyboard-handler)

@@ -38,8 +38,8 @@ void main (void)
      }
      else
      {
-          tmpval = fract(iter / 422.0);
-          tmpval2 = fract(iter / 320.0);
+          tmpval = fract(iter / 1422.0);
+          tmpval2 = fract(iter / 1833.0);
           color = vec4 (tmpval2, (1.0 - tmpval), tmpval, 1.0);
      }
      Color = color;
