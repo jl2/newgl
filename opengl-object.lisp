@@ -23,23 +23,29 @@
 (defgeneric handle-key (object window key scancode action mod-keys)
   (:documentation "Handle a GLFW key press.  Return non-nil if handled."))
 
-(defgeneric handle-click (object window button cpos action mod-keys)
+(defgeneric handle-click (object window click-info)
   (:documentation "Handle mouse move."))
 
 (defgeneric handle-scroll (object window cpos x-scroll y-scroll)
   (:documentation "Handle scrolling."))
 
+(defgeneric handle-drag (object window first-click-info current-pos)
+  (:documentation "Handle mouse drag."))
+
+
 (defgeneric reload-object (object)
   (:documentation "Destroy and reload object's buffers."))
-
 
 (defmethod handle-key ((object opengl-object) window key scancode action mod-keys)
   nil)
 
-(defmethod handle-click (object window button cpos action mod-keys)
+(defmethod handle-click ((object opengl-object) window click-info)
   nil)
 
-(defmethod handle-scroll (object window cpos x-scroll y-scroll)
+(defmethod handle-scroll ((object opengl-object) window cpos x-scroll y-scroll)
+  nil)
+
+(defmethod handle-drag ((object opengl-object) window first-click-info current-pos)
   nil)
 
 (defun ensure-vao-bound (object)

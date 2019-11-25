@@ -19,6 +19,15 @@
 (defpackage :newgl
   (:use #:cl #:j-utils #:alexandria #:glfw #:3d-vectors #:3d-matrices)
   (:export #:opengl-object
+
            #:mandelbrot
+           #:make-mandelbrot
+
+           #:zoom-window
+           #:imag-max
+           #:imag-min
+           #:real-max
+           #:real-min
+
            #:tri-mesh
            #:viewer))

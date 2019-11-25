@@ -48,10 +48,21 @@
 (defparameter *debug-stream* nil
   "Show or hide debug messages.  Toggle with 'd' key.")
 
-(defparameter *mouse-press-position* nil
+(defclass mouse-click ()
+  ((cpos :initarg :cpos)
+   (button :initarg :button)
+   (action :initarg :action)
+   (mod-keys :initarg :mod-keys)
+   (time :initarg :time))
+  (:documentation "Mouse click information."))
+
+(defparameter *mouse-press-info* nil
   "Location of last mouse press.")
 
-(defparameter *mouse-release-position* nil
+(defparameter *previous-mouse-drag* nil
+  "Location of last mouse drag update.")
+
+(defparameter *mouse-release-info* nil
   "Location of last mouse release.")
 
 
@@ -161,17 +172,24 @@
 
 (def-mouse-button-callback mouse-handler (window button action mod-keys)
   (declare (ignorable window button action mod-keys))
-  (let ((cpos (glfw:get-cursor-position window)))
+  (let* ((cpos (glfw:get-cursor-position window))
+         (click-info (make-instance 'mouse-click
+                                    :cpos cpos
+                                    :mod-keys mod-keys
+                                    :action action
+                                    :button button
+                                    :time (get-time))))
     (when *debug-stream* (format *debug-stream* "Mouse click at ~a ~a ~a ~a ~a~%" cpos window button action mod-keys))
-
-    (when (eq action :press)
-      (setf *mouse-press-position* cpos))
-
-    (when (eq action :release)
-      (setf *mouse-release-position* cpos))
-
-    (loop for object in *objects*
-       until (handle-click object window button cpos action mod-keys))))
+    (when (not (loop for object in *objects*
+                  for handled = (handle-click object window click-info)
+                  until handled
+                  finally (return handled)))
+      (when (eq action :press)
+        (setf *mouse-release-info* nil)
+        (setf *mouse-press-info* click-info))
+      (when (eq action :release)
+        (setf *mouse-press-info* nil)
+        (setf *mouse-release-info* click-info)))))
 
 (def-scroll-callback scroll-handler (window x-scroll y-scroll)
   (let ((cpos (glfw:get-cursor-position window)))
@@ -254,6 +272,21 @@
              (format t " Done.~%")
              (setf *refill-buffers* nil)
 
+           when (and (not (null *mouse-press-info*))
+                     (null *mouse-release-info*))
+           do (let* ((cpos (glfw:get-cursor-position *window*))
+                     (handled (loop for object in *objects*
+                                 for handled = (handle-drag object *window* *previous-mouse-drag* cpos)
+                                 until handled
+                                 finally (return handled))))
+                (when (not handled)
+                  (setf *previous-mouse-drag* (with-slots (mod-keys action button time) *mouse-press-info*
+                                                (make-instance 'mouse-click
+                                                               :cpos cpos
+                                                               :mod-keys mod-keys
+                                                               :action action
+                                                               :button button
+                                                               :time (get-time))))))
            do
              (gl:clear :color-buffer :depth-buffer)
              (if *cull-face*
@@ -272,26 +305,31 @@
         (dolist (object *objects*)
           (cleanup object))))))
 
-(defun viewer (&key (objects (make-instance 'mandelbrot)) (in-thread nil) (show-traces nil))
+(defun viewer (&key (objects (make-mandelbrot)) (in-thread nil) (show-traces nil))
   ;; Some traces that are helpful for debugging
   (when show-traces
     (trace
-     gl:bind-buffer
-     gl:bind-vertex-array
-     gl:draw-elements
-     gl:enable-vertex-attrib-array
-     gl:gen-vertex-array
-     gl:get-attrib-location
-     gl:polygon-mode
-     gl:use-program
-     gl:vertex-attrib-pointer
+     ;; gl:bind-buffer
+     ;; gl:bind-vertex-array
+     ;; gl:draw-elements
+     ;; gl:enable-vertex-attrib-array
+     ;; gl:gen-vertex-array
+     ;; gl:get-attrib-location
+     ;; gl:polygon-mode
+     ;; gl:use-program
+     ;; gl:vertex-attrib-pointer
 
-     newgl::build-shader-program
-     newgl::ensure-vao-bound
-     newgl::fill-buffers
-     newgl::render
-     newgl::use-layout
-     newgl::use-shader-program))
+     ;; newgl::build-shader-program
+     ;; newgl::ensure-vao-bound
+     ;; newgl::fill-buffers
+     ;; newgl::render
+     ;; newgl::use-layout
+     ;; newgl::use-shader-program
+     newgl::handle-drag
+     newgl::handle-click
+     newgl::handle-scroll
+     newgl::handle-key
+     ))
 
   (if in-thread
       (viewer-thread-function objects)
