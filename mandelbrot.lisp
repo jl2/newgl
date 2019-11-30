@@ -35,6 +35,21 @@
    (imag-max :initarg :image-max :initform 1.5))
   (:documentation "A rectangular region in the complex plain."))
 
+(defun from-center-radius (real-center imag-center real-radius imag-radius)
+  (make-instance 'complex-window
+                 :real-min (- real-center real-radius)
+                 :real-max (+ real-center real-radius)
+                 :imag-min (- imag-center imag-radius)
+                 :imag-max (+ imag-center imag-radius)))
+
+(defun compute-center-radius (window)
+  (with-slots (real-min real-max imag-min imag-max) window
+    (let ((real-center (+ real-min (- real-max real-min)))
+          (imag-center (+ imag-min (- imag-max imag-min)))
+          (real-radius (/ (- real-max real-min) 2))
+          (imag-radius (/ (- imag-max imag-min) 2)))
+      (values  real-center imag-center real-radius imag-radius))))
+
 (defun to-vertices (window)
   (with-slots (real-min real-max imag-min imag-max) window
     (make-array
@@ -109,6 +124,10 @@
      (with-slots (vertices) object
        (format t "Mandelbrot set vertices:~%~a~%" vertices))
      t)
+    ((and (eq key :page-down) (eq action :press))
+     (with-slots (vertices) object
+       (format t "Mandelbrot set vertices:~%~a~%" vertices))
+     t)
     (t
      nil)))
 
@@ -117,6 +136,7 @@
   ((window :initarg :window)))
 
 (defmethod handle-drag ((object mandelbrot) window (click mandelbrot-click) current-pos)
+  (declare (ignorable window))
   (with-slots (zoom-window) object
     (with-slots (real-min real-max imag-min imag-max) zoom-window
       (with-slots (cpos mod-keys action button time) click
@@ -167,6 +187,7 @@
             t)))))
 
 (defmethod handle-click ((object mandelbrot) window click)
+  (declare (ignorable window))
   (with-slots (zoom-window) object
     (with-slots (cpos mod-keys action button time) click
       (let ((mp (make-instance 'mandelbrot-click
@@ -188,7 +209,7 @@
         t))))
 
 (defmethod handle-scroll ((object mandelbrot) window cpos x-scroll y-scroll)
-  (declare (ignorable x-scroll y-scroll))
+  (declare (ignorable window x-scroll y-scroll))
   (let* ((x-pos (car cpos))
         (y-pos (cadr cpos))
         (win-size (glfw:get-window-size))
@@ -226,6 +247,6 @@
                 imag-min new-imag-min
                 imag-max new-imag-max)))
       (setf vertices (to-vertices zoom-window))
-      (glfw:set-cursor-position (/ cur-width 2.0) (/ cur-height 2.0))
+      (glfw:set-cursor-position (coerce (/ cur-width 2.0) 'double-float) (coerce (/ cur-height 2.0) 'double-float))
       (reload-object object))
   t))

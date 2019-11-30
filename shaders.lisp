@@ -9,7 +9,7 @@
 (defclass gl-shader ()
   ((layout :initarg :layout :initform nil :type (or null list))
    (shader :initform 0 :type fixnum)
-   (source-file :initarg :source-file :initform "" :type string)
+   (source-file :initarg :source-file :initform "" :type (or pathname string))
    (shader-type :initarg :shader-type))
   (:documentation "An opengl shader class."))
 

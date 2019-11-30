@@ -116,7 +116,7 @@
 (defun to-gl-array (arr type)
   "Create an OpenGL array of the specified type, initialized with the contents of arr."
   (declare (optimize (speed 3))
-           (type (vector single-float) arr))
+           (type (vector type) arr))
   (let* ((count (length arr))
          (gl-array (gl:alloc-gl-array type count)))
     (dotimes (i count)
