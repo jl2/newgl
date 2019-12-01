@@ -19,6 +19,31 @@
 (defpackage :newgl
   (:use #:cl #:j-utils #:alexandria #:glfw #:3d-vectors #:3d-matrices)
   (:export #:opengl-object
+           #:ebos
+           #:vbos
+           #:vertices
+           #:indices
+           #:shader-program
+           #:gl-shader
+           #:rebuild-shaders
+           #:build-shader-program
+           #:fill-buffers
+           #:reload-object
+           #:cleanup
+           #:to-gl-array
+           #:to-gl-float-array
+
+           #:shaders
+           #:shader-type
+           #:source-file
+           #:layout
+           #:shader
+
+           #:render
+           #:handle-key
+           #:handle-scroll
+           #:handle-drag
+           #:handle-click
 
            #:mandelbrot
            #:make-mandelbrot
@@ -30,4 +55,5 @@
            #:real-min
 
            #:tri-mesh
-           #:viewer))
+           #:viewer
+           #:viewer-thread-function))
