@@ -130,7 +130,7 @@
          (gl:free-gl-array gl-indices))))
     (setf changed nil)))
 
-(defmethod render ((object opengl-object))
+(defmethod render ((object tri-mesh))
   (with-slots (filled-triangles) object
     (gl:polygon-mode :front-and-back :fill)
     (gl:draw-elements :triangles
