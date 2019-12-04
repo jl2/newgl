@@ -47,6 +47,7 @@
 
            #:mandelbrot
            #:make-mandelbrot
+           #:complex-window
 
            #:zoom-window
            #:imag-max

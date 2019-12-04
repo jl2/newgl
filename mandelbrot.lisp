@@ -31,8 +31,8 @@
 (defclass complex-window ()
   ((real-min :initarg :real-min :initform -2.5)
    (real-max :initarg :real-max :initform 1.0)
-   (imag-min :initarg :image-min :initform -1.5)
-   (imag-max :initarg :image-max :initform 1.5))
+   (imag-min :initarg :imag-min :initform -1.5)
+   (imag-max :initarg :imag-max :initform 1.5))
   (:documentation "A rectangular region in the complex plain."))
 
 (defun from-center-radius (real-center imag-center real-radius imag-radius)

@@ -2,12 +2,21 @@
 ** About
 New OpenGL wrapper library.
 
+#+BEGIN_SOURCE lisp
+(ql:quickload :newgl)
+(newgl:viewer :objects
+              (newgl:make-mandelbrot :window (make-instance 'newgl:complex-window
+                                                            :imag-min -0.4284997f0
+                                                            :imag-max -0.42617327f0
+                                                            :real-min -1.2854176f0
+                                                            :real-max -1.2827007f0)))
+#+END_SOURCE
+
 ** License
 ISC
 
 
 Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
-
 
 
 

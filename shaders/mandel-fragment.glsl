@@ -38,9 +38,13 @@ void main (void)
      }
      else
      {
-          tmpval = fract(iter / 8422.0);
-          tmpval2 = fract(iter / 11133.0);
-          color = vec4 (tmpval2, sin(3.1415 * (1.0 - tmpval)), tmpval, 1.0);
+          // tmpval = fract(iter / 8422.0);
+          // tmpval2 = fract(iter / 11133.0);
+          // color = vec4 (tmpval2, sin(3.1415 * (1.0 - tmpval)), tmpval, 1.0);
+          float red = clamp(imag * real * (iter % 5)/4.0, 0.0, 1.0);
+          float green = clamp(imag * (iter % 3)/2.0, 0.0, 1.0);
+          float blue = clamp(real * real * (iter % 4)/3.0, 0.0, 1.0);
+          color = vec4(red, green, blue, 1.0);
      }
      Color = color;
      // Color = vec4(complexCoordinate.y, complexCoordinate.x, 0.0, 1.0);
