@@ -1,8 +1,10 @@
 * newgl
+
 ** About
 New OpenGL wrapper library.
 
-#+BEGIN_SOURCE lisp
+** Examples
+#+BEGIN_SOURCE common-lisp
 (ql:quickload :newgl)
 (newgl:viewer :objects
               (newgl:make-mandelbrot :window (make-instance 'newgl:complex-window
@@ -58,7 +60,7 @@ New OpenGL wrapper library.
 #+END_SOURCE
 
 
-** Licensep
+** License
 ISC
 
 
