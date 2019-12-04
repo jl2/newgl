@@ -42,13 +42,21 @@ void main (void)
           // tmpval2 = fract(iter / 11133.0);
           // color = vec4 (tmpval2, sin(3.1415 * (1.0 - tmpval)), tmpval, 1.0);
 
-          float red = clamp(imag * real * (iter % 67)/66.0, 0.0, 1.0);
-          float green = clamp(imag * (iter % 47)/46.0, 0.0, 1.0);
-          float blue = clamp(real * real * (iter % 24)/23.0, 0.0, 1.0);
-
           // float red = clamp(imag * real * (iter % 67)/66.0, 0.0, 1.0);
           // float green = clamp(imag * (iter % 47)/46.0, 0.0, 1.0);
           // float blue = clamp(real * real * (iter % 24)/23.0, 0.0, 1.0);
+
+          // float red = clamp(imag * real * real * (iter % 67)/66.0, 0.0, 1.0);
+          // float green = clamp(imag * imag * (iter % 47)/46.0, 0.0, 1.0);
+          // float blue = clamp(real * real * (iter % 24)/23.0, 0.0, 1.0);
+
+          // float red = clamp(imag * sin(3.1415*real) * (iter % 67)/66.0, 0.0, 1.0);
+          // float green = clamp(real * cos(3.1415*imag) * (iter % 47)/46.0, 0.0, 1.0);
+          // float blue = clamp(real * imag * (iter % 24)/23.0, 0.0, 1.0);
+
+          float red = clamp(cos(0.3*imag) * sin(0.7*real) * (iter % 7)/6.0, 0.0, 1.0);
+          float green = clamp(abs(sin(16*real) + cos(0.5*imag)) * (iter % 4)/3.0, 0.0, 1.0);
+          float blue = clamp(abs(cos(4*real + imag)) * (iter % 24)/23.0, 0.0, 1.0);
 
           color = vec4(red, green, blue, 1.0);
      }
