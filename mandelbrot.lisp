@@ -62,6 +62,13 @@
                         1.0f0  1.0f0  0.0f0 (coerce real-max 'single-float) (coerce imag-max 'single-float)
                         1.0f0 -1.0f0  0.0f0 (coerce real-max 'single-float) (coerce imag-min 'single-float)))))
 
+(defun from-vertices (array)
+  (make-instance 'complex-window
+                 :real-min (aref array 3)
+                 :real-max (aref array 13)
+                 :imag-min (aref array 9)
+                 :imag-max (aref array 4)))
+
 (defclass mandelbrot (opengl-object)
 
   ((vertices :initarg :vertices)
@@ -76,10 +83,18 @@
   (:documentation "A Mandelbrot set."))
 
 (defun make-mandelbrot (&key (window (make-instance 'complex-window)))
-  (with-slots (real-min real-max imag-min imag-max) window
-    (make-instance 'mandelbrot
-                   :vertices (to-vertices window)
-                   :zoom-window window)))
+  (ctypecase window
+    (complex-window (make-instance 'mandelbrot
+                                   :vertices (to-vertices window)
+                                   :zoom-window window))
+    (vector (make-instance 'mandelbrot
+                           :vertices window
+                           :zoom-window (from-vertices window)))))
+
+(defun make-mandelbrot-from-vertex-array (array)
+  (make-instance 'mandelbrot
+                 :vertices array
+                 :zoom-window (from-vertices array)))
 
 (defmethod rebuild-shaders ((object mandelbrot))
   (call-next-method)
@@ -111,6 +126,36 @@
     (gl:polygon-mode :front-and-back :fill)
     (gl:draw-elements :triangles (gl:make-null-gl-array :unsigned-int) :count (length indices))))
 
+(defun zoom-mandelbrot-window (scale cpos mandel)
+  (with-slots (vertices zoom-window) mandel
+    (with-slots (real-min real-max imag-min imag-max) zoom-window
+      (let* ((x-pos (car cpos))
+             (y-pos (cadr cpos))
+             (win-size (glfw:get-window-size))
+             (cur-width (car win-size))
+             (cur-height (cadr win-size))
+
+             (real-diff (- real-max real-min))
+             (imag-diff (- imag-max imag-min))
+
+             (new-real-diff (* scale 0.5 real-diff))
+             (new-imag-diff (* scale 0.5 imag-diff))
+
+             (real-mouse (ju:map-val x-pos 0.0 cur-width real-min real-max))
+             (imag-mouse (ju:map-val (- cur-height y-pos) 0.0 cur-height imag-min imag-max))
+
+             (new-real-min (coerce (- real-mouse new-real-diff) 'single-float))
+             (new-real-max (coerce (+ real-mouse new-real-diff) 'single-float))
+
+             (new-imag-min (coerce (- imag-mouse new-imag-diff) 'single-float))
+             (new-imag-max (coerce (+ imag-mouse new-imag-diff) 'single-float)))
+
+        (setf real-min new-real-min
+              real-max new-real-max
+              imag-min new-imag-min
+              imag-max new-imag-max)))
+    (setf vertices (to-vertices zoom-window))))
+
 (defmethod handle-key ((object mandelbrot) window key scancode action mod-keys)
   (declare (ignorable window key scancode action mod-keys))
   (cond
@@ -122,15 +167,20 @@
        t))
     ((and (eq key :m) (eq action :press))
      (with-slots (vertices) object
-       (format t "Mandelbrot set vertices:~%~a~%" vertices))
+       (format t "(newgl:viewer :objects (newgl:make-mandelbrot :window ~a))~%" vertices))
      t)
-    ((and (eq key :page-down) (eq action :press))
-     (with-slots (vertices) object
-       (format t "Mandelbrot set vertices:~%~a~%" vertices))
+    ((and (eq key :page-down)  (or (eq action :press)
+                                   (eq action :repeat)))
+     (zoom-mandelbrot-window 1.05 (mapcar (rcurry #'/ 2.0) (glfw:get-window-size)) object)
+     (reload-object object)
+     t)
+    ((and (eq key :page-up)  (or (eq action :press)
+                                 (eq action :repeat)))
+     (zoom-mandelbrot-window 0.95 (mapcar (rcurry #'/ 2.0) (glfw:get-window-size)) object)
+     (reload-object object)
      t)
     (t
      nil)))
-
 
 (defclass mandelbrot-click (mouse-click)
   ((window :initarg :window)))
@@ -210,43 +260,15 @@
 
 (defmethod handle-scroll ((object mandelbrot) window cpos x-scroll y-scroll)
   (declare (ignorable window x-scroll y-scroll))
-  (let* ((x-pos (car cpos))
-        (y-pos (cadr cpos))
-        (win-size (glfw:get-window-size))
-        (cur-width (car win-size))
-        (cur-height (cadr win-size)))
-    (with-slots (vertices zoom-window) object
-      (with-slots (real-min real-max imag-min imag-max) zoom-window
-        (let* (
-               (real-diff (- real-max real-min))
-               (imag-diff (- imag-max imag-min))
-
-               (mag (if (< 0 y-scroll)
-                        0.95
-                        1.05))
-
-               (new-real-diff (* mag 0.5 real-diff))
-               (new-imag-diff (* mag 0.5 imag-diff))
-
-               (real-mouse (ju:map-val x-pos 0.0 cur-width real-min real-max))
-               (imag-mouse (ju:map-val (- cur-height y-pos) 0.0 cur-height imag-min imag-max))
-
-               (new-real-min (coerce (- real-mouse new-real-diff) 'single-float))
-               (new-real-max (coerce (+ real-mouse new-real-diff) 'single-float))
-
-               (new-imag-min (coerce (- imag-mouse new-imag-diff) 'single-float))
-               (new-imag-max (coerce (+ imag-mouse new-imag-diff) 'single-float)))
-
-          ;; (format t "real-min ~a real-max ~a imag-min ~a imag-max ~a real-diff ~a imag-diff ~a~%"
-          ;;         real-min real-max imag-min imag-max real-diff imag-diff)
-          ;; (format t "new-real-diff ~a new-imag-diff ~a~%" new-real-diff new-imag-diff)
-          ;; (format t "real-mouse ~a imag-mouse ~a~%" real-mouse imag-mouse)
-          ;; (format t "new-real-min ~a new-real-max ~a new-imag-min ~a new-imag-max ~a~%" new-real-min new-real-max new-imag-min new-imag-max)
-          (setf real-min new-real-min
-                real-max new-real-max
-                imag-min new-imag-min
-                imag-max new-imag-max)))
-      (setf vertices (to-vertices zoom-window))
-      (glfw:set-cursor-position (coerce (/ cur-width 2.0) 'double-float) (coerce (/ cur-height 2.0) 'double-float))
-      (reload-object object))
-  t))
+  (zoom-mandelbrot-window (if (< 0 y-scroll)
+                              0.95
+                              1.05)
+                          cpos
+                          object)
+  (let* ((win-size (glfw:get-window-size))
+         (cur-width (car win-size))
+         (cur-height (cadr win-size)))
+    (glfw:set-cursor-position (coerce (/ cur-width 2.0) 'double-float)
+                              (coerce (/ cur-height 2.0) 'double-float)))
+  (reload-object object)
+  t)
