@@ -47,10 +47,63 @@ New OpenGL wrapper library.
                                                          1.0f0 1.0f0 0.0f0 -0.74601483f0 0.11142462f0
                                                          1.0f0 -1.0f0 0.0f0 -0.74601483f0 0.111105055f0)))
 
+(newgl:viewer :objects (newgl:make-mandelbrot :window #(-1.0f0 1.0f0 0.0f0 -0.5890263f0 -0.658861f0
+                                                        -1.0f0 -1.0f0 0.0f0 -0.5890263f0 -0.6588699f0
+                                                         1.0f0 1.0f0 0.0f0 -0.5890159f0 -0.658861f0
+                                                         1.0f0 -1.0f0 0.0f0 -0.5890159f0 -0.6588699f0)))
+(newgl:viewer :objects (newgl:make-mandelbrot :window #(-1.0f0 1.0f0 0.0f0
+                                                        -0.74516207f0
+                                                        0.11257817f0 -1.0f0
+                                                        -1.0f0 0.0f0
+                                                        -0.74516207f0
+                                                        0.11257163f0 1.0f0
+                                                        1.0f0 0.0f0
+                                                        -0.7451545f0
+                                                        0.11257817f0 1.0f0
+                                                        -1.0f0 0.0f0
+                                                        -0.7451545f0
+                                                        0.11257163f0)))
+(newgl:viewer :objects (newgl:make-mandelbrot :window #(-1.0f0 1.0f0 0.0f0
+                                                        -0.7574141f0
+                                                        0.065616846f0 -1.0f0
+                                                        -1.0f0 0.0f0
+                                                        -0.7574141f0
+                                                        0.065610915f0 1.0f0
+                                                        1.0f0 0.0f0
+                                                        -0.7574074f0
+                                                        0.065616846f0 1.0f0
+                                                        -1.0f0 0.0f0
+                                                        -0.7574074f0
+                                                        0.065610915f0)))
+(newgl:viewer :objects (newgl:make-mandelbrot :window #(-1.0f0 1.0f0 0.0f0
+                                                        -0.7915367f0
+                                                        0.14473091f0 -1.0f0
+                                                        -1.0f0 0.0f0
+                                                        -0.7915367f0
+                                                        0.14472453f0 1.0f0
+                                                        1.0f0 0.0f0
+                                                        -0.7915295f0
+                                                        0.14473091f0 1.0f0
+                                                        -1.0f0 0.0f0
+                                                        -0.7915295f0
+                                                        0.14472453f0)))
+(newgl:viewer :objects (newgl:make-mandelbrot :window #(-1.0f0 1.0f0 0.0f0
+                                                        -1.2241297f0
+                                                        0.17696597f0 -1.0f0
+                                                        -1.0f0 0.0f0
+                                                        -1.2241297f0
+                                                        0.17690969f0 1.0f0
+                                                        1.0f0 0.0f0
+                                                        -1.2240658f0
+                                                        0.17696597f0 1.0f0
+                                                        -1.0f0 0.0f0
+                                                        -1.2240658f0
+                                                        0.17690969f0)))
+
 #+END_SRC
 
 #+RESULTS:
-: #<SIMPLE-TASKS:CALL-TASK :FUNC #<CLOSURE (LAMBDA () :IN NEWGL:VIEWER) {100CF6848B}> :STATUS :SCHEDULED {100CF684F3}>
+: #<SIMPLE-TASKS:CALL-TASK :FUNC #<CLOSURE (LAMBDA () :IN NEWGL:VIEWER) {10111D07FB}> :STATUS :SCHEDULED {10111D0863}>
 
 
 ** License
