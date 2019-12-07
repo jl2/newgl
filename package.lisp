@@ -52,5 +52,9 @@
            #:*mouse-press-info*
            #:*mouse-release-info*
            #:mouse-click
-
+           #:cursor-pos
+           #:mod-keys
+           #:action
+           #:button
+           #:time
            #:viewer-thread-function))

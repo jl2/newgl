@@ -49,7 +49,7 @@
   "Show or hide debug messages.  Toggle with 'd' key.")
 
 (defclass mouse-click ()
-  ((cpos :initarg :cpos)
+  ((cursor-pos :initarg :cursor-pos)
    (button :initarg :button)
    (action :initarg :action)
    (mod-keys :initarg :mod-keys)
@@ -174,7 +174,7 @@
   (declare (ignorable window button action mod-keys))
   (let* ((cpos (glfw:get-cursor-position window))
          (click-info (make-instance 'mouse-click
-                                    :cpos cpos
+                                    :cursor-pos cpos
                                     :mod-keys mod-keys
                                     :action action
                                     :button button
@@ -282,7 +282,7 @@
                 (when (not handled)
                   (setf *previous-mouse-drag* (with-slots (mod-keys action button time) *mouse-press-info*
                                                 (make-instance 'mouse-click
-                                                               :cpos cpos
+                                                               :cursor-pos cpos
                                                                :mod-keys mod-keys
                                                                :action action
                                                                :button button
