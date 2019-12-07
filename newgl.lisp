@@ -225,7 +225,7 @@
                            :context-version-major 4
                            :context-version-minor 0
                            :opengl-forward-compat *want-forward-context*
-                           :samples 4
+                           :samples 8
                            :resizable t)
         (setf %gl:*gl-get-proc-address* #'get-proc-address)
         (set-key-callback 'keyboard-handler)
