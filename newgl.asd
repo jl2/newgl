@@ -37,7 +37,6 @@
                (:file "newgl")
                (:file "opengl-object")
                (:file "shaders")
-               (:file "mandelbrot")
                (:file "tri-mesh")
                )
   :in-order-to ((test-op (test-op newgl.test))))

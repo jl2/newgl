@@ -45,16 +45,12 @@
            #:handle-drag
            #:handle-click
 
-           #:mandelbrot
-           #:make-mandelbrot
-           #:complex-window
-
-           #:zoom-window
-           #:imag-max
-           #:imag-min
-           #:real-max
-           #:real-min
-
            #:tri-mesh
            #:viewer
+
+           #:*previous-mouse-drag*
+           #:*mouse-press-info*
+           #:*mouse-release-info*
+           #:mouse-click
+
            #:viewer-thread-function))

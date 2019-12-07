@@ -21,7 +21,7 @@
            :type (or null list))
 
    (shader :initform 0 :type fixnum)
-   (source-file :initform (merge-pathnames *shader-dir* "plastic-vertex.glsl") :type string)
+   (source-file :initform (merge-pathnames *shader-dir* "plastic-vertex.glsl"))
    (shader-type :initform :vertex-shader)))
 
 (defclass plastic-fragment-shader (gl-shader)
@@ -45,7 +45,7 @@
                                              :initial-contents '()
                                              :adjustable t
                                              :fill-pointer 0))
-   (shader-program :initform (make-instance 'mandel-program))
+   (shader-program :initform (make-instance 'plastic-program))
    (changed :initform t))
   (:documentation "A triangle mesh."))
 

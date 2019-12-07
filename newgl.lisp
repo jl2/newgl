@@ -305,7 +305,7 @@
         (dolist (object *objects*)
           (cleanup object))))))
 
-(defun viewer (&key (objects (make-mandelbrot)) (in-thread nil) (show-traces nil))
+(defun viewer (&key (objects) (in-thread nil) (show-traces nil))
   ;; Some traces that are helpful for debugging
   (when show-traces
     (trace
