@@ -58,6 +58,10 @@
 (defmethod rebuild-shaders :before ((object opengl-object))
   (ensure-vao-bound object))
 
+(defmethod newgl:rebuild-shaders ((object opengl-object))
+  (with-slots (shader-program) object
+    (build-shader-program shader-program)))
+
 (defmethod rebuild-shaders ((object opengl-object)))
 
 (defmethod rebuild-shaders :after ((object opengl-object))

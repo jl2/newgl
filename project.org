@@ -1,17 +1,32 @@
 * newgl
 
 ** About
-New OpenGL wrapper library.
+A CLOS wrapper around basic GLFW and OpenGL functionality.
 
+This library allows creating OpenGL objects by subclassing opengl-object or vertex-object and creating a viewer.
 
+To draw using OpenGL, subclass opengl-object or vertex-object and implement the apropriate methods.
+
+** Opening the Viewer
+To open an empty viewer, run:
+
+#+BEGIN_SRC lisp
+(ql:quickload :newgl)
+(newgl:viewer)
+#+END_SRC
+
+#+RESULTS:
+: #<SIMPLE-TASKS:CALL-TASK :FUNC #<CLOSURE (LAMBDA () :IN NEWGL:VIEWER) {1005D9117B}> :STATUS :SCHEDULED {1005D911E3}>
+
+** Examples
+For an example object, see the [[https://github.com/jl2/gl-fractals][gl-fractals]] repository.
 
 ** License
 ISC
-
 
 Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 
 
 * Plan
-** TODO Fill in a TODO list.
+** TODO Refactor common funtionality.

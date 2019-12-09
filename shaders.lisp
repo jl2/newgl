@@ -45,8 +45,6 @@
       (format t "compile-status: ~a~%" (gl:get-shader shader :compile-status))
       (format t "info-log ~a~%" (gl:get-shader-info-log shader)))))
 
-
-
 (defmethod cleanup ((obj shader-program))
   "Delete a shader on the GPU."
   (with-slots (shaders program) obj
