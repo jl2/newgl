@@ -19,6 +19,7 @@
 (defpackage :newgl
   (:use #:cl #:j-utils #:alexandria #:glfw #:3d-vectors #:3d-matrices)
   (:export #:opengl-object
+           #:vertex-object
            #:ebos
            #:vbos
            #:vertices

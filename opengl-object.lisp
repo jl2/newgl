@@ -11,6 +11,11 @@
    (shader-program :initarg :program))
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
+(defclass vertex-object (opengl-object)
+  ((vertices :initarg :vertices)
+   (indices :initarg :indices))
+  (:documentation "Base class for all objects that can be rendered in a scene."))
+
 (defgeneric render (object)
   (:documentation "Make OpenGL API calls to render the object.  Binding correct VAO is handled by before and after methods."))
 
@@ -68,7 +73,27 @@
 (defmethod fill-buffers :before ((object opengl-object))
   (ensure-vao-bound object))
 
-(defmethod fill-buffers ((object opengl-object)))
+(defmethod fill-buffers ((object opengl-object))
+)
+
+(defmethod fill-buffers ((object vertex-object))
+  (with-slots (vbos ebos vertices indices) object
+    (cond ((null vbos)
+           (setf vbos (gl:gen-buffers 1))
+           (setf ebos (gl:gen-buffers 1))
+           (let ((gl-vertices (to-gl-float-array vertices))
+                 (gl-indices (to-gl-array indices :unsigned-int)))
+
+             (gl:bind-buffer :array-buffer (car vbos))
+             (gl:buffer-data :array-buffer :dynamic-draw gl-vertices)
+             (gl:free-gl-array gl-vertices)
+
+             (gl:bind-buffer :element-array-buffer (car ebos))
+             (gl:buffer-data :element-array-buffer :dynamic-draw gl-indices)
+             (gl:free-gl-array gl-indices)))
+          (t
+           (gl:bind-buffer :array-buffer (car vbos))
+           (gl:bind-buffer :element-array-buffer (car ebos))))))
 
 (defmethod fill-buffers :after ((object opengl-object))
   (gl:bind-vertex-array 0))
@@ -97,7 +122,12 @@
       (gl:bind-buffer :element-array-buffer (car ebos)))))
 
 (defmethod render ((object opengl-object)))
-  
+
+(defmethod render ((object vertex-object))
+  (with-slots (indices) object
+    (gl:polygon-mode :front-and-back :fill)
+    (gl:draw-elements :triangles (gl:make-null-gl-array :unsigned-int) :count (length indices))))
+
 (defmethod render :after ((object opengl-object))
   (gl:bind-vertex-array 0))
 
