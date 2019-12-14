@@ -202,7 +202,12 @@
 
 (def-framebuffer-size-callback resize-handler (window width height)
   (declare (ignorable window))
-  (gl:viewport 0 0 width height))
+  (gl:viewport 0 0 width height)
+
+  (when *debug-stream* (format *debug-stream* "framebuffer-size ~a ~a~%" width height))
+  (loop
+     for object in *objects*
+     do (handle-resize object window width height)))
 
 (defun viewer-thread-function ( objects )
   (set-error-callback 'error-callback)
@@ -225,7 +230,7 @@
                            :context-version-major 4
                            :context-version-minor 0
                            :opengl-forward-compat *want-forward-context*
-                           :samples 8
+                           :samples 1
                            :resizable t)
         (setf %gl:*gl-get-proc-address* #'get-proc-address)
         (set-key-callback 'keyboard-handler)
@@ -258,7 +263,7 @@
 
 
            when *rebuild-shaders* do
-             (format t "Rebuilding shaders...")
+             (format t "Rebuilding shaders...~%")
              (dolist (object *objects*)
                (rebuild-shaders object))
              (format t " Done.~%")
@@ -305,7 +310,7 @@
         (dolist (object *objects*)
           (cleanup object))))))
 
-(defun viewer (&key (objects) (in-thread nil) (show-traces nil))
+(defun viewer (&optional objects &key  (in-thread nil) (show-traces nil))
   ;; Some traces that are helpful for debugging
   (when show-traces
     (trace

@@ -25,8 +25,10 @@
            #:vertices
            #:indices
            #:shader-program
+           #:program
            #:gl-shader
            #:rebuild-shaders
+           #:set-uniforms
            #:build-shader-program
            #:fill-buffers
            #:reload-object
@@ -45,6 +47,7 @@
            #:handle-scroll
            #:handle-drag
            #:handle-click
+           #:handle-resize
 
            #:tri-mesh
            #:viewer

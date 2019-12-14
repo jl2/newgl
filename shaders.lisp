@@ -8,6 +8,7 @@
 
 (defclass gl-shader ()
   ((layout :initarg :layout :initform nil :type (or null list))
+   (uniforms :initarg :uniforms :initform nil :type (or null list))
    (shader :initform 0 :type fixnum)
    (source-file :initarg :source-file :initform "" :type (or pathname string))
    (shader-type :initarg :shader-type))
@@ -21,13 +22,11 @@
    (program :initform 0))
   (:documentation "An opengl shader program."))
 
-
 (defgeneric build-shader-program (program)
-  (:documentation "Build a shader program and all of its corresponding programs."))
+  (:documentation "Build a shader program and all of its corresponding shaders."))
 
 (defgeneric use-shader-program (shader-program)
-  (:documentation "Set uniform and layout variables."))
-
+  (:documentation "Set uniform and layout variables for all shaders in the program."))
 
 (defmethod cleanup ((shader gl-shader))
   (with-slots (shader) shader
@@ -41,9 +40,8 @@
       (setf shader (gl:create-shader shader-type)))
     (gl:shader-source shader (read-file source-file))
     (gl:compile-shader shader)
-    (when (not (eq t (gl:get-shader shader :compile-status)))
-      (format t "compile-status: ~a~%" (gl:get-shader shader :compile-status))
-      (format t "info-log ~a~%" (gl:get-shader-info-log shader)))))
+    (format t "compile-status: ~a~%" (gl:get-shader shader :compile-status))
+    (format t "info-log ~s~%" (gl:get-shader-info-log shader))))
 
 (defmethod cleanup ((obj shader-program))
   "Delete a shader on the GPU."
@@ -68,18 +66,20 @@
         (gl:attach-shader program shader)))
     (gl:link-program program)
     (let ((status (gl:get-program program :link-status)))
-      (when (not (eq status t))
-        (format t "link-program: ~a~%~a~%" status (gl:get-program-info-log program))))
+      (format t "link-program: ~a~%Info log ~s~%"
+              status
+              (gl:get-program-info-log program)))
     (gl:validate-program program)
     (let ((status (gl:get-program program :validate-status)))
-      (when (not (eq status t))
-        (format t "validate-program: ~a~%~a~%" status (gl:get-program-info-log program))))))
+      (format t "validate-program: ~a~%~a~%"
+              status
+              (gl:get-program-info-log program)))))
 
 (defun use-layout (program layout)
   (loop
-     with stride = (loop for entry in layout summing
-                        (* (assoc-value entry :count)
-                           (cffi:foreign-type-size (assoc-value entry :type))))
+     with stride = (loop for entry in layout
+                      summing (* (assoc-value entry :count)
+                                 (cffi:foreign-type-size (assoc-value entry :type))))
 
      for cur-offset = 0 then (incf cur-offset entry-count)
 

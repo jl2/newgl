@@ -37,11 +37,16 @@
 (defgeneric handle-drag (object window first-click-info current-pos)
   (:documentation "Handle mouse drag."))
 
+(defgeneric handle-resize (object window width height)
+  (:documentation "Handle window resize."))
 
 (defgeneric reload-object (object)
   (:documentation "Destroy and reload object's buffers."))
 
 (defmethod handle-key ((object opengl-object) window key scancode action mod-keys)
+  nil)
+
+(defmethod handle-resize ((object opengl-object) window width height)
   nil)
 
 (defmethod handle-click ((object opengl-object) window click-info)
@@ -77,8 +82,7 @@
 (defmethod fill-buffers :before ((object opengl-object))
   (ensure-vao-bound object))
 
-(defmethod fill-buffers ((object opengl-object))
-)
+(defmethod fill-buffers ((object opengl-object)))
 
 (defmethod fill-buffers ((object vertex-object))
   (with-slots (vbos ebos vertices indices) object
@@ -102,6 +106,12 @@
 (defmethod fill-buffers :after ((object opengl-object))
   (gl:bind-vertex-array 0))
 
+
+(defmethod set-uniforms ((object opengl-object))
+  ;; (format t "WARNING: opengl-object set-uniforms~%")
+  )
+
+
 (defmethod reload-object ((object opengl-object))
   (cleanup object)
   (fill-buffers object))
@@ -123,7 +133,8 @@
     (when (and vbos ebos)
       (gl:bind-buffer :array-buffer (car vbos))
       (use-shader-program shader-program)
-      (gl:bind-buffer :element-array-buffer (car ebos)))))
+      (gl:bind-buffer :element-array-buffer (car ebos))
+      (set-uniforms object))))
 
 (defmethod render ((object opengl-object)))
 
