@@ -38,5 +38,6 @@
                (:file "opengl-object")
                (:file "shaders")
                (:file "tri-mesh")
+               (:file "point-cloud")
                )
   :in-order-to ((test-op (test-op newgl.test))))

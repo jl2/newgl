@@ -293,6 +293,9 @@
                                                                :button button
                                                                :time (get-time))))))
            do
+             (dolist (object *objects*)
+               (update object))
+           do
              (gl:clear :color-buffer :depth-buffer)
              (if *cull-face*
                  (gl:enable :cull-face)

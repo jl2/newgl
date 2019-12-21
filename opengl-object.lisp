@@ -22,6 +22,9 @@
 (defgeneric rebuild-shaders (object)
   (:documentation "Rebuild this object's shader programs.  Binding correct VAO is handled by before and after methods."))
 
+(defgeneric update (object)
+  (:documentation "Called on an object *before* rendering to update for the next animation frame."))
+
 (defgeneric fill-buffers (object)
   (:documentation "Copy this objects data into OpenGL buffers.  Binding correct VAO is handled by before and after methods."))
 
@@ -64,6 +67,9 @@
       (setf vao (gl:gen-vertex-array)))
     (gl:bind-vertex-array vao)))
 
+(defmethod update ((object opengl-object))
+  ;; No animation!
+  )
 
 (defmethod rebuild-shaders :before ((object opengl-object))
   (ensure-vao-bound object))

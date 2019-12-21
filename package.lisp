@@ -42,6 +42,7 @@
            #:layout
            #:shader
 
+           #:update
            #:render
            #:handle-key
            #:handle-scroll
@@ -50,6 +51,10 @@
            #:handle-resize
 
            #:tri-mesh
+
+           #:point-cloud
+           #:add-point
+
            #:viewer
 
            #:*previous-mouse-drag*
