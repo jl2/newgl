@@ -30,3 +30,7 @@ Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 * Plan
 ** TODO Refactor common funtionality.
+** TODO Refactor complex-fractal into complex-fractal-texture shader
+** TODO Create texture mapped quad class
+** TODO Refactor mandelbrot, etc to be quads with complex-fractal-texture 
+** TODO Make use-shader-program call set-uninforms on each shader
