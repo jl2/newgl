@@ -344,3 +344,8 @@
       (trivial-main-thread:with-body-in-main-thread ()
         (viewer-thread-function objects))))
 
+#+stl-to-open-gl
+(defun view-stl (stl-file-name)
+  (let ((stl (stl:read-stl stl-file-name)))
+    (multiple-value-bind (verts idxs) (stl:to-opengl stl)
+      (newgl:viewer (make-instance 'newgl:tri-mesh :indices idxs :vertices verts) :in-thread t))))

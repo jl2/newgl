@@ -8,7 +8,8 @@
   ((vao :initform 0 :type fixnum)
    (vbos :initform nil :type (or null cons))
    (ebos :initform nil :type (or null cons))
-   (shader-program :initarg :program))
+   (shader-program :initarg :program)
+   (transform :initarg :transform :initform (3d-matrices:meye 4) :type 3d-matrices:mat4))
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
 (defclass vertex-object (opengl-object)
@@ -74,11 +75,9 @@
 (defmethod rebuild-shaders :before ((object opengl-object))
   (ensure-vao-bound object))
 
-(defmethod newgl:rebuild-shaders ((object opengl-object))
+(defmethod rebuild-shaders ((object opengl-object))
   (with-slots (shader-program) object
     (build-shader-program shader-program)))
-
-(defmethod rebuild-shaders ((object opengl-object)))
 
 (defmethod rebuild-shaders :after ((object opengl-object))
   (gl:bind-vertex-array 0))
@@ -113,9 +112,14 @@
   (gl:bind-vertex-array 0))
 
 
-(defmethod set-uniforms ((object opengl-object))
+(defmethod set-uniforms :before ((object opengl-object))
   ;; (format t "WARNING: opengl-object set-uniforms~%")
-  )
+  (with-slots (shader-program transform) object
+    (let* ((prgrm (slot-value newgl:shader-program 'newgl:program))
+           (xform-location (gl:get-uniform-location prgrm "transform")))
+      (gl:uniform-matrix xform-location
+                         4
+                         (vector (marr4 transform))))))
 
 
 (defmethod reload-object ((object opengl-object))

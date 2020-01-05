@@ -51,11 +51,15 @@
            #:handle-resize
 
            #:tri-mesh
+           #+stl-to-open-gl #:view-stl
 
            #:point-cloud
            #:add-point
 
            #:viewer
+
+           #:quad
+           #:make-uv-quad
 
            #:*previous-mouse-drag*
            #:*mouse-press-info*

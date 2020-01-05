@@ -9,6 +9,6 @@ layout(location = 2) in vec4 color;
 out vec4 Color;
 void main()
 {
-     gl_Position = vec4(position.x-0.4, position.y+0.3, position.z, 1.0);
+     gl_Position = vec4(position, 1.0);
      Color = color;
 }
