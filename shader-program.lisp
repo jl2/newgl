@@ -53,15 +53,19 @@
 
     ;; Check for errors and validate program
     (let ((status (gl:get-program program :link-status)))
-      (format t "link-program: ~a~%Info log ~s~%"
-              status
-              (gl:get-program-info-log program)))
+      (when (not (eq t status))
+        (format t "program ~a link-program: ~a~%Info log ~s~%"
+                program
+                status
+                (gl:get-program-info-log program))))
 
     (gl:validate-program program)
     (let ((status (gl:get-program program :validate-status)))
-      (format t "validate-program: ~a~%~a~%"
-              status
-              (gl:get-program-info-log program)))))
+      (when (not (eq t status))
+        (format t "program ~a validate-program: ~a~%~a~%"
+                program
+                status
+                (gl:get-program-info-log program))))))
 
 
 (defmethod use-shader-program :before ((shader-program shader-program))

@@ -245,8 +245,7 @@
 
         (gl:clear-color 0.7f0 0.7f0 0.7f0 1.0)
         (dolist (object *objects*)
-          (fill-buffers object)
-          (build-shader-program object))
+          (reload-object object))
         ;; The event loop
         (loop
            until (window-should-close-p)
@@ -329,6 +328,7 @@
      render
      build-shader-program
      set-uniform
+     set-uniforms
      update
      fill-buffers
      handle-key

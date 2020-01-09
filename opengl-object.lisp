@@ -8,7 +8,7 @@
   ((vao :initform 0 :type fixnum)
    (vbos :initform nil :type (or null cons))
    (ebos :initform nil :type (or null cons))
-   (shader-program :initarg :shader-program))
+   (shader-program :initarg :shader-program :accessor program))
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
 (defclass vertex-object (opengl-object)
@@ -22,8 +22,8 @@
 (defgeneric build-shader-program (object)
   (:documentation "Build this object's shader programs.  Binding correct VAO is handled by before and after methods."))
 
-(defgeneric set-uniform (obj name value)
-  (:documentation "Assign a uniform shader variable associated with this shader program."))
+(defgeneric set-uniforms (object)
+  (:documentation "Assign uniform shader variables for this object."))
 
 (defgeneric update (object)
   (:documentation "Called on an object *before* rendering to update for the next animation frame."))
@@ -85,9 +85,8 @@
 (defmethod build-shader-program :after ((object opengl-object))
   (gl:bind-vertex-array 0))
 
-(defmethod set-uniform ((object opengl-object) name value)
-  (with-slots (shader-program) object
-    (set-uniform shader-program name value)))
+(defmethod set-uniforms ((object opengl-object))
+  t)
 
 (defmethod fill-buffers :before ((object opengl-object))
   (ensure-vao-bound object))
@@ -119,7 +118,9 @@
 
 (defmethod reload-object ((object opengl-object))
   (cleanup object)
-  (fill-buffers object))
+  (fill-buffers object)
+  (build-shader-program object)
+  (set-uniforms object))
 
 (defmethod cleanup ((object opengl-object))
   (with-slots (vao vbos ebos) object
