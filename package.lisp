@@ -27,7 +27,6 @@
            #:shader-program
            #:program
            #:gl-shader
-           #:rebuild-shaders
            #:set-uniforms
            #:build-shader-program
            #:fill-buffers
@@ -36,22 +35,36 @@
            #:to-gl-array
            #:to-gl-float-array
 
-           #:shaders
+           #:build-shader-program
+           #:use-shader-program
+           #:set-uniforms
+           #:enable-layout
+           #:compile-shader
+           #:use-layout
+           #:get-source
+           #:cleanup
+           #:render
+           #:update
+           #:fill-buffers
+           #:handle-key
+           #:handle-click
+           #:handle-scroll
+           #:handle-drag
+           #:handle-resize
+           #:reload-object
+           #:make-plastic-program
+           #:set-uniform
            #:shader-type
            #:source-file
            #:layout
            #:shader
 
-           #:update
-           #:render
-           #:handle-key
-           #:handle-scroll
-           #:handle-drag
-           #:handle-click
-           #:handle-resize
 
            #:tri-mesh
            #+stl-to-open-gl #:view-stl
+
+           #:make-layout
+           #:make-layout-entry
 
            #:point-cloud
            #:add-point
@@ -70,4 +83,8 @@
            #:action
            #:button
            #:time
-           #:viewer-thread-function))
+           #:viewer-thread-function
+
+           #:shader-from-file
+           #:make-shader-program
+           ))

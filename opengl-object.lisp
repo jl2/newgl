@@ -8,8 +8,7 @@
   ((vao :initform 0 :type fixnum)
    (vbos :initform nil :type (or null cons))
    (ebos :initform nil :type (or null cons))
-   (shader-program :initarg :program)
-   (transform :initarg :transform :initform (3d-matrices:meye 4) :type 3d-matrices:mat4))
+   (shader-program :initarg :shader-program))
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
 (defclass vertex-object (opengl-object)
@@ -20,14 +19,18 @@
 (defgeneric render (object)
   (:documentation "Make OpenGL API calls to render the object.  Binding correct VAO is handled by before and after methods."))
 
-(defgeneric rebuild-shaders (object)
-  (:documentation "Rebuild this object's shader programs.  Binding correct VAO is handled by before and after methods."))
+(defgeneric build-shader-program (object)
+  (:documentation "Build this object's shader programs.  Binding correct VAO is handled by before and after methods."))
+
+(defgeneric set-uniform (obj name value)
+  (:documentation "Assign a uniform shader variable associated with this shader program."))
 
 (defgeneric update (object)
   (:documentation "Called on an object *before* rendering to update for the next animation frame."))
 
 (defgeneric fill-buffers (object)
   (:documentation "Copy this objects data into OpenGL buffers.  Binding correct VAO is handled by before and after methods."))
+
 
 (defgeneric handle-key (object window key scancode action mod-keys)
   (:documentation "Handle a GLFW key press.  Return non-nil if handled."))
@@ -72,17 +75,19 @@
   ;; No animation!
   )
 
-(defmethod rebuild-shaders :before ((object opengl-object))
+(defmethod build-shader-program :before ((object opengl-object))
   (ensure-vao-bound object))
 
-(defmethod rebuild-shaders ((object opengl-object))
+(defmethod build-shader-program ((object opengl-object))
   (with-slots (shader-program) object
     (build-shader-program shader-program)))
 
-(defmethod rebuild-shaders :after ((object opengl-object))
+(defmethod build-shader-program :after ((object opengl-object))
   (gl:bind-vertex-array 0))
 
-
+(defmethod set-uniform ((object opengl-object) name value)
+  (with-slots (shader-program) object
+    (set-uniform shader-program name value)))
 
 (defmethod fill-buffers :before ((object opengl-object))
   (ensure-vao-bound object))
@@ -112,16 +117,6 @@
   (gl:bind-vertex-array 0))
 
 
-(defmethod set-uniforms :before ((object opengl-object))
-  ;; (format t "WARNING: opengl-object set-uniforms~%")
-  (with-slots (shader-program transform) object
-    (let* ((prgrm (slot-value newgl:shader-program 'newgl:program))
-           (xform-location (gl:get-uniform-location prgrm "transform")))
-      (gl:uniform-matrix xform-location
-                         4
-                         (vector (marr4 transform))))))
-
-
 (defmethod reload-object ((object opengl-object))
   (cleanup object)
   (fill-buffers object))
@@ -139,23 +134,29 @@
 
 (defmethod render :before ((object opengl-object))
   (ensure-vao-bound object)
+  ;;  (format t "render :before opengl-object~%")
   (with-slots (vbos ebos indices shader-program) object
     (when (and vbos ebos)
       (gl:bind-buffer :array-buffer (car vbos))
-      (use-shader-program shader-program)
       (gl:bind-buffer :element-array-buffer (car ebos))
-      (set-uniforms object))))
+      (use-shader-program shader-program))))
 
-(defmethod render ((object opengl-object)))
+(defmethod render ((object opengl-object))
+  ;;  (format t "In render object opengl-object~%")
+  )
 
 (defmethod render ((object vertex-object))
+  ;;  (format t "In render object vertex-object~%")
   (with-slots (indices) object
+    ;;    (format t "Before polygon-mode~%")
     (gl:polygon-mode :front-and-back :fill)
+    ;;    (format t "Before draw-elements ~a~%" (length indices))
     (gl:draw-elements :triangles (gl:make-null-gl-array :unsigned-int) :count (length indices))))
+    ;;    (format t "After draw-elements~%")))
 
 (defmethod render :after ((object opengl-object))
+  ;;  (format t "render :after opengl-object~%")
   (gl:bind-vertex-array 0))
-
 
 (defun to-gl-float-array (arr)
   "Create an OpenGL float array from a CL array of numbers.

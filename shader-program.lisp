@@ -9,15 +9,17 @@
    (program :initform 0))
   (:documentation "An opengl shader program."))
 
-(defgeneric build-shader-program (program)
-  (:documentation "Build a shader program and all of its corresponding shaders."))
-
 (defgeneric use-shader-program (program)
   (:documentation "Set uniform and layout variables for all shaders in the program."))
 
-(defgeneric set-uniforms (program)
-  (:documentation "Assign uniform shader variables associated with this shader program."))
+(defun make-shader-program (&rest shaders)
+  (make-instance 'shader-program :shaders shaders))
 
+
+(defmethod set-uniform ((obj shader-program) name value)
+  (with-slots (shaders) obj
+    (dolist (shader shaders)
+      (set-uniform shader name value))))
 
 (defmethod cleanup ((obj shader-program))
   "Delete a shader on the GPU."
@@ -61,14 +63,19 @@
               status
               (gl:get-program-info-log program)))))
 
+
 (defmethod use-shader-program :before ((shader-program shader-program))
+  ;; Set variables here, if necessary...
   (with-slots (program shaders) shader-program
     (dolist (shader shaders)
-      (use-layout shader program))))
+      (use-shader-layout shader program))))
 
-(defmethod use-shader-program ((shader-program shader-program)))
-
-(defmethod use-shader-program :after ((shader-program shader-program))
+(defmethod use-shader-program ((shader-program shader-program))
   (with-slots (program) shader-program
     (gl:use-program program)))
+
+(defmethod use-shader-program :after ((shader-program shader-program))
+  (with-slots (program shaders) shader-program
+    (dolist (shader shaders)
+      (use-shader-uniforms shader program))))
 

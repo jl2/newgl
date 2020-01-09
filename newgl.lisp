@@ -246,7 +246,7 @@
         (gl:clear-color 0.7f0 0.7f0 0.7f0 1.0)
         (dolist (object *objects*)
           (fill-buffers object)
-          (rebuild-shaders object))
+          (build-shader-program object))
         ;; The event loop
         (loop
            until (window-should-close-p)
@@ -265,7 +265,7 @@
            when *rebuild-shaders* do
              (format t "Rebuilding shaders...~%")
              (dolist (object *objects*)
-               (rebuild-shaders object))
+               (build-shader-program object))
              (format t " Done.~%")
              (setf *rebuild-shaders* nil)
 
@@ -317,27 +317,100 @@
   ;; Some traces that are helpful for debugging
   (when show-traces
     (trace
-     ;; gl:bind-buffer
-     ;; gl:bind-vertex-array
-     ;; gl:draw-elements
-     ;; gl:enable-vertex-attrib-array
-     ;; gl:gen-vertex-array
-     ;; gl:get-attrib-location
-     ;; gl:polygon-mode
-     ;; gl:use-program
-     ;; gl:vertex-attrib-pointer
 
-     ;; newgl::build-shader-program
-     ;; newgl::ensure-vao-bound
-     ;; newgl::fill-buffers
-     ;; newgl::render
-     ;; newgl::use-layout
-     ;; newgl::use-shader-program
-     newgl::handle-drag
-     newgl::handle-click
-     newgl::handle-scroll
-     newgl::handle-key
-     ))
+     ;; newgl defgenerics
+     use-shader-program
+     get-source
+     compile-shader
+     use-shader
+     cleanup
+     use-uniform
+     enable-layout
+     render
+     build-shader-program
+     set-uniform
+     update
+     fill-buffers
+     handle-key
+     handle-click
+     handle-scroll
+     handle-drag
+     handle-resize
+     reload-object
+
+
+     ;; newgl defuns
+     newgl::make-shader-program
+     newgl::make-plastic-program
+     newgl::add-point
+     newgl::glsl-type-keyword
+     newgl::glsl-type-size
+     newgl::lookup-shader-type
+     newgl::shader-from-file
+     newgl::make-uv-quad
+     newgl::make-uv-quad
+     newgl::show-gl-state
+     newgl::show-program-state
+     newgl::show-open-gl-info
+     newgl::top-key-handler
+     newgl::viewer-thread-function
+     newgl::viewer
+     newgl::view-stl
+     newgl::make-layout-entry
+     newgl::make-layout
+     newgl::compute-stride
+     newgl::ensure-vao-bound
+     newgl::to-gl-float-array
+     newgl::to-gl-array
+
+     ;; OpenGL
+     gl:alloc-gl-array
+     gl:attach-shader
+     gl:bind-buffer
+     gl:bind-vertex-array
+     gl:buffer-data
+     gl:clear
+     gl:clear-color
+     gl:compile-shader
+     gl:create-program
+     gl:create-shader
+     gl:delete-buffers
+     gl:delete-program
+     gl:delete-shader
+     gl:delete-vertex-arrays
+     gl:depth-func
+     gl:detach-shader
+     gl:draw-elements
+     gl:disable
+     gl:enable
+     gl:enable-vertex-attrib-array
+     gl:free-gl-array
+     gl:front-face
+     gl:gen-buffers
+     gl:gen-vertex-array
+     gl:get-attrib-location
+     gl:get-integer
+     gl:get-program
+     gl:get-program-info-log
+     gl:get-shader
+     gl:get-shader-info-log
+     gl:get-uniform-location
+     gl:glaref
+     gl:link-program
+     gl:make-null-gl-array
+     gl:polygon-mode
+     gl:shader-source
+     gl:uniform-matrix
+     gl:get-uniform-location
+     gl:uniformi
+     gl:uniformf
+     gl:uniformfv
+     gl:use-program
+     gl:validate-program
+     gl:vertex-attrib-pointer
+     gl:viewport
+
+))
 
   (if in-thread
       (viewer-thread-function objects)
@@ -345,7 +418,15 @@
         (viewer-thread-function objects))))
 
 #+stl-to-open-gl
-(defun view-stl (stl-file-name)
+(defun view-stl (stl-file-name  &key  (in-thread nil) (show-traces nil))
   (let ((stl (stl:read-stl stl-file-name)))
     (multiple-value-bind (verts idxs) (stl:to-opengl stl)
-      (newgl:viewer (make-instance 'newgl:tri-mesh :indices idxs :vertices verts) :in-thread t))))
+      (let ((tm (make-instance 'newgl:tri-mesh
+                               :vertices verts
+                               :indices idxs)))
+        (newgl:set-uniform tm "transform" (meye 4))
+        (newgl:viewer
+         tm
+         :in-thread in-thread
+         :show-traces show-traces)))))
+

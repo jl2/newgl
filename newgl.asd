@@ -31,11 +31,15 @@
                #:3d-vectors
                #:3d-matrices
 
+               #:cl-ppcre
+
                #:bordeaux-threads
                #:trivial-main-thread)
   :components ((:file "package")
                (:file "newgl")
                (:file "opengl-object")
+               (:file "layouts")
+               (:file "uniforms")
                (:file "gl-shader")
                (:file "shader-program")
                (:file "tri-mesh")

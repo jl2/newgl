@@ -46,7 +46,5 @@
   (with-slots (aspect-ratio) object
     (setf aspect-ratio (if (< height width )
                            (/ width height 1.0)
-                           (/ height width -1.0)))
-    (format t "New aspect ratio: ~a~%" aspect-ratio)
-    ))
+                           (/ height width -1.0)))))
 
