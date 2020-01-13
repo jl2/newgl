@@ -20,6 +20,34 @@ To open an empty viewer, run:
 
 ** Examples
 For an example object, see the [[https://github.com/jl2/gl-fractals][gl-fractals]] repository.
+#+BEGIN_SRC lisp
+(ql:quickload :newgl)
+
+(newgl:viewer (make-instance 'newgl:tri-mesh :indices #(0 1 2) :vertices
+                                      #(0.0f0 0.0f0 0.0f0
+                                        0.0f0 1.0f0 0.0f0
+                                        1.0f0 0.0f0 0.0f0 1.0f0
+                                        0.5f0 0.0f0 0.0f0
+                                        0.0f0 1.0f0 0.0f0
+                                        1.0f0 0.0f0 0.0f0 1.0f0
+                                        0.5f0 0.5f0 0.0f0
+                                        0.0f0 1.0f0 0.0f0
+                                        1.0f0 0.0f0 0.0f0 1.0f0)))
+#+END_SRC
+
+#+RESULTS:
+: #<SIMPLE-TASKS:CALL-TASK :FUNC #<CLOSURE (LAMBDA () :IN NEWGL:VIEWER) {101CE0F41B}> :STATUS :SCHEDULED {101CE0F483}>
+
+#+BEGIN_SRC lisp
+(ql:quickload :stl)
+(ql:quickload :newgl)
+
+(newgl:view-stl "~/cube.stl")
+
+#+END_SRC
+
+#+RESULTS:
+: #<SIMPLE-TASKS:CALL-TASK :FUNC #<CLOSURE (LAMBDA () :IN NEWGL:VIEWER) {1014C9174B}> :STATUS :SCHEDULED {1014C917B3}>
 
 ** License
 ISC
@@ -29,8 +57,7 @@ Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 
 * Plan
-** TODO Refactor common funtionality.
-** TODO Refactor complex-fractal into complex-fractal-texture shader
-** TODO Create texture mapped quad class
-** TODO Refactor mandelbrot, etc to be quads with complex-fractal-texture 
-** TODO Make use-shader-program call set-uninforms on each shader
+** TODO Wavefront OBJ load and render
+** TODO Collada load and render
+** TODO More examples.
+** TODO Parametric surfaces?

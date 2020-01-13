@@ -6,6 +6,11 @@
 
 (defparameter *shader-dir* (asdf:system-relative-pathname :newgl "shaders/"))
 
+(define-condition shader-error (error)
+  ((status :initarg :status :reader shader-compile-status)
+   (object :initarg :object :reader shader-object)
+   (info-log :initarg :info-log :reader shader-compile-info-log)))
+
 (defclass gl-shader ()
   ((layout :initarg :layout :initform nil :type (or null layout))
    (uniforms :initform (make-hash-table :test 'equal) :type hash-table)
@@ -125,6 +130,7 @@
       (gl:delete-shader shader))
     (setf shader 0)))
 
+(define-condition shader-compile-error (shader-error) ())
 
 (defmethod compile-shader ((shadr gl-shader))
   (with-slots (shader shader-type) shadr
@@ -134,5 +140,7 @@
     (gl:compile-shader shader)
     (let ((compile-result (gl:get-shader shader :compile-status)))
       (when (not (eq t compile-result))
-        (format t "shader ~a compile status: ~a~%" shader (gl:get-shader shader :compile-status))
-        (format t "info-log ~s~%" (gl:get-shader-info-log shader))))))
+        (error 'shader-compile-error
+               :status compile-result
+               :object shadr
+               :info-log (gl:get-shader-info-log shader))))))

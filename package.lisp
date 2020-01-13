@@ -67,7 +67,9 @@
            #:make-layout-entry
 
            #:point-cloud
+           #:make-point-cloud
            #:add-point
+           #:add-point-color
 
            #:viewer
 

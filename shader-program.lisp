@@ -12,6 +12,7 @@
 (defgeneric use-shader-program (program)
   (:documentation "Set uniform and layout variables for all shaders in the program."))
 
+
 (defun make-shader-program (&rest shaders)
   (make-instance 'shader-program :shaders shaders))
 
@@ -29,6 +30,9 @@
     (when (> 0 program)
       (gl:delete-program program))
     (setf program 0)))
+
+(define-condition shader-link-error (shader-error) ())
+(define-condition shader-validate-error (shader-error) ())
 
 (defmethod build-shader-program ((program shader-program))
   "Compile and link shader program, including validation."
@@ -54,18 +58,20 @@
     ;; Check for errors and validate program
     (let ((status (gl:get-program program :link-status)))
       (when (not (eq t status))
-        (format t "program ~a link-program: ~a~%Info log ~s~%"
-                program
-                status
-                (gl:get-program-info-log program))))
+        (error 'shader-link-error
+               :status status
+               :object program
+               :info-log (gl:get-program-info-log program))))
 
     (gl:validate-program program)
     (let ((status (gl:get-program program :validate-status)))
       (when (not (eq t status))
-        (format t "program ~a validate-program: ~a~%~a~%"
-                program
-                status
-                (gl:get-program-info-log program))))))
+        (restart-case 
+            (error 'shader-link-error
+                   :status status
+                   :object program
+                   :info-log (gl:get-program-info-log program))
+          (ignore-validation-error () t))))))
 
 
 (defmethod use-shader-program :before ((shader-program shader-program))

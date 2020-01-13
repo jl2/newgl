@@ -13,7 +13,8 @@
 
 (defclass vertex-object (opengl-object)
   ((vertices :initarg :vertices)
-   (indices :initarg :indices))
+   (indices :initarg :indices)
+   (primitive-type :initarg :primitive-type :initform :triangles))
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
 (defgeneric render (object)
@@ -21,6 +22,9 @@
 
 (defgeneric build-shader-program (object)
   (:documentation "Build this object's shader programs.  Binding correct VAO is handled by before and after methods."))
+
+(defgeneric set-uniform (object name value)
+  (:documentation "Set a uniform variable on object."))
 
 (defgeneric set-uniforms (object)
   (:documentation "Assign uniform shader variables for this object."))
@@ -85,6 +89,12 @@
 (defmethod build-shader-program :after ((object opengl-object))
   (gl:bind-vertex-array 0))
 
+
+(defmethod set-uniform ((obj opengl-object) name value)
+  (with-slots (shader-program) obj
+    (set-uniform shader-program name value)))
+
+
 (defmethod set-uniforms ((object opengl-object))
   t)
 
@@ -135,7 +145,6 @@
 
 (defmethod render :before ((object opengl-object))
   (ensure-vao-bound object)
-  ;;  (format t "render :before opengl-object~%")
   (with-slots (vbos ebos indices shader-program) object
     (when (and vbos ebos)
       (gl:bind-buffer :array-buffer (car vbos))
@@ -143,27 +152,20 @@
       (use-shader-program shader-program))))
 
 (defmethod render ((object opengl-object))
-  ;;  (format t "In render object opengl-object~%")
   )
 
 (defmethod render ((object vertex-object))
-  ;;  (format t "In render object vertex-object~%")
-  (with-slots (indices) object
-    ;;    (format t "Before polygon-mode~%")
+  (with-slots (indices primitive-type) object
     (gl:polygon-mode :front-and-back :fill)
-    ;;    (format t "Before draw-elements ~a~%" (length indices))
-    (gl:draw-elements :triangles (gl:make-null-gl-array :unsigned-int) :count (length indices))))
-    ;;    (format t "After draw-elements~%")))
+    (gl:draw-elements primitive-type (gl:make-null-gl-array :unsigned-int) :count (length indices))))
 
 (defmethod render :after ((object opengl-object))
-  ;;  (format t "render :after opengl-object~%")
   (gl:bind-vertex-array 0))
 
 (defun to-gl-float-array (arr)
   "Create an OpenGL float array from a CL array of numbers.
    This is a convenience function that will coerce array elments to single-float."
-  (declare (optimize (speed 3))
-           (type (vector single-float) arr))
+  (declare (optimize (speed 3)))
   (let* ((count (length arr))
          (gl-array (gl:alloc-gl-array :float count)))
     (dotimes (i count)
