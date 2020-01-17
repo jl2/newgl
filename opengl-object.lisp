@@ -157,7 +157,7 @@
 (defmethod render ((object vertex-object))
   (with-slots (indices primitive-type) object
     (gl:polygon-mode :front-and-back :fill)
-    (gl:draw-elements primitive-type (gl:make-null-gl-array :unsigned-int) :count (length indices))))
+    (gl:draw-elements :points (gl:make-null-gl-array :unsigned-int) :count (length indices))))
 
 (defmethod render :after ((object opengl-object))
   (gl:bind-vertex-array 0))

@@ -59,7 +59,6 @@
            #:layout
            #:shader
 
-
            #:tri-mesh
            #+stl-to-open-gl #:view-stl
 
@@ -68,8 +67,8 @@
 
            #:point-cloud
            #:make-point-cloud
+           #:random-point-cloud
            #:add-point
-           #:add-point-color
 
            #:viewer
 

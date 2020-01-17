@@ -106,7 +106,7 @@
 
 (defmethod use-shader-uniforms ((shader gl-shader) program )
   (with-slots (uniforms) shader
-    (dohash (name uniform uniforms)
+    (ju:dohash (name uniform uniforms)
       (use-uniform uniform program))))
 
 (defmethod get-source ((shader gl-shader))

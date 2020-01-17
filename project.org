@@ -36,7 +36,7 @@ For an example object, see the [[https://github.com/jl2/gl-fractals][gl-fractals
 #+END_SRC
 
 #+RESULTS:
-: #<SIMPLE-TASKS:CALL-TASK :FUNC #<CLOSURE (LAMBDA () :IN NEWGL:VIEWER) {101CE0F41B}> :STATUS :SCHEDULED {101CE0F483}>
+: #<SIMPLE-TASKS:CALL-TASK :FUNC #<CLOSURE (LAMBDA () :IN NEWGL:VIEWER) {10100DF9CB}> :STATUS :SCHEDULED {101015EA43}>
 
 #+BEGIN_SRC lisp
 (ql:quickload :stl)
