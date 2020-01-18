@@ -20,7 +20,6 @@
                    (make-shader-program
                     (shader-from-file (merge-pathnames *shader-dir* "point-vertex.glsl"))
                     (shader-from-file (merge-pathnames *shader-dir* "point-fragment.glsl"))))
-   (transformation :initform (meye 4) :type mat4)
    (aspect-ratio :initarg :aspect-ratio :initform 1.0))
   (:documentation "Point cloud."))
 
@@ -52,11 +51,7 @@
                  :alpha (ju:random-between 0.5f0 1.0f0)))
     pcloud))
 
-(defmethod set-uniforms ((object point-cloud))
-  (call-next-method)
-  (with-slots (shader-program transformation aspect-ratio) object
-    (set-uniform shader-program "transform" (m* (3d-matrices:mscaling (vec3 1.0 aspect-ratio 1.0))
-                                                transformation))))
+
 
 (defmethod handle-key ((object point-cloud) window key scancode action mod-keys)
   (declare (ignorable window key scancode action mod-keys))

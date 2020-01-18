@@ -18,6 +18,8 @@
   (with-slots (name type value) uniform
     (let ((location (gl:get-uniform-location program name)))
       (when (>= location 0)
+        (when (null value)
+          (format t "value of ~a is nil, using default.~%" name))
         (cond ((eq :mat4 type)
                (gl:uniform-matrix location
                                   4
@@ -43,3 +45,6 @@
               ((eq :vec4 type)
                (gl:uniformfv location (if value value (vec4 0.0 0.0 0.0 0.0)))))))))
 
+(defun set-value (uniform new-value)
+  (with-slots (value) uniform
+    (setf value new-value)))

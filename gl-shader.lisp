@@ -106,6 +106,7 @@
 
 (defmethod use-shader-uniforms ((shader gl-shader) program )
   (with-slots (uniforms) shader
+    ;;(inspect uniforms)
     (dohash (name uniform uniforms)
       (use-uniform uniform program))))
 
@@ -117,12 +118,18 @@
     (ju:read-file source-file)))
 
 (defmethod set-uniform ((shader gl-shader) name new-value)
-  (with-slots (uniforms) shader
-    (let ((old-uni (gethash name uniforms)))
-      (when old-uni
-        (with-slots (value) old-uni
-          (setf value new-value))
-        (setf (gethash name uniforms) old-uni)))))
+  (with-slots (uniforms shader shader-type) shader
+    ;; (format t
+    ;;         "Assinging ~a to uniform ~s in ~a shader ~a~%"
+    ;;                new-value name shader-type shader)
+    (cond ((gethash name uniforms)
+           (set-value (gethash name uniforms) new-value))
+          (t
+           ;; (format t
+           ;;         "Cannot assign ~a to unknown uniform ~a in ~a shader ~a, no uniform type declaration found~%"
+           ;;         new-value name shader-type shader)
+           ;; (inspect uniforms)
+           nil))))
 
 (defmethod cleanup ((shader gl-shader))
   (with-slots (shader) shader

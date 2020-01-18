@@ -209,10 +209,14 @@
      for object in *objects*
      do (handle-resize object window width height)))
 
-(defun viewer-thread-function ( objects &key (background-color (vec4 0.7f0 0.7f0 0.7f0 1.0)))
+(defun viewer-thread-function ( objects
+                               &key
+                                 (background-color (vec4 0.7f0 0.7f0 0.7f0 1.0))
+                                 (xform (meye 4)))
   (set-error-callback 'error-callback)
   (setf *objects* (ensure-list objects))
-
+  (dolist (object *objects*)
+    (set-uniform object "transform" xform))
   (with-init
     (let* ((monitor (glfw:get-primary-monitor))
            (cur-mode (glfw:get-video-mode monitor))
@@ -317,7 +321,8 @@
           (cleanup object))))))
 
 (defun viewer (&optional objects &key
-                                   (background-color (vec4 0.7f0 0.7f0 0.7f0 1.0))
+                                   (background-color (vec4 0.0f0 0.0f0 0.0f0 1.0))
+                                   (xform (3d-matrices:meye 4))
                                    (in-thread nil)
                                    (show-traces nil))
   ;; Some traces that are helpful for debugging
@@ -359,6 +364,8 @@
      newgl::show-gl-state
      newgl::show-program-state
      newgl::show-open-gl-info
+     newgl::use-shader-uniforms
+     newgl::use-uniform
      newgl::top-key-handler
      newgl::viewer-thread-function
      newgl::viewer
@@ -420,9 +427,13 @@
 ))
 
   (if in-thread
-      (viewer-thread-function objects :background-color background-color)
+      (viewer-thread-function objects
+                              :background-color background-color
+                              :xform xform)
       (trivial-main-thread:with-body-in-main-thread ()
-        (viewer-thread-function objects :background-color background-color))))
+        (viewer-thread-function objects
+                                :background-color background-color
+                                :xform xform))))
 
 #+stl-to-open-gl
 (defun view-stl (stl-file-name  &key  (in-thread nil) (show-traces nil))

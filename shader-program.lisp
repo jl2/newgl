@@ -66,7 +66,7 @@
     (gl:validate-program program)
     (let ((status (gl:get-program program :validate-status)))
       (when (not (eq t status))
-        (restart-case 
+        (restart-case
             (error 'shader-link-error
                    :status status
                    :object program
@@ -88,4 +88,3 @@
   (with-slots (program shaders) shader-program
     (dolist (shader shaders)
       (use-shader-uniforms shader program))))
-
