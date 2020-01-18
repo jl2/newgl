@@ -4,12 +4,18 @@
 
 (in-package #:newgl)
 
-(defclass point-cloud (opengl-object)
+(defclass point-cloud (vertex-object)
   ((vertices :initform (make-array 0
                                    :element-type 'single-float
                                    :initial-contents '()
                                    :adjustable t
                                    :fill-pointer 0))
+   (indices :initform (make-array 0
+                                  :element-type 'fixnum
+                                  :initial-contents '()
+                                  :adjustable t
+                                  :fill-pointer 0))
+   (primitive-type :initform :points)
    (shader-program :initform
                    (make-shader-program
                     (shader-from-file (merge-pathnames *shader-dir* "point-vertex.glsl"))
@@ -18,65 +24,29 @@
    (aspect-ratio :initarg :aspect-ratio :initform 1.0))
   (:documentation "Point cloud."))
 
-(defmethod fill-buffers ((object point-cloud))
-  (with-slots (vbos ebos vertices) object
-    (cond ((null vbos)
-           (setf vbos (gl:gen-buffers 1))
-           (setf ebos (gl:gen-buffers 1))
-           (let ((gl-vertices (to-gl-float-array vertices))
-                 (gl-indices (to-gl-array (make-array
-                                           (/ (length vertices) 7)
-                                           :initial-contents (loop
-                                                                for i
-                                                                below (/ (length vertices)
-                                                                         7)
-                                                                collecting i)
-                                           :element-type 'fixnum)
-                                           :unsigned-int)
-                                          ))
-
-             (gl:bind-buffer :array-buffer (car vbos))
-             (gl:buffer-data :array-buffer :dynamic-draw gl-vertices)
-             (gl:free-gl-array gl-vertices)
-
-             (gl:bind-buffer :element-array-buffer (car ebos))
-             (gl:buffer-data :element-array-buffer :dynamic-draw gl-indices)
-             (gl:free-gl-array gl-indices)))
-          (t
-           (gl:bind-buffer :array-buffer (car vbos))
-           (gl:bind-buffer :element-array-buffer (car ebos))))))
-(defmethod render ((object opengl-object))
-  (with-slots (vertices) object
-    (with-slots (indices primitive-type) object
-      (gl:draw-elements :points
-                        (gl:make-null-gl-array :unsigned-int)
-                        :count (/ (length vertices) 7)))))
-
 (defun make-point-cloud ()
   (make-instance 'point-cloud))
 
-(defun add-point (cloud &key x y z (red 0.0) (green 1.0) (blue 0.0) (alpha 1.0))
-  (with-slots (vertices) cloud
-    (vector-push-extend (coerce x 'single-float) vertices)
-    (vector-push-extend (coerce y 'single-float) vertices)
-    (vector-push-extend (coerce z 'single-float) vertices)
-    (vector-push-extend (coerce red 'single-float) vertices)
-    (vector-push-extend (coerce green 'single-float) vertices)
-    (vector-push-extend (coerce blue 'single-float) vertices)
-    (vector-push-extend (coerce alpha 'single-float) vertices)))
+(defun add-point (cloud x y z)
+  (with-slots (vertices indices) cloud
+    (let ((index  (length vertices)))
+      (vector-push-extend (coerce x 'single-float) vertices)
+      (vector-push-extend (coerce y 'single-float) vertices)
+      (vector-push-extend (coerce z 'single-float) vertices)
+      (vector-push-extend index indices))))
+
+(defun add-point-color (cloud x y z red green blue alpha)
+  (with-slots (vertices indices) cloud
+    (let ((index  (length indices)))
+      (vector-push-extend (coerce x 'single-float) vertices)
+      (vector-push-extend (coerce y 'single-float) vertices)
+      (vector-push-extend (coerce z 'single-float) vertices)
+      (vector-push-extend (coerce red 'single-float) vertices)
+      (vector-push-extend (coerce green 'single-float) vertices)
+      (vector-push-extend (coerce blue 'single-float) vertices)
+      (vector-push-extend (coerce alpha 'single-float) vertices)
+      (vector-push-extend index indices))))
   
-(defun random-point-cloud (&optional (n 100))
-  (let ((pcloud (make-point-cloud)))
-    (dotimes (i n)
-      (add-point pcloud
-                 :x (ju:random-between -1.0f0 1.0f0)
-                 :y (ju:random-between -1.0f0 1.0f0)
-                 :z (ju:random-between -1.0f0 1.0f0)
-                 :red (ju:random-between 0.5f0 1.0f0)
-                 :green (ju:random-between 0.0f0 1.0f0)
-                 :blue (ju:random-between 0.0f0 1.0f0)
-                 :alpha (ju:random-between 0.5f0 1.0f0)))
-    pcloud))
 
 (defmethod set-uniforms ((object point-cloud))
   (call-next-method)
