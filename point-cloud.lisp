@@ -27,15 +27,7 @@
 (defun make-point-cloud ()
   (make-instance 'point-cloud))
 
-(defun add-point (cloud x y z)
-  (with-slots (vertices indices) cloud
-    (let ((index  (length vertices)))
-      (vector-push-extend (coerce x 'single-float) vertices)
-      (vector-push-extend (coerce y 'single-float) vertices)
-      (vector-push-extend (coerce z 'single-float) vertices)
-      (vector-push-extend index indices))))
-
-(defun add-point-color (cloud x y z red green blue alpha)
+(defun add-point (cloud &key x y z (red 1.0f0) (green 1.0f0)  (blue 1.0f0) (alpha 1.0f0))
   (with-slots (vertices indices) cloud
     (let ((index  (length indices)))
       (vector-push-extend (coerce x 'single-float) vertices)
@@ -46,7 +38,19 @@
       (vector-push-extend (coerce blue 'single-float) vertices)
       (vector-push-extend (coerce alpha 'single-float) vertices)
       (vector-push-extend index indices))))
-  
+
+(defun random-point-cloud (&optional (n 100))
+  (let ((pcloud (make-point-cloud)))
+    (dotimes (i n)
+      (add-point pcloud
+                 :x (ju:random-between -0.25f0 0.25f0)
+                 :y (ju:random-between -0.25f0 0.25f0)
+                 :z (ju:random-between -0.25f0 0.25f0)
+                 :red (ju:random-between 0.25f0 1.0f0)
+                 :green (ju:random-between 0.0f0 1.0f0)
+                 :blue (ju:random-between 0.0f0 1.0f0)
+                 :alpha (ju:random-between 0.5f0 1.0f0)))
+    pcloud))
 
 (defmethod set-uniforms ((object point-cloud))
   (call-next-method)
@@ -62,6 +66,13 @@
   (with-slots (aspect-ratio) object
     (setf aspect-ratio (if (< height width )
                            (/ width height 1.0)
-                           (/ height width -1.0))))
+                           (/ height width 1.0))))
   (set-uniforms object))
 
+(defun make-square ()
+  (let ((pc (newgl:make-point-cloud)))
+    (newgl:add-point pc :x 0.0 :y 0.0 :z 0.0)
+    (newgl:add-point pc :x 1.0 :y 0.0 :z 0.0)
+    (newgl:add-point pc :x 1.0 :y 1.0 :z 0.0)
+    (newgl:add-point pc :x 0.0 :y 1.0 :z 0.0)
+    pc))

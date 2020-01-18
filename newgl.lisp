@@ -209,7 +209,7 @@
      for object in *objects*
      do (handle-resize object window width height)))
 
-(defun viewer-thread-function ( objects )
+(defun viewer-thread-function ( objects &key (background-color (vec4 0.7f0 0.7f0 0.7f0 1.0)))
   (set-error-callback 'error-callback)
   (setf *objects* (ensure-list objects))
 
@@ -243,7 +243,11 @@
                    :depth-test)
         (gl:depth-func :less)
 
-        (gl:clear-color 0.7f0 0.7f0 0.7f0 1.0)
+        (gl:clear-color (vx background-color)
+                        (vy background-color)
+                        (vz background-color)
+                        (vw background-color))
+
         (dolist (object *objects*)
           (reload-object object))
         ;; The event loop
@@ -312,7 +316,10 @@
         (dolist (object *objects*)
           (cleanup object))))))
 
-(defun viewer (&optional objects &key  (in-thread nil) (show-traces nil))
+(defun viewer (&optional objects &key
+                                   (background-color (vec4 0.7f0 0.7f0 0.7f0 1.0))
+                                   (in-thread nil)
+                                   (show-traces nil))
   ;; Some traces that are helpful for debugging
   (when show-traces
     (trace
@@ -413,9 +420,9 @@
 ))
 
   (if in-thread
-      (viewer-thread-function objects)
+      (viewer-thread-function objects :background-color background-color)
       (trivial-main-thread:with-body-in-main-thread ()
-        (viewer-thread-function objects))))
+        (viewer-thread-function objects :background-color background-color))))
 
 #+stl-to-open-gl
 (defun view-stl (stl-file-name  &key  (in-thread nil) (show-traces nil))

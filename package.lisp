@@ -69,7 +69,8 @@
            #:point-cloud
            #:make-point-cloud
            #:add-point
-           #:add-point-color
+           #:make-square
+           #:random-point-cloud
 
            #:viewer
 
