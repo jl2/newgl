@@ -61,6 +61,8 @@
 
 
            #:tri-mesh
+           #:add-point-tm
+           #:parametric-tri-mesh
            #+stl-to-open-gl #:view-stl
 
            #:make-layout
@@ -68,9 +70,13 @@
 
            #:point-cloud
            #:make-point-cloud
-           #:add-point
+           #:add-point-pc
            #:make-square
            #:random-point-cloud
+           #:parametric-point-cloud
+
+           #:make-line-segments
+           #:add-line
 
            #:viewer
 
