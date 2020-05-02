@@ -324,7 +324,8 @@
                                    (background-color (vec4 0.0f0 0.0f0 0.0f0 1.0))
                                    (xform (3d-matrices:meye 4))
                                    (in-thread nil)
-                                   (show-traces nil))
+                                   (show-traces nil)
+                                   (debug-stream nil))
   ;; Some traces that are helpful for debugging
   (when show-traces
     (trace
@@ -427,13 +428,15 @@
 ))
 
   (if in-thread
-      (viewer-thread-function objects
-                              :background-color background-color
-                              :xform xform)
-      (trivial-main-thread:with-body-in-main-thread ()
+      (let ((*debug-stream* debug-stream))
         (viewer-thread-function objects
-                                :background-color background-color
-                                :xform xform))))
+                              :background-color background-color
+                              :xform xform))
+      (trivial-main-thread:with-body-in-main-thread ()
+        (let ((*debug-stream* debug-stream))
+          (viewer-thread-function objects
+                                  :background-color background-color
+                                  :xform xform)))))
 
 #+stl-to-open-gl
 (defun view-stl (stl-file-name  &key  (in-thread nil) (show-traces nil))
@@ -455,4 +458,3 @@
          tm
          :in-thread in-thread
          :show-traces show-traces)))))
-

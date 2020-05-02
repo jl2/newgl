@@ -8,6 +8,7 @@
   ((vao :initform 0 :type fixnum)
    (vbos :initform nil :type (or null cons))
    (ebos :initform nil :type (or null cons))
+   (xform :initform (meye 4) :initarg :xform :type mat4)
    (shader-program :initarg :shader-program :accessor program))
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
@@ -96,7 +97,8 @@
 
 
 (defmethod set-uniforms ((object opengl-object))
-  t)
+  (with-slots (shader-program xform) object
+    (set-uniform shader-program "transform" xform)))
 
 (defmethod fill-buffers :before ((object opengl-object))
   (ensure-vao-bound object))
@@ -165,7 +167,8 @@
 (defun to-gl-float-array (arr)
   "Create an OpenGL float array from a CL array of numbers.
    This is a convenience function that will coerce array elments to single-float."
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 3))
+           (type vector arr))
   (let* ((count (length arr))
          (gl-array (gl:alloc-gl-array :float count)))
     (dotimes (i count)
@@ -181,4 +184,3 @@
     (dotimes (i count)
       (setf (gl:glaref gl-array i) (aref arr i)))
     gl-array))
-

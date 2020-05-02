@@ -22,6 +22,7 @@
            #:vertex-object
            #:ebos
            #:vbos
+           #:xform
            #:vertices
            #:indices
            #:shader-program
@@ -76,7 +77,14 @@
            #:parametric-point-cloud
 
            #:make-line-segments
+
+           #:line-segments
            #:add-line
+           #:add-line-2
+           #:add-line-by-pt-index
+           #:add-line-by-pt-index-2
+           #:add-line-by-index
+           #:random-line-cloud
 
            #:viewer
 

@@ -41,11 +41,11 @@
 (defun random-point-cloud (&optional (n 100))
   (let ((pcloud (make-point-cloud)))
     (dotimes (i n)
-      (add-point pcloud
-                 :x (ju:random-between -0.25f0 0.25f0)
-                 :y (ju:random-between -0.25f0 0.25f0)
-                 :z (ju:random-between -0.25f0 0.25f0)
-                 :red (ju:random-between 0.25f0 1.0f0)
+      (add-point-pc pcloud
+                 :x (ju:random-between -0.64f0 0.64f0)
+                 :y (ju:random-between -0.64f0 0.64f0)
+                 :z (ju:random-between -0.64f0 0.64f0)
+                 :red (ju:random-between 0.64f0 1.0f0)
                  :green (ju:random-between 0.0f0 1.0f0)
                  :blue (ju:random-between 0.0f0 1.0f0)
                  :alpha (ju:random-between 0.5f0 1.0f0)))
@@ -57,20 +57,14 @@
   (declare (ignorable window key scancode action mod-keys))
   (call-next-method))
 
-(defmethod handle-resize ((object point-cloud) window width height)
-  (with-slots (aspect-ratio) object
-    (setf aspect-ratio (if (< height width )
-                           (/ width height 1.0)
-                           (/ height width 1.0))))
+(defmethod handle-resize ((object line-segments) window width height)
+  (with-slots (xform) object
+    (setf xform (3d-matrices:mscaling
+                 (if (< height width )
+                     (3d-vectors:vec3 (/ height width 1.0) 1.0 1.0)
+                     (3d-vectors:vec3 1.0 (/ width height  1.0) 1.0))))
+    (when *debug-stream* (format *debug-stream* "Transform: ~a~%" xform)))
   (set-uniforms object))
-
-;; (defun make-square ()
-;;   (let ((pc (newgl:make-point-cloud)))
-;;     (newgl:add-point pc :x 0.0 :y 0.0 :z 0.0)
-;;     (newgl:add-point pc :x 1.0 :y 0.0 :z 0.0)
-;;     (newgl:add-point pc :x 1.0 :y 1.0 :z 0.0)
-;;     (newgl:add-point pc :x 0.0 :y 1.0 :z 0.0)
-;;     pc))
 
 (defun parametric-point-cloud ()
   (let* ((pc (make-point-cloud))
@@ -89,6 +83,7 @@
                  (zv vv))
             (add-point-pc pc :x xv :y yv :z zv)))))
     pc))
+
 ;; (newgl:viewer pc
 ;;               :xform
 ;;               (3d-matrices:m* (3d-matrices:mscaling (3d-vectors:vec3 scale scale scale))
