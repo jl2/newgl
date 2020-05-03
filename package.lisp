@@ -1,4 +1,4 @@
-;;;; package.lisp 
+;; package.lisp
 ;;
 ;; Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 

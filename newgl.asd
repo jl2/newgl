@@ -1,4 +1,4 @@
-;;;; newgl.asd 
+;; newgl.asd
 ;;
 ;; Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
@@ -44,6 +44,7 @@
                (:file "shader-program")
                (:file "tri-mesh")
                (:file "point-cloud")
+               (:file "line-segments")
                (:file "quad")
                )
   :in-order-to ((test-op (test-op newgl.test))))

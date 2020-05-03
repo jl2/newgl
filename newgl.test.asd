@@ -1,4 +1,4 @@
-;;;; newgl.test.asd 
+;; newgl.test.asd
 ;;
 ;; Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
@@ -28,8 +28,7 @@
   :serial t
   :depends-on ( :newgl
                   :fiveam)
-  
   :components ((:module "t"
-                        :components 
+                        :components
                         ((:file "package"))))
   :perform (test-op :after (op c) (eval (read-from-string "(every #'fiveam::TEST-PASSED-P (5am:run :newgl))"))))

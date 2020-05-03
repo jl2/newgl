@@ -1,4 +1,4 @@
-;;;; newgl.lisp 
+;; newgl.lisp
 ;;
 ;; Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
@@ -72,7 +72,7 @@
 (defgeneric cleanup (obj)
   (:documentation "Cleanup any OpenGL resources owned by obj."))
 
-#+(or windows linux) (defparameter *want-forward-context* nil)
+#+(or windows linux bsd) (defparameter *want-forward-context* nil)
 #+darwin (defparameter *want-forward-context* t)
 
 (defun show-gl-state ()

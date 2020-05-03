@@ -1,6 +1,6 @@
-;;;; point-cloud.lisp
-;;;;
-;;;; Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
+;; point-cloud.lisp
+;;
+;; Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 (in-package #:newgl)
 
@@ -57,7 +57,7 @@
   (declare (ignorable window key scancode action mod-keys))
   (call-next-method))
 
-(defmethod handle-resize ((object line-segments) window width height)
+(defmethod handle-resize ((object point-cloud) window width height)
   (with-slots (xform) object
     (setf xform (3d-matrices:mscaling
                  (if (< height width )

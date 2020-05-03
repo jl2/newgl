@@ -1,6 +1,6 @@
-;;;; primitives.lisp
-;;;;
-;;;; Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
+;; primitives.lisp
+;;
+;; Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 (in-package #:newgl)
 

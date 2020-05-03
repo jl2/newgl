@@ -1,6 +1,6 @@
-;;;; uniforms.lisp
-;;;;
-;;;; Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
+;; uniforms.lisp
+;;
+;; Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 (in-package #:newgl)
 

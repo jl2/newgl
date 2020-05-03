@@ -1,6 +1,6 @@
-;;;; opengl-object.lisp
-;;;;
-;;;; Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
+;; opengl-object.lisp
+;;
+;; Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 (in-package #:newgl)
 
