@@ -56,8 +56,10 @@ Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 
 
-* Plan
+* TODOs
 ** TODO Wavefront OBJ load and render
 ** TODO Collada load and render
 ** TODO More examples.
 ** TODO Parametric surfaces?
+
+** TODO Look at creating complex-fractal-scene that handles drag itself?

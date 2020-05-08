@@ -26,7 +26,7 @@
 (defun make-point-cloud ()
   (make-instance 'point-cloud))
 
-(defun add-point-pc (cloud &key x y z (red 1.0f0) (green 1.0f0)  (blue 1.0f0) (alpha 1.0f0))
+(defun add-point-pc (cloud x y z red green blue alpha)
   (with-slots (vertices indices) cloud
     (let ((index  (length indices)))
       (vector-push-extend (coerce x 'single-float) vertices)
@@ -38,17 +38,24 @@
       (vector-push-extend (coerce alpha 'single-float) vertices)
       (vector-push-extend index indices))))
 
+(defun add-point (cloud pt color)
+  (with-slots (vertices indices) cloud
+    (let ((index  (length indices)))
+      (vector-push-extend (vx pt) vertices)
+      (vector-push-extend (vy pt) vertices)
+      (vector-push-extend (vz pt) vertices)
+      (vector-push-extend (vx color) vertices)
+      (vector-push-extend (vy color) vertices)
+      (vector-push-extend (vz color) vertices)
+      (vector-push-extend (vw color) vertices)
+      (vector-push-extend index indices))))
+
 (defun random-point-cloud (&optional (n 100))
   (let ((pcloud (make-point-cloud)))
     (dotimes (i n)
-      (add-point-pc pcloud
-                 :x (ju:random-between -0.64f0 0.64f0)
-                 :y (ju:random-between -0.64f0 0.64f0)
-                 :z (ju:random-between -0.64f0 0.64f0)
-                 :red (ju:random-between 0.64f0 1.0f0)
-                 :green (ju:random-between 0.0f0 1.0f0)
-                 :blue (ju:random-between 0.0f0 1.0f0)
-                 :alpha (ju:random-between 0.5f0 1.0f0)))
+      (add-point pcloud
+                 (vec3-random -0.64f0 0.64f0)
+                 (vec4-random 0.2f0 1.0f0)))
     pcloud))
 
 
@@ -81,7 +88,7 @@
                  (xv uv)
                  (yv (* 3.0 (sin uv) (cos vv)))
                  (zv vv))
-            (add-point-pc pc :x xv :y yv :z zv)))))
+            (add-point-pc pc xv yv zv 0.0 1.0 0.0 0.0)))))
     pc))
 
 ;; (newgl:viewer pc

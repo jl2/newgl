@@ -36,7 +36,9 @@
                #:bordeaux-threads
                #:trivial-main-thread)
   :components ((:file "package")
+               (:file "common")
                (:file "newgl")
+               (:file "scene")
                (:file "opengl-object")
                (:file "layouts")
                (:file "uniforms")

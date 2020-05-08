@@ -18,9 +18,6 @@
    (primitive-type :initarg :primitive-type :initform :triangles))
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
-(defgeneric render (object)
-  (:documentation "Make OpenGL API calls to render the object.  Binding correct VAO is handled by before and after methods."))
-
 (defgeneric build-shader-program (object)
   (:documentation "Build this object's shader programs.  Binding correct VAO is handled by before and after methods."))
 
@@ -30,27 +27,8 @@
 (defgeneric set-uniforms (object)
   (:documentation "Assign uniform shader variables for this object."))
 
-(defgeneric update (object)
-  (:documentation "Called on an object *before* rendering to update for the next animation frame."))
-
 (defgeneric fill-buffers (object)
   (:documentation "Copy this objects data into OpenGL buffers.  Binding correct VAO is handled by before and after methods."))
-
-
-(defgeneric handle-key (object window key scancode action mod-keys)
-  (:documentation "Handle a GLFW key press.  Return non-nil if handled."))
-
-(defgeneric handle-click (object window click-info)
-  (:documentation "Handle mouse move."))
-
-(defgeneric handle-scroll (object window cpos x-scroll y-scroll)
-  (:documentation "Handle scrolling."))
-
-(defgeneric handle-drag (object window first-click-info current-pos)
-  (:documentation "Handle mouse drag."))
-
-(defgeneric handle-resize (object window width height)
-  (:documentation "Handle window resize."))
 
 (defgeneric reload-object (object)
   (:documentation "Destroy and reload object's buffers."))
@@ -69,6 +47,7 @@
 
 (defmethod handle-drag ((object opengl-object) window first-click-info current-pos)
   nil)
+
 
 (defun ensure-vao-bound (object)
   (with-slots (vao) object
@@ -145,23 +124,24 @@
     (setf vao 0)
     (setf vbos nil)))
 
-(defmethod render :before ((object opengl-object))
+(defmethod render :before ((object opengl-object) view-xform)
   (ensure-vao-bound object)
-  (with-slots (vbos ebos indices shader-program) object
+  (with-slots (vbos ebos indices shader-program xform) object
     (when (and vbos ebos)
       (gl:bind-buffer :array-buffer (car vbos))
       (gl:bind-buffer :element-array-buffer (car ebos))
-      (use-shader-program shader-program))))
+      (use-shader-program shader-program)
+      (set-uniform shader-program "transform" (m* view-xform xform)))))
 
-(defmethod render ((object opengl-object))
+(defmethod render ((object opengl-object) view-xform)
   )
 
-(defmethod render ((object vertex-object))
+(defmethod render ((object vertex-object) view-xform)
   (with-slots (indices primitive-type) object
     (gl:polygon-mode :front-and-back :fill)
     (gl:draw-elements primitive-type (gl:make-null-gl-array :unsigned-int) :count (length indices))))
 
-(defmethod render :after ((object opengl-object))
+(defmethod render :after ((object opengl-object) view-xform)
   (gl:bind-vertex-array 0))
 
 (defun to-gl-float-array (arr)

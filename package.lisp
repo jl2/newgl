@@ -85,8 +85,11 @@
            #:add-line-by-pt-index-2
            #:add-line-by-index
            #:random-line-cloud
+           #:fractal-tree
 
-           #:viewer
+           #:display
+
+           #:scene
 
            #:quad
            #:make-uv-quad

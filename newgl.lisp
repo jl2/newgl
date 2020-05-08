@@ -66,8 +66,8 @@
   "Location of last mouse release.")
 
 
-(defparameter *objects* nil
-  "Objects being displayed.")
+(defparameter *scene* nil
+  "Current scene being displayed.")
 
 (defgeneric cleanup (obj)
   (:documentation "Cleanup any OpenGL resources owned by obj."))
@@ -167,8 +167,7 @@
   (declare (ignorable window scancode mod-keys))
   (when *debug-stream* (format *debug-stream* "Keypress: ~a ~a ~a ~a ~a~%" window key scancode action mod-keys))
   (when (not (top-key-handler window key scancode action mod-keys))
-    (loop for object in *objects*
-       until (handle-key object window key scancode action mod-keys))))
+    (handle-key *scene* window key scancode action mod-keys)))
 
 (def-mouse-button-callback mouse-handler (window button action mod-keys)
   (declare (ignorable window button action mod-keys))
@@ -180,10 +179,7 @@
                                     :button button
                                     :time (get-time))))
     (when *debug-stream* (format *debug-stream* "Mouse click at ~a ~a ~a ~a ~a~%" cpos window button action mod-keys))
-    (when (not (loop for object in *objects*
-                  for handled = (handle-click object window click-info)
-                  until handled
-                  finally (return handled)))
+    (when (not (handle-click *scene* window click-info))
       (when (eq action :press)
         (setf *mouse-release-info* nil)
         (setf *mouse-press-info* click-info))
@@ -194,8 +190,7 @@
 (def-scroll-callback scroll-handler (window x-scroll y-scroll)
   (let ((cpos (glfw:get-cursor-position window)))
     (when *debug-stream* (format *debug-stream* "Scroll at ~a ~a ~a ~a ~%" cpos window x-scroll y-scroll))
-    (loop for object in *objects*
-       until (handle-scroll object window cpos x-scroll y-scroll))))
+    (handle-scroll *scene*  window cpos x-scroll y-scroll)))
 
 (def-error-callback error-callback (message)
   (when *debug-stream* (format *debug-stream* "Error: ~a~%" message)))
@@ -205,18 +200,17 @@
   (gl:viewport 0 0 width height)
 
   (when *debug-stream* (format *debug-stream* "framebuffer-size ~a ~a~%" width height))
-  (loop
-     for object in *objects*
-     do (handle-resize object window width height)))
+  (handle-resize *scene*  window width height))
 
-(defun viewer-thread-function ( objects
+(defun viewer-thread-function ( scene
                                &key
-                                 (background-color (vec4 0.7f0 0.7f0 0.7f0 1.0))
-                                 (xform (meye 4)))
+                                 (background-color (vec4 0.7f0 0.7f0 0.7f0 1.0)))
   (set-error-callback 'error-callback)
-  (setf *objects* (ensure-list objects))
-  (dolist (object *objects*)
-    (set-uniform object "transform" xform))
+  (setf *scene* (typecase scene
+                  (scene
+                   scene)
+                  (t
+                   (make-instance 'scene :objects (ensure-list scene)))))
   (with-init
     (let* ((monitor (glfw:get-primary-monitor))
            (cur-mode (glfw:get-video-mode monitor))
@@ -252,7 +246,7 @@
                         (vz background-color)
                         (vw background-color))
 
-        (dolist (object *objects*)
+        (dolist (object (objects *scene*))
           (reload-object object))
         ;; The event loop
         (loop
@@ -271,14 +265,14 @@
 
            when *rebuild-shaders* do
              (format t "Rebuilding shaders...~%")
-             (dolist (object *objects*)
+             (dolist (object (objects *scene*))
                (build-shader-program object))
              (format t " Done.~%")
              (setf *rebuild-shaders* nil)
 
            when *refill-buffers* do
              (format t "Refilling buffers...")
-             (dolist (object *objects*)
+             (dolist (object (objects *scene*))
                (cleanup object)
                (fill-buffers object))
              (format t " Done.~%")
@@ -287,10 +281,7 @@
            when (and (not (null *mouse-press-info*))
                      (null *mouse-release-info*))
            do (let* ((cpos (glfw:get-cursor-position *window*))
-                     (handled (loop for object in *objects*
-                                 for handled = (handle-drag object *window* *previous-mouse-drag* cpos)
-                                 until handled
-                                 finally (return handled))))
+                     (handled (handle-drag scene *window* *previous-mouse-drag* cpos)))
                 (when (not handled)
                   (setf *previous-mouse-drag* (with-slots (mod-keys action button time) *mouse-press-info*
                                                 (make-instance 'mouse-click
@@ -300,8 +291,7 @@
                                                                :button button
                                                                :time (get-time))))))
            do
-             (dolist (object *objects*)
-               (update object))
+             (update *scene*)
            do
              (gl:clear :color-buffer :depth-buffer)
              (if *cull-face*
@@ -312,21 +302,18 @@
                  (gl:polygon-mode :front-and-back :line)
                  (gl:polygon-mode :front-and-back :fill))
 
-             (dolist (object *objects*)
-               (render object))
+             (render scene (meye 4))
              (incf frame-count)
            do (swap-buffers)
            do (poll-events))
-        (dolist (object *objects*)
-          (cleanup object))))))
+        (cleanup *scene*)))))
 
-(defun viewer (&optional objects &key
-                                   (background-color (vec4 0.0f0 0.0f0 0.0f0 1.0))
-                                   (xform (3d-matrices:meye 4))
-                                   (in-thread nil)
-                                   (show-traces nil)
-                                   (debug-stream nil))
+(defun display (object &key
+                         (background-color (vec4 0.0f0 0.0f0 0.0f0 1.0))
+                         (show-traces nil)
+                         (debug nil))
   ;; Some traces that are helpful for debugging
+       ;; newgl defgenerics
   (when show-traces
     (trace
 
@@ -425,18 +412,16 @@
      gl:vertex-attrib-pointer
      gl:viewport
 
-))
+     ))
 
-  (if in-thread
-      (let ((*debug-stream* debug-stream))
-        (viewer-thread-function objects
-                              :background-color background-color
-                              :xform xform))
+  (if debug
+      ;; Always print to standard out when in-thread, because it's probably for debugging...
+      (let ((*debug-stream* t))
+        (viewer-thread-function object
+                              :background-color background-color))
       (trivial-main-thread:with-body-in-main-thread ()
-        (let ((*debug-stream* debug-stream))
-          (viewer-thread-function objects
-                                  :background-color background-color
-                                  :xform xform)))))
+        (viewer-thread-function object
+                                :background-color background-color))))
 
 #+stl-to-open-gl
 (defun view-stl (stl-file-name  &key  (in-thread nil) (show-traces nil))
@@ -458,3 +443,32 @@
          tm
          :in-thread in-thread
          :show-traces show-traces)))))
+
+(defun to-rectangular (delta)
+  "Convert a length and angle (polar coordinates) into x,y rectangular coordinates."
+  (vec3
+   (* (vz delta) (cos (vy delta)) (cos (vx delta)))
+   (* (vz delta) (sin (vy delta)) (cos (vx delta)))
+   (* (vz delta) (sin (vx delta)))))
+
+(defun fractal-tree (&key (maxdepth 4) (theta-limbs 2) (phi-limbs 2) (color (vec4 0 1 0 1)))
+  "Draw a fractal tree into the specified file, recursing to maxdepth, with the specified number of limbs at each level."
+  (let ((prims (make-instance 'line-segments)))
+    (labels
+        ((draw-tree (current delta depth)
+           ;;(add-point prims current color)
+           (add-line-2 prims :p1 current :c1 color :p2 (v+ current (to-rectangular delta)) :c2 color)
+           (when (> depth 0)
+             (let ((next-base (v+ current (to-rectangular delta)))
+                   (d-phi (/ (* 2 pi) phi-limbs))
+                   (d-theta (/ pi phi-limbs)))
+               (dotimes (i theta-limbs)
+                 (dotimes (j phi-limbs)
+                   (draw-tree
+                    next-base
+                    (vec3 (+ (/ (vx delta) 3.0) (random 0.0125))
+                          (+ (* i d-phi) (random 0.75))
+                          (+ (* j d-theta) (random 0.75)))
+                    (- depth 1))))))))
+      (draw-tree (vec3 0 0 0) (vec3 0.5 pi 0) maxdepth))
+    prims))
