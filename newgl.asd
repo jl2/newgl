@@ -47,6 +47,7 @@
                (:file "tri-mesh")
                (:file "point-cloud")
                (:file "line-segments")
+               (:file "canvas")
                (:file "quad")
                )
   :in-order-to ((test-op (test-op newgl.test))))

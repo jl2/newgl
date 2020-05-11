@@ -107,4 +107,8 @@
 
            #:shader-from-file
            #:make-shader-program
+
+           #:canvas
+           #:draw-line
+           #:draw-triangle
            ))

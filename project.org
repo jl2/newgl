@@ -63,3 +63,4 @@ Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 ** TODO Parametric surfaces?
 
 ** TODO Look at creating complex-fractal-scene that handles drag itself?
+** TODO aspect-ratio-corrected mix-in class
