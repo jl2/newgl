@@ -72,7 +72,7 @@
 (defgeneric cleanup (obj)
   (:documentation "Cleanup any OpenGL resources owned by obj."))
 
-#+(or windows linux bsd) (defparameter *want-forward-context* nil)
+#+(or windows linux bsd :freebsd) (defparameter *want-forward-context* nil)
 #+darwin (defparameter *want-forward-context* t)
 
 (defun show-gl-state ()

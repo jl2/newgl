@@ -19,3 +19,4 @@
   (add-line-2 canvas :p1 pt-1 :c1 color :p2 pt-2 :c2 color)
   (add-line-2 canvas :p1 pt-2 :c1 color :p2 pt-3 :c2 color)
   (add-line-2 canvas :p1 pt-3 :c1 color :p2 pt-1 :c2 color))
+
