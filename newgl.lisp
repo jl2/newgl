@@ -206,11 +206,7 @@
                                &key
                                  (background-color (vec4 0.7f0 0.7f0 0.7f0 1.0)))
   (set-error-callback 'error-callback)
-  (setf *scene* (typecase scene
-                  (scene
-                   scene)
-                  (t
-                   (make-instance 'scene :objects (ensure-list scene)))))
+  (setf *scene* scene)
   (with-init
     (let* ((monitor (glfw:get-primary-monitor))
            (cur-mode (glfw:get-video-mode monitor))
@@ -416,15 +412,27 @@
 
   (if debug
       ;; Always print to standard out when in-thread, because it's probably for debugging...
-      (let ((*debug-stream* t))
-        (viewer-thread-function object
+      (let ((*debug-stream* t)
+            (scene
+             (if object
+                 (typecase object
+                   (scene object)
+                   (t (make-instance 'scene :objects (list object))))
+                 (make-instance 'scene :objects nil))))
+        (viewer-thread-function scene
                               :background-color background-color))
       (trivial-main-thread:with-body-in-main-thread ()
-        (viewer-thread-function object
-                                :background-color background-color))))
+        (let ((scene
+               (if object
+                   (typecase object
+                     (scene object)
+                     (t (make-instance 'scene :objects (list object))))
+                   (make-instance 'scene :objects nil))))
+          (viewer-thread-function scene
+                                :background-color background-color)))))
 
 #+stl-to-open-gl
-(defun view-stl (stl-file-name  &key  (in-thread nil) (show-traces nil))
+(defun view-stl (stl-file-name)
   (let ((stl (stl:read-stl stl-file-name)))
     (multiple-value-bind (verts idxs) (stl:to-opengl stl)
       (let* ((tm (make-instance 'newgl:tri-mesh
@@ -439,10 +447,7 @@
         (newgl:set-uniform tm "transform" xform)
         (newgl:set-uniform tm "normalTransform" normal-xform)
         (newgl:set-uniform tm "mode" 1)
-        (newgl:viewer
-         tm
-         :in-thread in-thread
-         :show-traces show-traces)))))
+        (newgl:display tm)))))
 
 (defun to-rectangular (delta)
   "Convert a length and angle (polar coordinates) into x,y rectangular coordinates."

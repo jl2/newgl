@@ -18,8 +18,8 @@
   (with-slots (name type value) uniform
     (let ((location (gl:get-uniform-location program name)))
       (when (>= location 0)
-        (when (null value)
-          (format t "value of ~a is nil, using default.~%" name))
+        (when (and (null value) *debug-stream*)
+          (format *debug-stream* "value of ~a is nil, using default.~%" name))
         (cond ((eq :mat4 type)
                (gl:uniform-matrix location
                                   4
@@ -37,14 +37,19 @@
               ((eq :int type)
                (gl:uniformi location (if value value 0)))
               ((eq :float type)
-               (gl:uniformf location (if value value 0.0)))
+               (gl:uniformf location (if value value 0.0f0)))
               ((eq :vec2 type)
-               (gl:uniformfv location (if value value (vec2 0.0 0.0))))
+               (let ((val (if value value (vec3 0.0f0 0.0f0 0.0f0))))
+                 (gl:uniformfv location (make-array 2 :element-type 'single-float
+                                                    :initial-contents (list (vx val) (vy val))))))
               ((eq :vec3 type)
-               (gl:uniformfv location (if value value (vec3 0.0 0.0 0.0))))
+               (let ((val (if value value (vec3 0.0f0 0.0f0 0.0f0))))
+                 (gl:uniformfv location (make-array 3 :element-type 'single-float
+                                                    :initial-contents (list (vx val) (vy val) (vz val))))))
               ((eq :vec4 type)
-               (gl:uniformfv location (if value value (vec4 0.0 0.0 0.0 0.0)))))))))
-
+               (let ((val (if value value (vec3 0.0f0 0.0f0 0.0f0))))
+                 (gl:uniformfv location (make-array 3 :element-type 'single-float
+                                                    :initial-contents (list (vx val) (vy val) (vz val) (vw val)))))))))))
 (defun set-value (uniform new-value)
   (with-slots (value) uniform
     (setf value new-value)))

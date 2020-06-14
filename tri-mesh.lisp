@@ -44,8 +44,8 @@
                                                  :adjustable t
                                                  :fill-pointer 0)))
          ;; (scale (/ 1 (* 2 pi)))
-         (i-steps 180)
-         (j-steps 180)
+         (i-steps 10)
+         (j-steps 10)
          (u-min (- pi))
          (v-min (- pi))
          (du (/ (* 2 pi) i-steps))
