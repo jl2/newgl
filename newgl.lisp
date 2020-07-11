@@ -18,23 +18,23 @@
 (in-package :newgl)
 
 (deftype point ()
-  '(or vec3))
+  'vec3)
 
 (deftype normal ()
-  '(or vec3))
+  'vec3)
 
 (deftype color ()
-  '(or vec4))
+  'vec4)
 
 ;; Flags to communicate between handlers and main loop.
 (defparameter *rebuild-shaders* nil
-  "Flag set by keyboard handler to signal rebuilding shaders.  Trigger with 'r' key.")
+  "Flag set by keyboard handler to signal shaders should be rebuilt.  Trigger with 'r' key.")
 
 (defparameter *refill-buffers* nil
-  "Flag set by keyboard handler to signal refill buffers.  Trigger with 'f' key.")
+  "Flag set by keyboard handler to signal buffers should be refilled.  Trigger with 'b' key.")
 
 (defparameter *show-fps* nil
-  "Flag to turn on or off printing FPS.  Toggle with 'c' key.")
+  "Flag to turn on or off printing FPS.  Toggle with 'f' key.")
 
 (defparameter *wire-frame* t
   "Toggle filled or wireframe drawing. Trigger with 'w' key.")
@@ -294,9 +294,7 @@
                  (gl:enable :cull-face)
                  (gl:disable :cull-face))
              (gl:front-face *front-face*)
-             (if *wire-frame*
-                 (gl:polygon-mode :front-and-back :line)
-                 (gl:polygon-mode :front-and-back :fill))
+             (gl:polygon-mode :front-and-back (if *wire-frame* :line :fill))
 
              (render scene (meye 4))
              (incf frame-count)
@@ -306,7 +304,7 @@
 
 (defun display (object &key
                          (view-transform nil)
-                         (background-color (vec4 0.0f0 0.0f0 0.0f0 1.0))
+                         (background-color (vec4 0.7f0 0.7f0 0.7f0 1.0))
                          (show-traces nil)
                          (debug nil))
   ;; Some traces that are helpful for debugging
