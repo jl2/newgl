@@ -65,13 +65,8 @@
   (call-next-method))
 
 (defmethod handle-resize ((object point-cloud) window width height)
-  (with-slots (xform) object
-    (setf xform (3d-matrices:mscaling
-                 (if (< height width )
-                     (3d-vectors:vec3 (/ height width 1.0) 1.0 1.0)
-                     (3d-vectors:vec3 1.0 (/ width height  1.0) 1.0))))
-    (when *debug-stream* (format *debug-stream* "Transform: ~a~%" xform)))
-  (set-uniforms object))
+  (declare (ignorable window width height))
+  (call-next-method))
 
 (defun parametric-point-cloud ()
   (let* ((pc (make-point-cloud))

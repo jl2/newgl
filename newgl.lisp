@@ -124,7 +124,7 @@
      t)
 
     ;; f to refill buffers
-    ((and (eq key :f) (eq action :press))
+    ((and (eq key :b) (eq action :press))
      (setf *refill-buffers* t)
      t)
 
@@ -144,7 +144,7 @@
      t)
 
     ;; c to toggle printing fps
-    ((and (eq key :c) (eq action :press))
+    ((and (eq key :f) (eq action :press))
      (setf *show-fps* (if *show-fps* nil t))
      t)
 
@@ -305,11 +305,12 @@
         (cleanup *scene*)))))
 
 (defun display (object &key
+                         (view-transform nil)
                          (background-color (vec4 0.0f0 0.0f0 0.0f0 1.0))
                          (show-traces nil)
                          (debug nil))
   ;; Some traces that are helpful for debugging
-       ;; newgl defgenerics
+  ;; newgl defgenerics
   (when show-traces
     (trace
 
@@ -417,19 +418,34 @@
              (if object
                  (typecase object
                    (scene object)
-                   (t (make-instance 'scene :objects (list object))))
-                 (make-instance 'scene :objects nil))))
+                   (t (make-instance 'scene
+                                     :objects (list object)
+                                     :xform (if view-transform
+                                                view-transform
+                                                (meye 4)))))
+                   (make-instance 'scene
+                                  :objects nil
+                                  :xform (if view-transform
+                                             view-transform
+                                             (meye 4))))))
         (viewer-thread-function scene
-                              :background-color background-color))
+                                :background-color background-color))
       (trivial-main-thread:with-body-in-main-thread ()
         (let ((scene
                (if object
                    (typecase object
                      (scene object)
-                     (t (make-instance 'scene :objects (list object))))
-                   (make-instance 'scene :objects nil))))
+                     (t (make-instance 'scene
+                                       :objects (list object)
+                                       :xform (if view-transform
+                                                  view-transform
+                                                  (meye 4)))))
+                   (make-instance 'scene :objects nil
+                                  :xform (if view-transform
+                                             view-transform
+                                             (meye 4))))))
           (viewer-thread-function scene
-                                :background-color background-color)))))
+                                  :background-color background-color)))))
 
 #+stl-to-open-gl
 (defun view-stl (stl-file-name)

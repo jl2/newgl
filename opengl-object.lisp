@@ -33,19 +33,31 @@
 (defgeneric reload-object (object)
   (:documentation "Destroy and reload object's buffers."))
 
+
 (defmethod handle-key ((object opengl-object) window key scancode action mod-keys)
+  (declare (ignorable object window key scancode action mod-keys))
   nil)
 
 (defmethod handle-resize ((object opengl-object) window width height)
-  nil)
+  (declare (ignorable window width height))
+  (with-slots (xform) object
+    (setf xform (3d-matrices:mscaling
+                 (if (< width height )
+                     (3d-vectors:vec3 (/ height width 1.0) 1.0 1.0)
+                     (3d-vectors:vec3 (/ width height 1.0) 1.0 1.0))))
+    (when *debug-stream* (format *debug-stream* "Transform: ~a~%" xform)))
+  (set-uniforms object))
 
 (defmethod handle-click ((object opengl-object) window click-info)
+  (declare (ignorable object window click-info))
   nil)
 
 (defmethod handle-scroll ((object opengl-object) window cpos x-scroll y-scroll)
+  (declare (ignorable object window cpos x-scroll y-scroll))
   nil)
 
 (defmethod handle-drag ((object opengl-object) window first-click-info current-pos)
+  (declare (ignorable object window first-click-info current-pos))
   nil)
 
 
@@ -134,14 +146,16 @@
       (set-uniform shader-program "transform" (m* view-xform xform)))))
 
 (defmethod render ((object opengl-object) view-xform)
-  )
+  (declare (ignorable view-xform)))
 
 (defmethod render ((object vertex-object) view-xform)
+  (declare (ignorable view-xform))
   (with-slots (indices primitive-type) object
     (gl:polygon-mode :front-and-back :fill)
     (gl:draw-elements primitive-type (gl:make-null-gl-array :unsigned-int) :count (length indices))))
 
 (defmethod render :after ((object opengl-object) view-xform)
+  (declare (ignorable view-xform))
   (gl:bind-vertex-array 0))
 
 (defun to-gl-float-array (arr)
