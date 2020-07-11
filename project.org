@@ -52,7 +52,7 @@ For an example object, see the [[https://github.com/jl2/gl-fractals][gl-fractals
 ** License
 ISC
 
-Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
+Copyright (c) 2020 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 
 

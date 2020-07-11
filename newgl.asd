@@ -1,6 +1,6 @@
 ;; newgl.asd
 ;;
-;; Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
+;; Copyright (c) 2020 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 
 ;; Permission to use, copy, modify, and/or distribute this software for any
