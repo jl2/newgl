@@ -132,6 +132,7 @@
   (call-next-method))
 
 (defmethod handle-resize ((object line-segments) window width height)
+  (declare (ignorable window))
   (with-slots (xform) object
     (setf xform (3d-matrices:mscaling
                  (if (< height width )

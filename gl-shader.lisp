@@ -106,8 +106,7 @@
 
 (defmethod use-shader-uniforms ((shader gl-shader) program )
   (with-slots (uniforms) shader
-    ;;(inspect uniforms)
-    (dohash (name uniform uniforms)
+    (loop for uniform being the hash-values of uniforms do
       (use-uniform uniform program))))
 
 (defmethod get-source ((shader gl-shader))
