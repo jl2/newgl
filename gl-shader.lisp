@@ -4,8 +4,19 @@
 
 (in-package #:newgl)
 
-(defparameter *shader-dir* (asdf:system-relative-pathname :newgl "shaders/"))
+;; This library depends on a number of conventions to automatically handle shaders.
+;; 1. Shader file names must specify the shader type as part of the file name.
+;;    For example, 'plastic-fragment.glsl', 'plastic-vertex.glsl'
+;; 2. Uniforms and layout information is 'parsed' out of the shader using regular expressions.
+;;    They work for the shader's I write, but may need improvements or replacements.
 
+(defparameter *shader-dir* (asdf:system-relative-pathname :newgl "shaders/")
+  "Directory containing newgl shaders.")
+
+(defun newgl-shader (fname)
+  (merge-pathnames *shader-dir* fname))
+
+;; Shader
 (define-condition shader-error (error)
   ((status :initarg :status :reader shader-compile-status)
    (object :initarg :object :reader shader-object)
@@ -35,8 +46,6 @@
 (defclass gl-file-shader (gl-shader)
   ((source-file :initarg :source-file :type (or pathname string)))
   (:documentation "An OpenGL shader whose source code is stored in a file."))
-
-
 
 (defun glsl-type-keyword (name)
   (intern (string-upcase name) "KEYWORD"))

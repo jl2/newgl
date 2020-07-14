@@ -18,8 +18,8 @@
    (primitive-type :initform :lines)
    (shader-program :initform
                    (make-shader-program
-                    (shader-from-file (merge-pathnames *shader-dir* "point-vertex.glsl"))
-                    (shader-from-file (merge-pathnames *shader-dir* "point-fragment.glsl"))))
+                    (shader-from-file (newgl-shader "point-vertex.glsl"))
+                    (shader-from-file (newgl-shader "point-fragment.glsl"))))
    (aspect-ratio :initarg :aspect-ratio :initform 1.0))
   (:documentation "Point cloud."))
 

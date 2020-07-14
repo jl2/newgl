@@ -5,8 +5,8 @@
 (in-package #:newgl)
 
 (defun make-plastic-program ()
-  (make-shader-program  (shader-from-file (merge-pathnames *shader-dir* "plastic-vertex.glsl"))
-                        (shader-from-file (merge-pathnames *shader-dir* "plastic-fragment.glsl"))))
+  (make-shader-program  (shader-from-file (newgl-shader "plastic-vertex.glsl"))
+                        (shader-from-file (newgl-shader "plastic-fragment.glsl"))))
 
 (defclass tri-mesh (vertex-object)
   ((vertices :initarg :vertices)

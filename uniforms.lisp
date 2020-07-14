@@ -4,6 +4,8 @@
 
 (in-package #:newgl)
 
+;; TODO: Consider creating float-uniform, mat4-uniform, etc. subclasses that call the
+;; correct gl:uniform* functions, and remove the big cond in use-uniform.
 (defclass uniform ()
   ((name :initarg :name :type string)
    (type :initarg :type)
@@ -13,10 +15,16 @@
 (defgeneric use-uniform (uniform program)
   (:documentation "Pass the uniform's value into the OpenGL program."))
 
+(defgeneric set-value (uniform new-value)
+  (:documentation "Assign a new value to a uniform."))
 
 (defmethod use-uniform ((uniform uniform) program)
+  "Bind the uniform's value in the program."
+
   (with-slots (name type value) uniform
     (let ((location (gl:get-uniform-location program name)))
+
+      ;; Only assign values to uniforms that are used by the program
       (when (>= location 0)
         (when (and (null value) *debug-stream*)
           (format *debug-stream* "value of ~a is nil, using default.~%" name))
@@ -49,7 +57,11 @@
               ((eq :vec4 type)
                (let ((val (if value value (vec3 0.0f0 0.0f0 0.0f0))))
                  (gl:uniformfv location (make-array 3 :element-type 'single-float
-                                                    :initial-contents (list (vx val) (vy val) (vz val) (vw val)))))))))))
-(defun set-value (uniform new-value)
+                                                    :initial-contents
+                                                    (list (vx val) (vy val) (vz val) (vw val)))))))))))
+
+
+(defmethod set-value ((uniform uniform) new-value)
+  "Set a uniform's value."
   (with-slots (value) uniform
     (setf value new-value)))
