@@ -133,13 +133,11 @@
         (setf vbos nil))
       (when ebos
         (gl:delete-buffers ebos)
-        )
+        (setf ebos nil))
       (when shader-program
         (cleanup shader-program))
-      (gl:delete-vertex-arrays (list vao)))
-    (setf vao 0)
-    (setf vbos nil)
-    (setf ebos nil)))
+      (gl:delete-vertex-arrays (list vao))
+      (setf vao 0))))
 
 (defmethod render :before ((object opengl-object) view-xform)
   (ensure-vao-bound object)
