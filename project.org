@@ -57,10 +57,14 @@ Copyright (c) 2020 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 
 * TODOs
+** TODO Implement more methods on scene class
+** TODO Move top level keyboard handler into scene
 ** TODO Wavefront OBJ load and render
 ** TODO Collada load and render
 ** TODO More examples.
 ** TODO Parametric surfaces?
 
-** TODO Look at creating complex-fractal-scene that handles drag itself?
-** TODO aspect-ratio-corrected mix-in class
+
+* DONEs
+** DONE Look at creating complex-fractal-scene that handles drag itself?
+** DONE aspect-ratio-corrected mix-in class - no longer needed?

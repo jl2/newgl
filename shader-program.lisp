@@ -14,10 +14,12 @@
 
 
 (defun make-shader-program (&rest shaders)
+  "Create a shader program using the specified shaders."
   (make-instance 'shader-program :shaders shaders))
 
 
 (defmethod set-uniform ((obj shader-program) name value)
+  "Set a uniform value for the shader program."
   (with-slots (shaders) obj
     (dolist (shader shaders)
       (set-uniform shader name value))))
@@ -35,7 +37,7 @@
 (define-condition shader-validate-error (shader-error) ())
 
 (defmethod build-shader-program ((program shader-program))
-  "Compile and link shader program, including validation."
+  "Compile and link a shader program, including validation."
 
   (with-slots (shaders program) program
     ;; Compile all shaders
@@ -75,16 +77,18 @@
 
 
 (defmethod use-shader-program :before ((shader-program shader-program))
-  ;; Set variables here, if necessary...
+  ":before method that ensures all of the program's layouts are used."
   (with-slots (program shaders) shader-program
     (dolist (shader shaders)
       (use-shader-layout shader program))))
 
 (defmethod use-shader-program ((shader-program shader-program))
+  "Use a shader program."
   (with-slots (program) shader-program
     (gl:use-program program)))
 
 (defmethod use-shader-program :after ((shader-program shader-program))
+  ":after method that ensures all of the program's uniforms are used."
   (with-slots (program shaders) shader-program
     (dolist (shader shaders)
       (use-shader-uniforms shader program))))

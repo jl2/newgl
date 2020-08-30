@@ -116,76 +116,14 @@
        do
          (format *debug-stream* "~a : ~a~%" field (gl:get-integer field)))))
 
-(defun top-key-handler (window key scancode action mod-keys)
-  "Top level keyboard handler.  Implements global keyboard shortcuts like 'esc' to exit and 'd' to toggle the debug print stream."
-  (declare (ignorable window key scancode action mod-keys))
 
-  ;; TODO: Change to a lookup table
-  (cond
-
-    ;; ESC to exit
-    ((and (eq key :escape) (eq action :press))
-     (set-window-should-close)
-     t)
-
-    ;; r to rebuild shaders
-    ((and (eq key :r) (eq action :press))
-     (setf *rebuild-shaders* t)
-     t)
-
-    ;; f to refill buffers
-    ((and (eq key :b) (eq action :press))
-     (setf *refill-buffers* t)
-     t)
-
-    ;; i to show gl info
-    ((and (eq key :i) (eq action :press))
-     (show-open-gl-info)
-     t)
-
-    ;; d to toggle debug printing
-    ((and (eq key :d) (eq action :press))
-     (setf *debug-stream* (if *debug-stream* nil t))
-     t)
-
-    ;; s to show gl state
-    ((and (eq key :s) (eq action :press))
-     (show-gl-state)
-     t)
-
-    ;; c to toggle printing fps
-    ((and (eq key :f) (eq action :press))
-     (setf *show-fps* (if *show-fps* nil t))
-     t)
-
-    ;; w to toggle wireframe
-    ((and (eq key :w) (eq action :press))
-     (setf *wire-frame* (if *wire-frame* nil t))
-     t)
-
-    ;; f1
-    ((and (eq key :f1) (eq action :press))
-     (setf *cull-face* (if (eq *cull-face* :cull-face)
-                           nil
-                           :cull-face))
-     t)
-
-    ((and (eq key :f2) (eq action :press))
-     (setf *front-face* (if (eq *front-face* :cw)
-                            :ccw
-                            :cw))
-     t)
-    (t
-     nil)))
 
 ;; Keyboard callback.
 ;; Implements top-level key handler, and forwards unhandled events to *scene*
 (def-key-callback keyboard-handler (window key scancode action mod-keys)
   (declare (ignorable window scancode mod-keys))
   (when *debug-stream* (format *debug-stream* "Keypress: ~a ~a ~a ~a ~a~%" window key scancode action mod-keys))
-
-  ;; If key isn't handled by the top level keyboard handler, then try passing the key to the scen object.
-  (when (not (top-key-handler window key scancode action mod-keys))
+  (when *scene*
     (handle-key *scene* window key scancode action mod-keys)))
 
 ;; Mouse handler callback
@@ -304,30 +242,14 @@
                (set-window-title (format nil "OpenGL Scene Viewer (~,3f)" (/ frame-count elapsed-seconds))))
              (setf frame-count 0)
 
-           ;; TODO: Why is this here instead of in the top level keyboard handler?
-           when *rebuild-shaders* do
-             (format t "Rebuilding shaders...~%")
-             (dolist (object (objects *scene*))
-               (build-shader-program object))
-             (format t " Done.~%")
-             (setf *rebuild-shaders* nil)
-
-           ;; TODO: Why is this here instead of in the top level keyboard handler?
-           when *refill-buffers* do
-             (format t "Refilling buffers...")
-             (dolist (object (objects *scene*))
-               (cleanup object)
-               (fill-buffers object))
-             (format t " Done.~%")
-             (setf *refill-buffers* nil)
-
            ;; Save info about the mouse drag.
            ;; TODO: clean this up or handle in scene...
            when (and (not (null *mouse-press-info*))
                      (null *mouse-release-info*))
-           do (let* ((cpos (glfw:get-cursor-position *window*))
+           do
+             (let* ((cpos (glfw:get-cursor-position *window*))
                      (handled (handle-drag scene *window* *previous-mouse-drag* cpos)))
-                (when (not handled)
+               (when (not handled)
                   (setf *previous-mouse-drag* (with-slots (mod-keys action button time) *mouse-press-info*
                                                 (make-instance 'mouse-click
                                                                :cursor-pos cpos
@@ -396,7 +318,6 @@
    newgl::show-open-gl-info
    newgl::use-shader-uniforms
    newgl::use-uniform
-   newgl::top-key-handler
    newgl::viewer-thread-function
    newgl::viewer
    newgl::view-stl

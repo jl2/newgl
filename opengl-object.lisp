@@ -126,15 +126,20 @@
   (set-uniforms object))
 
 (defmethod cleanup ((object opengl-object))
-  (with-slots (vao vbos ebos) object
+  (with-slots (vao vbos ebos shader-program) object
     (when (/= 0 vao)
       (when vbos
-        (gl:delete-buffers vbos))
+        (gl:delete-buffers vbos)
+        (setf vbos nil))
       (when ebos
-        (gl:delete-buffers ebos))
+        (gl:delete-buffers ebos)
+        )
+      (when shader-program
+        (cleanup shader-program))
       (gl:delete-vertex-arrays (list vao)))
     (setf vao 0)
-    (setf vbos nil)))
+    (setf vbos nil)
+    (setf ebos nil)))
 
 (defmethod render :before ((object opengl-object) view-xform)
   (ensure-vao-bound object)

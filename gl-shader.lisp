@@ -140,9 +140,10 @@
            nil))))
 
 (defmethod cleanup ((shader gl-shader))
-  (with-slots (shader) shader
+  (with-slots (shader uniforms) shader
     (when (> 0 shader)
       (gl:delete-shader shader))
+    (setf uniforms (make-hash-table :test 'equal))
     (setf shader 0)))
 
 (define-condition shader-compile-error (shader-error) ())
