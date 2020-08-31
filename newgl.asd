@@ -35,6 +35,7 @@
 
                #:bordeaux-threads
                #:trivial-main-thread)
+
   :components ((:file "package")
                (:file "common")
                (:file "newgl")
@@ -49,5 +50,7 @@
                (:file "line-segments")
                (:file "canvas")
                (:file "quad")
+               (:file "keyframe-sequence")
+               (:file "testing")
                )
   :in-order-to ((test-op (test-op newgl.test))))

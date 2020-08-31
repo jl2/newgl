@@ -111,4 +111,15 @@
            #:canvas
            #:draw-line
            #:draw-triangle
+
+           #:test-scene
+           #:show-test-scene
+
+           #:keyframe
+           #:create-keyframe
+           #:create-keyframe-sequence
+           #:keyframe-sequence
+           #:keyframe-count
+           #:value-at
+           #:create-simple-keyframe-sequence
            ))
