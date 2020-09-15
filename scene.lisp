@@ -13,17 +13,17 @@
   (with-slots (objects view-xform) scene
     (loop for object in objects
           do
-          (render object (m* view-xform xform)))))
+          (render object (m* xform view-xform)))))
 
 (defmethod cleanup ((scene scene))
   (loop for object in (objects scene)
         do
         (cleanup object)))
 
-(defmethod update ((scene scene))
+(defmethod update ((scene scene) elapsed-seconds)
   (loop for object in (objects scene)
         do
-        (update object)))
+        (update object elapsed-seconds)))
 
 (defmethod handle-key ((scene scene) window key scancode action mod-keys)
   (cond

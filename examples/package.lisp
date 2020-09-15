@@ -24,6 +24,9 @@
         :3d-vectors)
   (:export #:show-keyframe-axis-rotation
            #:show-keyframe-axis-border
+           #:polygon-scene
+           #:make-polygon
+           #:show-polygons
 
            ))
 

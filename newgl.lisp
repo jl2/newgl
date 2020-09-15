@@ -215,7 +215,8 @@
         ;; Initialize OpenGL state
         (gl:enable :line-smooth
                    :polygon-smooth
-                   :depth-test)
+                   :depth-test
+                   )
 
         (gl:depth-func :less)
 
@@ -230,26 +231,28 @@
 
         ;; The event loop
         (loop
-           until (window-should-close-p)
+              with start-time = (get-time)
 
-           for current-seconds = (get-time)
-           for elapsed-seconds = (- current-seconds  previous-seconds)
+              until (window-should-close-p)
 
-           when (> elapsed-seconds 0.25) do
-             (setf previous-seconds current-seconds)
-             (when *show-fps*
-               (format t "OpenGL Scene Viewer (~,3f)~%" (/ frame-count elapsed-seconds))
-               (set-window-title (format nil "OpenGL Scene Viewer (~,3f)" (/ frame-count elapsed-seconds))))
-             (setf frame-count 0)
+              for current-seconds = (get-time)
+              for elapsed-seconds = (- current-seconds  previous-seconds)
+              for elapsed-time = (- (get-time) start-time)
+              when (> elapsed-seconds 0.25) do
+              (setf previous-seconds current-seconds)
+              (when *show-fps*
+                (format t "OpenGL Scene Viewer (~,3f)~%" (/ frame-count elapsed-seconds))
+                (set-window-title (format nil "OpenGL Scene Viewer (~,3f)" (/ frame-count elapsed-seconds))))
+              (setf frame-count 0)
 
-           ;; Save info about the mouse drag.
-           ;; TODO: clean this up or handle in scene...
-           when (and (not (null *mouse-press-info*))
-                     (null *mouse-release-info*))
-           do
-             (let* ((cpos (glfw:get-cursor-position *window*))
+              ;; Save info about the mouse drag.
+              ;; TODO: clean this up or handle in scene...
+              when (and (not (null *mouse-press-info*))
+                        (null *mouse-release-info*))
+              do
+              (let* ((cpos (glfw:get-cursor-position *window*))
                      (handled (handle-drag scene *window* *previous-mouse-drag* cpos)))
-               (when (not handled)
+                (when (not handled)
                   (setf *previous-mouse-drag* (with-slots (mod-keys action button time) *mouse-press-info*
                                                 (make-instance 'mouse-click
                                                                :cursor-pos cpos
@@ -257,23 +260,23 @@
                                                                :action action
                                                                :button button
                                                                :time (get-time))))))
-           do
-             ;; Update for next frame
-             (update *scene*)
-           do
-             ;; Draw the scene
-             (gl:clear :color-buffer :depth-buffer)
-             (if *cull-face*
-                 (gl:enable :cull-face)
-                 (gl:disable :cull-face))
-             (gl:front-face *front-face*)
-             (gl:polygon-mode :front-and-back (if *wire-frame* :line :fill))
+              do
+              ;; Update for next frame
+              (update *scene* elapsed-time)
+              do
+              ;; Draw the scene
+              (gl:clear :color-buffer :depth-buffer)
+              (if *cull-face*
+                  (gl:enable :cull-face)
+                  (gl:disable :cull-face))
+              (gl:front-face *front-face*)
+              (gl:polygon-mode :front-and-back (if *wire-frame* :line :fill))
 
-             (render scene (meye 4))
-             (incf frame-count)
+              (render scene (meye 4))
+              (incf frame-count)
 
-           do (swap-buffers)
-           do (poll-events))
+              do (swap-buffers)
+              do (poll-events))
 
         ;; Cleanup before exit
         (cleanup *scene*)))))

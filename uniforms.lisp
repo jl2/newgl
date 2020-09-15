@@ -26,8 +26,8 @@
 
       ;; Only assign values to uniforms that are used by the program
       (when (>= location 0)
-        (when (and (null value) *debug-stream*)
-          (format *debug-stream* "value of ~a is nil, using default.~%" name))
+        (when (and (null value) *debug-stream* (not (eq :sampler2d type)))
+          (format *debug-stream* "value of ~a (~a) is nil, using default.~%" name type))
         (cond ((eq :mat4 type)
                (gl:uniform-matrix location
                                   4

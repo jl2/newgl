@@ -17,7 +17,7 @@
   (:documentation "A triangle mesh."))
 
 
-(defmethod update ((object tri-mesh))
+(defmethod update ((object tri-mesh) elapsed-seconds)
   )
 (defun add-point-tm (tm &key x y z (red 1.0f0) (green 1.0f0)  (blue 1.0f0) (alpha 1.0f0))
   (with-slots (vertices indices) tm

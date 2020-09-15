@@ -7,7 +7,7 @@
 (defgeneric render (object view-xform)
   (:documentation "Make OpenGL API calls to render the object.  Binding correct VAO is handled by before and after methods."))
 
-(defgeneric update (object)
+(defgeneric update (object elapsed-seconds)
   (:documentation "Called on an object *before* rendering to update for the next animation frame."))
 
 (defgeneric handle-key (object window key scancode action mod-keys)

@@ -20,8 +20,10 @@
   (:use #:cl #:j-utils #:alexandria #:glfw #:3d-vectors #:3d-matrices)
   (:export #:opengl-object
            #:vertex-object
+           #:vao
            #:ebos
            #:vbos
+           #:primitive-type
            #:xform
            #:vertices
            #:indices
@@ -30,12 +32,14 @@
            #:gl-shader
            #:set-uniforms
            #:build-shader-program
+           #:bind-buffers
            #:fill-buffers
            #:reload-object
            #:cleanup
            #:to-gl-array
            #:to-gl-float-array
 
+           #:ensure-vao-bound
            #:build-shader-program
            #:use-shader-program
            #:set-uniforms
@@ -59,7 +63,7 @@
            #:source-file
            #:layout
            #:shader
-
+           #:view-xform
 
            #:tri-mesh
            #:add-point-tm

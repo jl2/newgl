@@ -33,5 +33,6 @@
             ((:file "package")
              (:file "keyframe-axis-rotation")
              (:file "keyframe-axis-border")
+             (:file "regular-polygons")
              )
             )))

@@ -30,6 +30,8 @@
 (defgeneric fill-buffers (object)
   (:documentation "Copy this objects data into OpenGL buffers.  Binding correct VAO is handled by before and after methods."))
 
+(defgeneric bind-buffers (object))
+
 (defgeneric reload-object (object)
   (:documentation "Destroy and reload object's buffers."))
 
@@ -67,7 +69,7 @@
       (setf vao (gl:gen-vertex-array)))
     (gl:bind-vertex-array vao)))
 
-(defmethod update ((object opengl-object))
+(defmethod update ((object opengl-object) elapsed-seconds)
   ;; No animation!
   )
 
@@ -112,8 +114,7 @@
              (gl:buffer-data :element-array-buffer :dynamic-draw gl-indices)
              (gl:free-gl-array gl-indices)))
           (t
-           (gl:bind-buffer :array-buffer (car vbos))
-           (gl:bind-buffer :element-array-buffer (car ebos))))))
+           (bind-buffers object)))))
 
 (defmethod fill-buffers :after ((object opengl-object))
   (gl:bind-vertex-array 0))
@@ -139,14 +140,22 @@
       (gl:delete-vertex-arrays (list vao))
       (setf vao 0))))
 
+
+
+(defmethod bind-buffers ((object opengl-object))
+  (with-slots (vbos ebos) object
+    (when *debug-stream* (format *debug-stream* "Binding buffers: ~a~%" object))
+    (gl:bind-buffer :array-buffer (car vbos))
+    (gl:bind-buffer :element-array-buffer (car ebos))))
+
 (defmethod render :before ((object opengl-object) view-xform)
+  (when *debug-stream* (format *debug-stream* "newgl render :before ~a~%" object))
   (ensure-vao-bound object)
-  (with-slots (vbos ebos indices shader-program xform) object
+  (with-slots (vbos ebos shader-program xform) object
     (when (and vbos ebos)
-      (gl:bind-buffer :array-buffer (car vbos))
-      (gl:bind-buffer :element-array-buffer (car ebos))
+      (bind-buffers object)
       (use-shader-program shader-program)
-      (set-uniform shader-program "transform" (m* view-xform xform)))))
+      (set-uniform shader-program "transform" (m* xform view-xform )))))
 
 (defmethod render ((object opengl-object) view-xform)
   (declare (ignorable view-xform)))
