@@ -46,8 +46,7 @@
     (setf xform (3d-matrices:mscaling
                  (if (< width height )
                      (3d-vectors:vec3 (/ height width 1.0) 1.0 1.0)
-                     (3d-vectors:vec3 (/ width height 1.0) 1.0 1.0))))
-    (when *debug-stream* (format *debug-stream* "Transform: ~a~%" xform)))
+                     (3d-vectors:vec3 (/ width height 1.0) 1.0 1.0)))))
   (set-uniforms object))
 
 (defmethod handle-click ((object opengl-object) window click-info)
@@ -100,21 +99,20 @@
 
 (defmethod fill-buffers ((object vertex-object))
   (with-slots (vbos ebos vertices indices) object
-    (cond ((null vbos)
-           (setf vbos (gl:gen-buffers 1))
-           (setf ebos (gl:gen-buffers 1))
-           (let ((gl-vertices (to-gl-float-array vertices))
-                 (gl-indices (to-gl-array indices :unsigned-int)))
+    (when (not (null vbos))
+      (error "vbos is being rebound!"))
+    (setf vbos (gl:gen-buffers 1))
+    (setf ebos (gl:gen-buffers 1))
+    (let ((gl-vertices (to-gl-float-array vertices))
+          (gl-indices (to-gl-array indices :unsigned-int)))
 
-             (gl:bind-buffer :array-buffer (car vbos))
-             (gl:buffer-data :array-buffer :dynamic-draw gl-vertices)
-             (gl:free-gl-array gl-vertices)
+      (gl:bind-buffer :array-buffer (car vbos))
+      (gl:buffer-data :array-buffer :dynamic-draw gl-vertices)
+      (gl:free-gl-array gl-vertices)
 
-             (gl:bind-buffer :element-array-buffer (car ebos))
-             (gl:buffer-data :element-array-buffer :dynamic-draw gl-indices)
-             (gl:free-gl-array gl-indices)))
-          (t
-           (bind-buffers object)))))
+      (gl:bind-buffer :element-array-buffer (car ebos))
+      (gl:buffer-data :element-array-buffer :dynamic-draw gl-indices)
+      (gl:free-gl-array gl-indices))))
 
 (defmethod fill-buffers :after ((object opengl-object))
   (gl:bind-vertex-array 0))
@@ -140,22 +138,22 @@
       (gl:delete-vertex-arrays (list vao))
       (setf vao 0))))
 
-
-
 (defmethod bind-buffers ((object opengl-object))
   (with-slots (vbos ebos) object
-    (when *debug-stream* (format *debug-stream* "Binding buffers: ~a~%" object))
+    (when (null vbos)
+      (error "vbos is null"))
+    (when (null ebos)
+      (error "ebos is null"))
+
     (gl:bind-buffer :array-buffer (car vbos))
     (gl:bind-buffer :element-array-buffer (car ebos))))
 
 (defmethod render :before ((object opengl-object) view-xform)
-  (when *debug-stream* (format *debug-stream* "newgl render :before ~a~%" object))
   (ensure-vao-bound object)
   (with-slots (vbos ebos shader-program xform) object
-    (when (and vbos ebos)
-      (bind-buffers object)
-      (use-shader-program shader-program)
-      (set-uniform shader-program "transform" (m* xform view-xform )))))
+    (bind-buffers object)
+    (use-shader-program shader-program)
+    (set-uniform shader-program "transform" (m* xform view-xform ))))
 
 (defmethod render ((object opengl-object) view-xform)
   (declare (ignorable view-xform)))

@@ -112,9 +112,10 @@
                       :max-vertex-texture-image-units
                       :max-vertex-uniform-components
                       :max-viewport-dims
+                      :texture-binding-2d
                       :stereo)
        do
-         (format *debug-stream* "~a : ~a~%" field (gl:get-integer field)))))
+          (format *debug-stream* "~a : ~a~%" field (gl:get-integer field)))))
 
 
 
@@ -162,8 +163,7 @@
 
 ;; GLFW error callback
 (def-error-callback error-callback (message)
-  (when *debug-stream*
-    (format *debug-stream* "Error: ~a~%" message)))
+  (format t "Error: ~a~%" message))
 
 ;; Resize event handler
 ;; Forwards events to *scene*
@@ -204,9 +204,9 @@
                            :opengl-forward-compat *want-forward-context*
                            :samples 1
                            :resizable t)
-
         ;; GLFW Initialization
         (setf %gl:*gl-get-proc-address* #'get-proc-address)
+
         (set-key-callback 'keyboard-handler)
         (set-mouse-button-callback 'mouse-handler)
         (set-scroll-callback 'scroll-handler)
@@ -226,8 +226,7 @@
                         (vw background-color))
 
         ;; Load objects for the first time
-        (dolist (object (objects *scene*))
-          (reload-object object))
+        (reload-object *scene*)
 
         ;; The event loop
         (loop
@@ -273,6 +272,7 @@
               (gl:polygon-mode :front-and-back (if *wire-frame* :line :fill))
 
               (render scene (meye 4))
+              (gl:finish)
               (incf frame-count)
 
               do (swap-buffers)
@@ -281,115 +281,11 @@
         ;; Cleanup before exit
         (cleanup *scene*)))))
 
-(defun turn-on-traces ()
-  "Trace functions useful for debugging"
-  (trace
-   ;; newgl defgenerics
-   use-shader-program
-   get-source
-   compile-shader
-   use-shader
-   cleanup
-   use-uniform
-   enable-layout
-   render
-   build-shader-program
-   set-uniform
-   set-uniforms
-   update
-   fill-buffers
-   handle-key
-   handle-click
-   handle-scroll
-   handle-drag
-   handle-resize
-   reload-object
-
-
-   ;; newgl defuns
-   newgl::make-shader-program
-   newgl::make-plastic-program
-   newgl::add-point
-   newgl::glsl-type-keyword
-   newgl::glsl-type-size
-   newgl::lookup-shader-type
-   newgl::shader-from-file
-   newgl::make-uv-quad
-   newgl::make-uv-quad
-   newgl::show-gl-state
-   newgl::show-program-state
-   newgl::show-open-gl-info
-   newgl::use-shader-uniforms
-   newgl::use-uniform
-   newgl::viewer-thread-function
-   newgl::viewer
-   newgl::view-stl
-   newgl::make-layout-entry
-   newgl::make-layout
-   newgl::compute-stride
-   newgl::ensure-vao-bound
-   newgl::to-gl-float-array
-   newgl::to-gl-array
-
-   ;; OpenGL
-   gl:alloc-gl-array
-   gl:attach-shader
-   gl:bind-buffer
-   gl:bind-vertex-array
-   gl:buffer-data
-   gl:clear
-   gl:clear-color
-   gl:compile-shader
-   gl:create-program
-   gl:create-shader
-   gl:delete-buffers
-   gl:delete-program
-   gl:delete-shader
-   gl:delete-vertex-arrays
-   gl:depth-func
-   gl:detach-shader
-   gl:draw-elements
-   gl:disable
-   gl:enable
-   gl:enable-vertex-attrib-array
-   gl:free-gl-array
-   gl:front-face
-   gl:gen-buffers
-   gl:gen-vertex-array
-   gl:get-attrib-location
-   gl:get-integer
-   gl:get-program
-   gl:get-program-info-log
-   gl:get-shader
-   gl:get-shader-info-log
-   gl:get-uniform-location
-   gl:glaref
-   gl:link-program
-   gl:make-null-gl-array
-   gl:polygon-mode
-   gl:shader-source
-   gl:uniform-matrix
-   gl:get-uniform-location
-   gl:uniformi
-   gl:uniformf
-   gl:uniformfv
-   gl:use-program
-   gl:validate-program
-   gl:vertex-attrib-pointer
-   gl:viewport
-
-   ))
-
 (defun display (object &key
                          (view-transform (meye 4))
                          (background-color (vec4 0.7f0 0.7f0 0.7f0 1.0))
-                         (show-traces nil)
                          (debug nil))
-  "Higher level function to display an object or scene."
-
-  (when show-traces
-    (turn-on-traces))
-
+  "High level function to display an object or scene."
 
   (let (
         ;; If object is a scene, then it's the scene,

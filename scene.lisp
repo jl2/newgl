@@ -25,6 +25,10 @@
         do
         (update object elapsed-seconds)))
 
+(defmethod reload-object ((scene scene))
+  (dolist (object (objects scene))
+    (reload-object object)))
+
 (defmethod handle-key ((scene scene) window key scancode action mod-keys)
   (cond
     ;; ESC to exit
@@ -43,13 +47,7 @@
 
     ;; f to refill buffers
     ((and (eq key :b) (eq action :press))
-     (format t "Refilling buffers...")
-     (with-slots (objects) scene
-       (dolist (object objects)
-         (cleanup object)
-         (build-shader-program object)
-         (fill-buffers object)))
-     (format t " Done.~%")
+     (reload-object scene)
      t)
 
     ;; i to show gl info
