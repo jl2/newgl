@@ -259,7 +259,7 @@
               (gl:polygon-mode :front-and-back (if *wire-frame* :line :fill))
 
               (render scene (meye 4))
-              (gl:finish)
+
               (incf frame-count)
 
               do (swap-buffers)
