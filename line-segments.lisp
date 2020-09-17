@@ -137,8 +137,7 @@
     (setf xform (3d-matrices:mscaling
                  (if (< height width )
                      (3d-vectors:vec3 (/ height width 1.0) 1.0 1.0)
-                     (3d-vectors:vec3 1.0 (/ width height  1.0) 1.0))))
-    (when *debug-stream* (format *debug-stream* "Transform: ~a~%" xform)))
+                     (3d-vectors:vec3 1.0 (/ width height  1.0) 1.0)))))
   (set-uniforms object))
 
 

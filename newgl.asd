@@ -41,6 +41,7 @@
                (:file "newgl")
                (:file "scene")
                (:file "opengl-object")
+               (:file "vertex-object")
                (:file "layouts")
                (:file "uniforms")
                (:file "gl-shader")

@@ -42,7 +42,6 @@
            #:ensure-vao-bound
            #:build-shader-program
            #:use-shader-program
-           #:set-uniforms
            #:enable-layout
            #:compile-shader
            #:use-layout

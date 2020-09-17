@@ -45,9 +45,6 @@
 (defparameter *front-face* :ccw
   "Front face direction setting.  Toggle between :ccw (default) and :cw with 'F2' key.")
 
-(defparameter *debug-stream* nil
-  "Show or hide debug messages.  Toggle with 'd' key.")
-
 (defclass mouse-click ()
   ((cursor-pos :initarg :cursor-pos)
    (button :initarg :button)
@@ -77,45 +74,42 @@
   "Whether or not to ask for a 'forward compatible' OpenGL context.  Required for OSX.")
 
 (defun show-gl-state ()
-  "Print debug information about the OpenGL state to *debug-stream*."
-  (when *debug-stream*
-    (loop
-       for field in '(:active-texture
-                      :array-buffer-binding
-                      :blend
-                      :current-program
-                      :line-width
-                      :vertex-array-binding
-                      :viewport)
-       do
-         (format *debug-stream* "~a : ~a~%" field (gl:get-integer field)))))
+  "Print debug information about the OpenGL state."
+  (loop
+        for field in '(:active-texture
+                       :array-buffer-binding
+                       :blend
+                       :current-program
+                       :line-width
+                       :vertex-array-binding
+                       :viewport)
+        do
+        (format t "~a : ~a~%" field (gl:get-integer field))))
 
 (defun show-program-state (program)
-  "Print shader program state to *debug-stream*"
-  (when *debug-stream*
-    (loop
-       for field in '(:link-status :attached-shaders)
-       do
-         (format *debug-stream* "~a : ~a~%" field (gl:get-program program field)))))
+  "Print shader program state."
+  (loop
+        for field in '(:link-status :attached-shaders)
+        do
+        (format t "~a : ~a~%" field (gl:get-program program field))))
 
 (defun show-open-gl-info ()
-  "Print OpenGL limits to *debug-stream*"
-  (when *debug-stream* 
-    (loop
-       for field in '(:max-combined-texture-image-units
-                      :max-cube-map-texture-size
-                      :max-draw-buffers
-                      :max-fragment-uniform-components
-                      :max-texture-size
-                      ;; :max-varying-floats
-                      :max-vertex-attribs
-                      :max-vertex-texture-image-units
-                      :max-vertex-uniform-components
-                      :max-viewport-dims
-                      :texture-binding-2d
-                      :stereo)
-       do
-          (format *debug-stream* "~a : ~a~%" field (gl:get-integer field)))))
+  "Print OpenGL limits"
+  (loop
+        for field in '(:max-combined-texture-image-units
+                       :max-cube-map-texture-size
+                       :max-draw-buffers
+                       :max-fragment-uniform-components
+                       :max-texture-size
+                       ;; :max-varying-floats
+                       :max-vertex-attribs
+                       :max-vertex-texture-image-units
+                       :max-vertex-uniform-components
+                       :max-viewport-dims
+                       :texture-binding-2d
+                       :stereo)
+        do
+        (format t "~a : ~a~%" field (gl:get-integer field))))
 
 
 
@@ -123,7 +117,6 @@
 ;; Implements top-level key handler, and forwards unhandled events to *scene*
 (def-key-callback keyboard-handler (window key scancode action mod-keys)
   (declare (ignorable window scancode mod-keys))
-  (when *debug-stream* (format *debug-stream* "Keypress: ~a ~a ~a ~a ~a~%" window key scancode action mod-keys))
   (when *scene*
     (handle-key *scene* window key scancode action mod-keys)))
 
@@ -139,9 +132,6 @@
                                     :action action
                                     :button button
                                     :time (get-time))))
-    (when *debug-stream*
-      (format *debug-stream* "Mouse click at ~a ~a ~a ~a ~a~%" cpos window button action mod-keys))
-
     ;; If no objects handle mouse clicks then save the click and release positions for later.
     ;; TODO: Update gl-fractals/complex-fractal.lisp to save clicks to complex-fractal member variable
     ;; and get rid of *mouse-release-info* and *mouse-press-info*
@@ -157,8 +147,6 @@
 ;; Forwards scroll events to *scene*
 (def-scroll-callback scroll-handler (window x-scroll y-scroll)
   (let ((cpos (glfw:get-cursor-position window)))
-    (when *debug-stream*
-      (format *debug-stream* "Scroll at ~a ~a ~a ~a ~%" cpos window x-scroll y-scroll))
     (handle-scroll *scene* window cpos x-scroll y-scroll)))
 
 ;; GLFW error callback
@@ -171,7 +159,6 @@
   (declare (ignorable window))
   (gl:viewport 0 0 width height)
 
-  (when *debug-stream* (format *debug-stream* "framebuffer-size ~a ~a~%" width height))
   (handle-resize *scene*  window width height))
 
 
@@ -301,11 +288,9 @@
                                             nil)
                                :xform view-transform)))))
 
-    ;; Debug mode runs in the calling thread, with *debug-stream* set to standard output.
     (if debug
-        (let ((*debug-stream* t))
-          (viewer-thread-function scene
-                                  :background-color background-color))
+        (viewer-thread-function scene
+                                :background-color background-color)
         (trivial-main-thread:with-body-in-main-thread ()
           (viewer-thread-function scene
                                   :background-color background-color)))))

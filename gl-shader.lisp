@@ -127,23 +127,14 @@
 
 (defmethod set-uniform ((shader gl-shader) name new-value)
   (with-slots (uniforms shader shader-type) shader
-    ;; (format t
-    ;;         "Assinging ~a to uniform ~s in ~a shader ~a~%"
-    ;;                new-value name shader-type shader)
-    (cond ((gethash name uniforms)
-           (set-value (gethash name uniforms) new-value))
-          (t
-           ;; (format t
-           ;;         "Cannot assign ~a to unknown uniform ~a in ~a shader ~a, no uniform type declaration found~%"
-           ;;         new-value name shader-type shader)
-           ;; (inspect uniforms)
-           nil))))
+    (when (gethash name uniforms)
+           (set-value (gethash name uniforms) new-value))))
 
 (defmethod cleanup ((shader gl-shader))
   (with-slots (shader uniforms) shader
     (when (> 0 shader)
       (gl:delete-shader shader))
-    (setf uniforms (make-hash-table :test 'equal))
+    ;; (setf uniforms (make-hash-table :test 'equal))
     (setf shader 0)))
 
 (define-condition shader-compile-error (shader-error) ())

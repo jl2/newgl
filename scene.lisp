@@ -55,11 +55,6 @@
      (show-open-gl-info)
      t)
 
-    ;; d to toggle debug printing
-    ((and (eq key :d) (eq action :press))
-     (setf *debug-stream* (if *debug-stream* nil t))
-     t)
-
     ;; s to show gl state
     ((and (eq key :s) (eq action :press))
      (show-gl-state)
