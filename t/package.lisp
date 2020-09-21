@@ -51,9 +51,9 @@
 (test keyframe-sequence-empty
   (let ((seq (create-simple-keyframe-sequence
               (list))))
-    (is-true (= 0 (keyframe-count seq)))
-    (is (null (value-at seq 0)))
-    (is (null (value-at seq 1.0)))))
+    (is (= 0 (keyframe-count seq)))
+    (signals error (value-at seq 0))
+    (signals error (value-at seq 1.0))))
 
 (test keyframe-sequence-single-value
   (let* ((v (vec3 0.0 1.0 0.0))
@@ -103,3 +103,21 @@
     (is (near v2 (value-at seq 1.0)))
     (is (near v3 (value-at seq 2.0)))
     (is (near (vec3 0.5 1.0 0.0) (value-at seq 3.0)))))
+
+(test keyframe-sequence-repeating
+  (let* ((v1 (vec3 0.0 0.0 0.0))
+         (v2 (vec3 1.0 0.0 0.0))
+         (seq (newgl:create-keyframe-sequence (list
+                                               (newgl:create-keyframe v1 0.0)
+                                               (newgl:create-keyframe v2 1.0)
+                                               (newgl:create-keyframe v1 2.0))
+                                              :before :repeat
+                                              :after :repeat)))
+
+    (is (= 3 (keyframe-count seq)))
+    (is (near v2 (value-at seq -1.0)))
+    (is (near v1 (value-at seq 0.0)))
+    (is (near (vec3 0.5 0.0 0.0) (value-at seq 0.5)))
+    (is (near (vec3 0.5 0.0 0.0) (value-at seq 1.5)))
+    (is (near (vec3 0.5 0.0 0.0) (value-at seq 2.5)))
+    (is (near (vec3 0.5 0.0 0.0) (value-at seq 3.5)))))

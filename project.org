@@ -64,6 +64,7 @@ Copyright (c) 2020 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 ** TODO More examples.
 ** TODO Parametric surfaces?
 
+** TODO Fix keyframe-sequence :repeat behavior that repeats first/last point causing flicker
 
 * DONEs
 ** DONE Look at creating complex-fractal-scene that handles drag itself?

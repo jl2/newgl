@@ -11,49 +11,83 @@
 
 (defclass keyframe-sequence ()
   ((frames :initarg :frames)
-   (before-behavior :initarg :before :initform :stop)
-   (after-behavior :initarg :after :initform :stop)))
+   (before-behavior :initarg :before :initform :clamp)
+   (after-behavior :initarg :after :initform :clamp)))
 
 (defgeneric value-at (sequence time))
 
+(defun compute-logical-time (real-time start-time start-behavior end-time end-behavior)
+  (cond
+
+    ;; In range
+    ((and (>= real-time start-time) (<= real-time end-time))
+     real-time)
+
+    ;; Below and clamping
+    ((and (<= real-time start-time) (eq start-behavior :clamp))
+     start-time)
+
+    ;; Above and clamping
+    ((and (>= real-time end-time) (eq end-behavior :clamp))
+     end-time)
+
+    ;; Repeating on the end
+    ((and (> real-time end-time) (eq end-behavior :repeat))
+     (+ (mod (- real-time start-time) (- end-time start-time)) start-time))
+
+    ((and (< real-time start-time) (eq start-behavior :repeat))
+     (+ (mod (- real-time start-time) (- end-time start-time)) start-time))
+    (t
+     (error "Unhandled case in compute-logical-time ~a ~a ~a ~a ~a"
+            real-time start-time end-time start-behavior end-behavior)
+     )
+  ))
+
 (defmethod value-at ((sequence keyframe-sequence) time)
-  (with-slots (frames before-behavior end-behavior) sequence
+  (with-slots (frames before-behavior after-behavior) sequence
     (let ((last-idx (- (length frames) 1)))
-      (cond ((= -1 last-idx)
-             ;; (format t "Empty sequence.~%")
-             nil)
+      (cond
+        ;; value-at of an empty sequence is an error
+        ((= -1 last-idx)
+         (error "Trying to get value-at of empty sequence.")
+         nil)
 
-            ((= 0 last-idx)
-             ;; (format t "Single value sequence.~%")
-             (keyframe-value (aref frames 0)))
+        ;; Single value sequence is always that value
+        ((= 0 last-idx)
+         ;; (format t "Single value sequence.~%")
+         (keyframe-value (aref frames 0)))
 
-            ((and (<= time (slot-value (aref frames 0) 'start-time))
-                  (eq before-behavior :stop) )
-             ;; (format t "Before beginning of sequence.~%")
-             (keyframe-value (aref frames 0)))
+        ((and (<= time (slot-value (aref frames 0) 'start-time))
+              (eq before-behavior :clamp) )
+         ;; (format t "Before beginning of sequence.~%")
+         (keyframe-value (aref frames 0)))
+        ((and (>= time (slot-value (aref frames last-idx) 'start-time))
+              (eq before-behavior :clamp))
+         ;; (format t "After end of sequence.~%")
+         (keyframe-value (aref frames last-idx)))
 
-            ((and (>= time (slot-value (aref frames last-idx) 'start-time))
-                  (eq before-behavior :stop))
-             ;; (format t "After end of sequence.~%")
-             (keyframe-value (aref frames last-idx)))
+        (t
+         ;; (format t "Computing using compute-logical-time~%")
+         (let* ((logical-time (compute-logical-time
+                                            time
+                                            (slot-value (aref frames 0) 'start-time)
+                                            before-behavior
+                                            (slot-value (aref frames last-idx) 'start-time)
+                                            after-behavior))
+                (first-frame-idx (position logical-time
+                                           frames :test #'>=
+                                           :key #'start-time
+                                           :from-end t))
+                (second-frame-idx (1+ first-frame-idx))
+                (first-frame (aref frames first-frame-idx))
+                (second-frame (aref frames second-frame-idx)))
+           (with-slots (interperolator) first-frame
+             (funcall interperolator
+                      (keyframe-value first-frame)
+                      (keyframe-value second-frame)
+                      (/ (- logical-time (start-time first-frame))
+                         (- (start-time second-frame) (start-time first-frame)))))))))))
 
-            (t
-             (let* ((first-frame-idx (position time
-                                               frames :test #'>=
-                                               :key #'start-time
-                                               :from-end t))
-                    (second-frame-idx (1+ first-frame-idx))
-                    (first-frame (aref frames first-frame-idx))
-                    (second-frame (aref frames second-frame-idx)))
-               ;; (format t "index for ~a is ~a~%" time first-frame-idx)
-               ;; (format t "first-frame starts at: ~a~%" (start-time first-frame))
-               ;; (format t "second-frame starts at: ~a~%" (start-time second-frame))
-               (with-slots (interperolator) first-frame
-                 (funcall interperolator
-                          (keyframe-value first-frame)
-                          (keyframe-value second-frame)
-                          (/ (- time (start-time first-frame))
-                             (- (start-time second-frame) (start-time first-frame)))))))))))
 
 (defgeneric keyframe-count (sequence))
 (defmethod keyframe-count ((sequence keyframe-sequence))
@@ -63,7 +97,7 @@
 (defun create-keyframe (value time)
   (make-instance 'keyframe :value value :start-time time))
 
-(defun create-keyframe-sequence (frames &key (before :stop) (after :stop))
+(defun create-keyframe-sequence (frames &key (before :clamp) (after :clamp))
   (declare (type list frames))
   (make-instance 'keyframe-sequence
                  :frames (make-array (length frames)
@@ -83,5 +117,5 @@
                                                              (make-instance 'keyframe :value pt
                                                                             :start-time (* time-scale time)))
                                      :adjustable t)
-                 :before :stop
-                 :after :stop))
+                 :before :clamp
+                 :after :clamp))

@@ -11,7 +11,10 @@
                                              (create-keyframe (vec3  1.0  1.0 -1.0) 1.0)
                                              (create-keyframe (vec3 -1.0  1.0 -1.0) 2.0)
                                              (create-keyframe (vec3 -1.0  1.0 1.0) 3.0)
-                                             (create-keyframe (vec3  1.0  1.0 1.0) 4.0))))))
+                                             (create-keyframe (vec3  1.0  1.0 1.0) 4.0))
+                                      :before :repeat
+                                      :after :repeat
+                                      ))))
 
 
 (defmethod update :before ((scene polygon-scene) elapsed-seconds)
