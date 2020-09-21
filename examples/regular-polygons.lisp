@@ -4,14 +4,23 @@
 
 (in-package :newgl.examples)
 
+(defparameter *radius* 8.0)
+
+(defun polygon-list (sides radius)
+  (loop 
+        with theta-diff = (/ (* pi 2) sides)
+        for i below (1+ sides)
+        for theta0 = (* theta-diff i)
+        for theta1 = (* theta-diff (1+ i))
+        collect (vec3 (* radius (cos theta0)) 0 (* radius (sin theta0)))))
+
 (defclass polygon-scene (scene)
   ((eye-pos :initform
-            (create-keyframe-sequence (list
-                                             (create-keyframe (vec3  1.0  1.0 1.0) 0.0)
-                                             (create-keyframe (vec3  1.0  1.0 -1.0) 1.0)
-                                             (create-keyframe (vec3 -1.0  1.0 -1.0) 2.0)
-                                             (create-keyframe (vec3 -1.0  1.0 1.0) 3.0)
-                                             (create-keyframe (vec3  1.0  1.0 1.0) 4.0))
+            (create-keyframe-sequence (loop for i from 0
+                                            with dt = (/ 0.125 4)
+                                            for pt in (polygon-list 80 24.0)
+                                            collect (create-keyframe (v+ (vec3 0.0 4.0 0.0) pt)
+                                                                     (* dt i)))
                                       :before :repeat
                                       :after :repeat
                                       ))))
@@ -48,8 +57,11 @@
                 :p2 (vec3 0 0 2) :c2 (vec4 0 0 1 1))
     (display (make-instance 'polygon-scene
                             :objects (list tm
-                                           (make-polygon 7 1.0 (vec4 1 0 1 1))
+                                           (make-polygon 8 4.0 (vec4 1 0 1 1))
+                                           (make-polygon 7 2.0 (vec4 1 0 1 1))
+                                           (make-polygon 6 1.0 (vec4 1 0 1 1))
                                            (make-polygon 5 0.5 (vec4 1 0 0 1))
-                                           (make-polygon 3 0.25 (vec4 0 0 1 1)))
+                                           (make-polygon 4 0.25 (vec4 1 0 0 1))
+                                           (make-polygon 3 0.125 (vec4 0 0 1 1)))
                             :xform (meye 4)) :debug debug)))
 
