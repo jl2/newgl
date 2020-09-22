@@ -125,4 +125,5 @@
            #:keyframe-count
            #:value-at
            #:create-simple-keyframe-sequence
+           #:read-txt
            ))

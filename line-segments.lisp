@@ -126,21 +126,6 @@
     lines))
 
 
-
-(defmethod handle-key ((object line-segments) window key scancode action mod-keys)
-  (declare (ignorable window key scancode action mod-keys))
-  (call-next-method))
-
-(defmethod handle-resize ((object line-segments) window width height)
-  (declare (ignorable window))
-  (with-slots (xform) object
-    (setf xform (3d-matrices:mscaling
-                 (if (< height width )
-                     (3d-vectors:vec3 (/ height width 1.0) 1.0 1.0)
-                     (3d-vectors:vec3 1.0 (/ width height  1.0) 1.0)))))
-  (set-uniforms object))
-
-
 (defun make-square ()
   (let ((ls (make-line-segments)))
     (add-line ls
@@ -157,26 +142,36 @@
                     :x2 0.0 :y2 0.0 :z2 0.0)
     ls))
 
-;; (defun parametric-point-cloud ()
-;;   (let* ((pc (newgl:make-point-cloud))
-;;          (scale (/ 1 (* 2 pi)))
-;;          (i-steps 180)
-;;          (j-steps 180)
-;;          (u-min (- pi))
-;;          (v-min (- pi))
-;;          (du (/ (* 2 pi) i-steps))
-;;          (dv (/ (* 2 pi) j-steps)))
-;;     (dotimes (i i-steps)
-;;       (let ((uv (+ u-min (* i du))))
-;;         (dotimes (j j-steps)
-;;           (let* ((vv (+ v-min (* j dv)))
-;;                  (xv uv)
-;;                  (yv (* 3.0 (sin uv) (cos vv)))
-;;                  (zv vv))
-;;             (newgl:add-point pc :x xv :y yv :z zv)))))
-;;     pc))
-;; (newgl:viewer pc
-;;               :xform
-;;               (3d-matrices:m* (3d-matrices:mscaling (3d-vectors:vec3 scale scale scale))
-;;                               (3d-matrices:mrotation (3d-vectors:vec3 1.0 0.0 0.0) (/ pi 3))
-;;                               (3d-matrices:mrotation (3d-vectors:vec3 0.0 1.0 0.0) (/ pi 3)))))
+
+(defun read-txt (filename)
+  (let ((ls (make-line-segments))
+        (pts (with-input-from-file (inf filename)
+               (loop for line = (read-line inf nil)
+                     while line collect (vec3 (coerce (read inf) 'double-float)
+                                              0.0
+                                              (coerce (read inf) 'double-float)
+                                              )))))
+    (loop for first in pts
+          for second in (cdr pts)
+
+          do
+          (add-line-2 ls
+                      :p1 first
+                      :c1 (vec4 0 1 0 1)
+                      :p2 second
+                      :c2 (vec4 0 1 0 1))
+
+          maximizing (vx first) into max-x
+          maximizing (vy first) into max-y
+          maximizing (vz first) into max-z
+
+          minimizing (vx first) into min-x
+          minimizing (vy first) into min-y
+          minimizing (vz first) into min-z
+
+          finally (add-line-2 ls
+                              :p1 second
+                              :c1 (vec4 0 1 0 1)
+                              :p2 (car pts)
+                              :c2 (vec4 0 1 0 1))
+          finally (return (values ls (vec3 min-x -1.0 min-z) (vec3 max-x 1.0 max-z))))))

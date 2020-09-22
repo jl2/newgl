@@ -12,14 +12,20 @@
         for i below (1+ sides)
         for theta0 = (* theta-diff i)
         for theta1 = (* theta-diff (1+ i))
-        collect (vec3 (* radius (cos theta0)) 0 (* radius (sin theta0)))))
+        collect (vec3 (* radius (cos theta0))
+                      0
+                      (* radius (sin theta0)))))
 
 (defclass polygon-scene (scene)
   ((eye-pos :initform
             (create-keyframe-sequence (loop for i from 0
-                                            with dt = (/ 0.125 4)
-                                            for pt in (polygon-list 80 24.0)
-                                            collect (create-keyframe (v+ (vec3 0.0 4.0 0.0) pt)
+                                            for j = -1 then (- j)
+                                            with dt = (/ 0.125 16)
+                                            for pt in (polygon-list 180 24.0)
+                                            collect (create-keyframe (v+ (vec3 0.0
+                                                                               (* (sin (* 32 dt i)) 8.0)
+                                                                               0.0)
+                                                                         pt)
                                                                      (* dt i)))
                                       :before :repeat
                                       :after :repeat
