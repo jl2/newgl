@@ -82,6 +82,7 @@
            #:make-line-segments
 
            #:line-segments
+           #:create-axis
            #:add-line
            #:add-line-2
            #:add-line-by-pt-index
@@ -125,5 +126,9 @@
            #:keyframe-count
            #:value-at
            #:create-simple-keyframe-sequence
-           #:read-txt
+
+           #:display-in-rotating-scene
+           #:create-rotating-keyframe-scene
+
+           #:read-lines-from-text-file
            ))

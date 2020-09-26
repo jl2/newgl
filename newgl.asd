@@ -53,5 +53,6 @@
                (:file "quad")
                (:file "keyframe-sequence")
                (:file "testing")
+               (:file "keyframe-scene")
                )
   :in-order-to ((test-op (test-op newgl.test))))

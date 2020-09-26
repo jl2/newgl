@@ -42,7 +42,6 @@
             real-time start-time end-time start-behavior end-behavior)
      )
   ))
-
 (defmethod value-at ((sequence keyframe-sequence) time)
   (with-slots (frames before-behavior after-behavior) sequence
     (let ((last-idx (- (length frames) 1)))
@@ -88,8 +87,11 @@
                       (/ (- logical-time (start-time first-frame))
                          (- (start-time second-frame) (start-time first-frame)))))))))))
 
+(defmethod value-at ((obj t) time)
+  obj)
 
 (defgeneric keyframe-count (sequence))
+
 (defmethod keyframe-count ((sequence keyframe-sequence))
   (with-slots (frames) sequence
     (length frames)))

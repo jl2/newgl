@@ -19,8 +19,7 @@
    (shader-program :initform
                    (make-shader-program
                     (shader-from-file (newgl-shader "point-vertex.glsl"))
-                    (shader-from-file (newgl-shader "point-fragment.glsl"))))
-   (aspect-ratio :initarg :aspect-ratio :initform 1.0))
+                   (shader-from-file (newgl-shader "point-fragment.glsl")))))
   (:documentation "Point cloud."))
 
 (defun make-line-segments ()
@@ -143,14 +142,51 @@
     ls))
 
 
-(defun read-txt (filename)
+(defun create-axis (size &key (color t)
+                           (half nil))
+  (let* ((axis (make-line-segments))
+         x-color
+         y-color
+         z-color
+         (min-value(if half 0 (- size)))
+         (max-value size))
+    (cond ((eq color :black)
+           (setf x-color (vec4 0 0 0 1)
+                 y-color (vec4 0 0 0 1)
+                 z-color (vec4 0 0 0 1)))
+          ((eq color :white)
+           (setf x-color (vec4 1 1 1 1)
+                 y-color (vec4 1 1 1 1)
+                 z-color (vec4 1 1 1 1)))
+          ((eq (type-of color) 'vec4)
+           (setf x-color color
+                 y-color color
+                 z-color color))
+          (t
+           (setf x-color (vec4 1 0 0 1)
+                 y-color (vec4 0 1 0 1)
+                 z-color (vec4 0 0 1 1))))
+    (add-line-2 axis
+                :p1 (vec3 min-value 0 0) :c1 x-color
+                :p2 (vec3 max-value 0 0) :c2 x-color)
+    (add-line-2 axis
+                :p1 (vec3 0 min-value 0) :c1 y-color
+                :p2 (vec3 0 max-value 0) :c2 y-color)
+    (add-line-2 axis
+                :p1 (vec3 0 0 min-value) :c1 z-color
+                :p2 (vec3 0 0 max-value) :c2 z-color)
+    axis))
+
+(defun read-lines-from-text-file (filename)
   (let ((ls (make-line-segments))
         (pts (with-input-from-file (inf filename)
-               (loop for line = (read-line inf nil)
-                     while line collect (vec3 (coerce (read inf) 'double-float)
-                                              0.0
-                                              (coerce (read inf) 'double-float)
-                                              )))))
+               (loop for xc = (read inf nil nil)
+                     for yc = (read inf nil nil)
+                     while (and xc yc)
+                     collect (vec3 (coerce xc 'double-float)
+                                   0.0
+                                   (coerce yc 'double-float)
+                                   )))))
     (loop for first in pts
           for second in (cdr pts)
 

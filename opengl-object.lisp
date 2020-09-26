@@ -7,6 +7,7 @@
 (defclass opengl-object ()
   ((vao :initform 0 :type fixnum)
    (xform :initform (meye 4) :initarg :xform :type mat4)
+   (aspect-ratio :initform (vec3 1.0 1.0 1.0) :type vec3)
    (shader-program :initarg :shader-program :accessor program))
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
@@ -56,11 +57,11 @@
 
 (defmethod handle-resize ((object opengl-object) window width height)
   (declare (ignorable window width height))
-  (with-slots (xform) object
-    (setf xform (3d-matrices:mscaling
-                 (if (< width height )
-                     (3d-vectors:vec3 (/ height width 1.0) 1.0 1.0)
-                     (3d-vectors:vec3 (/ width height 1.0) 1.0 1.0)))))
+  (with-slots (aspect-ratio) object
+    (setf aspect-ratio
+          (if (< width height )
+              (3d-vectors:vec3 (/ height width 1.0) 1.0 1.0)
+              (3d-vectors:vec3 (/ width height 1.0) 1.0 1.0))))
   (set-uniforms object))
 
 (defmethod handle-click ((object opengl-object) window click-info)
@@ -88,8 +89,9 @@
     (set-uniform shader-program name value)))
 
 (defmethod set-uniforms ((object opengl-object))
-  (with-slots (shader-program xform) object
-    (set-uniform shader-program "transform" xform)))
+  ;; (with-slots (shader-program xform aspect-ratio) object
+  ;;   (set-uniform shader-program "transform" (m* xform (3d-matrices:mscaling aspect-ratio))))
+  )
 
 (defmethod fill-buffers ((object opengl-object))
   (with-slots (vao) object
@@ -119,9 +121,11 @@
 
 
 (defmethod render ((object opengl-object) view-xform)
-  (with-slots (shader-program xform) object
+  (with-slots (shader-program xform aspect-ratio) object
     (bind-buffers object)
-    (set-uniform shader-program "transform" (m* xform view-xform ))
-    (use-shader-program shader-program)))
+    (let ((old-xform xform))
+      (set-uniform shader-program "transform" (m*  xform (3d-matrices:mscaling aspect-ratio) view-xform ))
+      (use-shader-program shader-program)
+      (setf xform old-xform))))
 
 
