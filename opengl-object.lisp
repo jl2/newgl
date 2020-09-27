@@ -124,7 +124,11 @@
   (with-slots (shader-program xform aspect-ratio) object
     (bind-buffers object)
     (let ((old-xform xform))
-      (set-uniform shader-program "transform" (m*  xform (3d-matrices:mscaling aspect-ratio) view-xform ))
+      (set-uniform shader-program
+                   "transform"
+                   (m* xform
+                       (mscaling aspect-ratio)
+                       view-xform))
       (use-shader-program shader-program)
       (setf xform old-xform))))
 
