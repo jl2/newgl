@@ -4,7 +4,7 @@
 
 (in-package :newgl.examples)
 
-(defclass keyframe-axis-border-scene (scene)
+(defclass keyframe-axis-border-viewer (viewer)
   ((target-pos :initform
                (create-keyframe-sequence (list
                                           (create-keyframe (vec3  1.0  0.0 1.0) 0.0)
@@ -16,8 +16,8 @@
                                          :after :repeat))))
 
 
-(defmethod update :before ((scene keyframe-axis-border-scene) elapsed-seconds)
-  (with-slots (view-xform target-pos) scene
+(defmethod update :before ((viewer keyframe-axis-border-viewer) elapsed-seconds)
+  (with-slots (view-xform target-pos) viewer
     (setf view-xform
           (m* (mperspective 30.0 1.0 1.0 10000.0)
               (mlookat (vec3 10 10 10) (value-at target-pos elapsed-seconds) +vz+)))))
@@ -33,6 +33,6 @@
     (add-line-2 tm
                       :p1 (vec3 0 0 0) :c1 (vec4 0 0 1 1)
                       :p2 (vec3 0 0 2) :c2 (vec4 0 0 1 1))
-    (display (make-instance 'keyframe-axis-border-scene
+    (display (make-instance 'keyframe-axis-border-viewer
                             :objects (list tm)
                             :xform (meye 4)) :debug debug)))

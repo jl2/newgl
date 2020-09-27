@@ -33,7 +33,7 @@
                    (return ls))))
 
 (defun show-polygons ( &optional debug)
-  (display-in-rotating-scene (list (create-axis 5 :half nil)
+  (display-in-rotating-viewer (list (create-axis 5 :half nil)
                                    (make-polygon 8 4.0 (vec4 1 0 1 1)
                                                  :position (3d-vectors:vec3-random -5 5))
                                    (make-polygon 7 2.0 (vec4 1 0 1 1)

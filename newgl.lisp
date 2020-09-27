@@ -63,8 +63,8 @@
   "Location of last mouse release.")
 
 
-(defparameter *scene* nil
-  "Current scene being displayed.")
+(defparameter *viewer* nil
+  "Current viewer being displayed.")
 
 (defgeneric cleanup (obj)
   (:documentation "Cleanup any OpenGL resources owned by obj."))
@@ -114,14 +114,14 @@
 
 
 ;; Keyboard callback.
-;; Implements top-level key handler, and forwards unhandled events to *scene*
+;; Implements top-level key handler, and forwards unhandled events to *viewer*
 (def-key-callback keyboard-handler (window key scancode action mod-keys)
   (declare (ignorable window scancode mod-keys))
-  (when *scene*
-    (handle-key *scene* window key scancode action mod-keys)))
+  (when *viewer*
+    (handle-key *viewer* window key scancode action mod-keys)))
 
 ;; Mouse handler callback
-;; Forwards mouse events to *scene*
+;; Forwards mouse events to *viewer*
 (def-mouse-button-callback mouse-handler (window button action mod-keys)
   (declare (ignorable window button action mod-keys))
   
@@ -135,7 +135,7 @@
     ;; If no objects handle mouse clicks then save the click and release positions for later.
     ;; TODO: Update gl-fractals/complex-fractal.lisp to save clicks to complex-fractal member variable
     ;; and get rid of *mouse-release-info* and *mouse-press-info*
-    (when (not (handle-click *scene* window click-info))
+    (when (not (handle-click *viewer* window click-info))
       (when (eq action :press)
         (setf *mouse-release-info* nil)
         (setf *mouse-press-info* click-info))
@@ -144,25 +144,25 @@
         (setf *mouse-release-info* click-info)))))
 
 ;; GLFW scroll handler
-;; Forwards scroll events to *scene*
+;; Forwards scroll events to *viewer*
 (def-scroll-callback scroll-handler (window x-scroll y-scroll)
   (let ((cpos (glfw:get-cursor-position window)))
-    (handle-scroll *scene* window cpos x-scroll y-scroll)))
+    (handle-scroll *viewer* window cpos x-scroll y-scroll)))
 
 ;; GLFW error callback
 (def-error-callback error-callback (message)
   (format t "Error: ~a~%" message))
 
 ;; Resize event handler
-;; Forwards events to *scene*
+;; Forwards events to *viewer*
 (def-framebuffer-size-callback resize-handler (window width height)
   (declare (ignorable window))
   (gl:viewport 0 0 width height)
 
-  (handle-resize *scene*  window width height))
+  (handle-resize *viewer*  window width height))
 
 
-(defun viewer-thread-function (scene
+(defun viewer-thread-function (viewer
                                &key
                                  (background-color (vec4 0.7f0 0.7f0 0.7f0 1.0)))
   "GLFW Event Loop function that initializes GLFW and OpenGL, creates a window,
@@ -170,7 +170,7 @@
 
   (set-error-callback 'error-callback)
 
-  (setf *scene* scene)
+  (setf *viewer* viewer)
 
   (with-init
     (let* ((monitor (glfw:get-primary-monitor))
@@ -180,7 +180,7 @@
            (previous-seconds 0.0)
            (frame-count 1))
 
-      (with-window (:title (format nil "OpenGL Scene Viewer (~,3f)" 0.0)
+      (with-window (:title (format nil "OpenGL Viewer Viewer (~,3f)" 0.0)
                            :width (/ cur-width 2)
                            :height (/ cur-height 2)
                            :decorated t
@@ -213,7 +213,7 @@
                         (vw background-color))
 
         ;; Load objects for the first time
-        (reload-object *scene*)
+        (reload-object *viewer*)
 
         ;; The event loop
         (loop
@@ -227,17 +227,17 @@
               when (> elapsed-seconds 0.25) do
               (setf previous-seconds current-seconds)
               (when *show-fps*
-                (format t "OpenGL Scene Viewer (~,3f)~%" (/ frame-count elapsed-seconds))
-                (set-window-title (format nil "OpenGL Scene Viewer (~,3f)" (/ frame-count elapsed-seconds))))
+                (format t "OpenGL Viewer Viewer (~,3f)~%" (/ frame-count elapsed-seconds))
+                (set-window-title (format nil "OpenGL Viewer Viewer (~,3f)" (/ frame-count elapsed-seconds))))
               (setf frame-count 0)
 
               ;; Save info about the mouse drag.
-              ;; TODO: clean this up or handle in scene...
+              ;; TODO: clean this up or handle in viewer...
               when (and (not (null *mouse-press-info*))
                         (null *mouse-release-info*))
               do
               (let* ((cpos (glfw:get-cursor-position *window*))
-                     (handled (handle-drag scene *window* *previous-mouse-drag* cpos)))
+                     (handled (handle-drag viewer *window* *previous-mouse-drag* cpos)))
                 (when (not handled)
                   (setf *previous-mouse-drag* (with-slots (mod-keys action button time) *mouse-press-info*
                                                 (make-instance 'mouse-click
@@ -248,9 +248,9 @@
                                                                :time (get-time))))))
               do
               ;; Update for next frame
-              (update *scene* elapsed-time)
+              (update *viewer* elapsed-time)
               do
-              ;; Draw the scene
+              ;; Draw the viewer
               (gl:clear :color-buffer :depth-buffer)
               (if *cull-face*
                   (gl:enable :cull-face)
@@ -258,7 +258,7 @@
               (gl:front-face *front-face*)
               (gl:polygon-mode :front-and-back (if *wire-frame* :line :fill))
 
-              (render scene (meye 4))
+              (render viewer (meye 4))
 
               (incf frame-count)
 
@@ -266,33 +266,33 @@
               do (poll-events))
 
         ;; Cleanup before exit
-        (cleanup *scene*)))))
+        (cleanup *viewer*)))))
 
 (defun display (object &key
                          (view-transform (meye 4))
                          (background-color (vec4 0.7f0 0.7f0 0.7f0 1.0))
                          (debug nil))
-  "High level function to display an object or scene."
+  "High level function to display an object or viewer."
 
   (let (
-        ;; If object is a scene, then it's the scene,
-        ;; otherwise if scene is an object or list of objects,
-        ;; then they're the objects in the scene
-        (scene
+        ;; If object is a viewer, then it's the viewer,
+        ;; otherwise if viewer is an object or list of objects,
+        ;; then they're the objects in the viewer
+        (viewer
              (typecase object
-               (scene object)
+               (viewer object)
                ((or null t)
-                (make-instance 'scene
+                (make-instance 'viewer
                                :objects (if object
                                             (ensure-list object)
                                             nil)
                                :xform view-transform)))))
 
     (if debug
-        (viewer-thread-function scene
+        (viewer-thread-function viewer
                                 :background-color background-color)
         (trivial-main-thread:with-body-in-main-thread ()
-          (viewer-thread-function scene
+          (viewer-thread-function viewer
                                   :background-color background-color)))))
 
 #+stl-to-open-gl

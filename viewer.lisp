@@ -6,7 +6,8 @@
 
 (defclass viewer ()
   ((objects :initform nil :initarg :objects :type (or null cons) :accessor objects)
-   (view-xform :initform (meye 4) :initarg :xform :type mat4 :accessor viewport))
+   (view-xform :initform (meye 4) :initarg :xform :type mat4 :accessor viewport)
+   (aspect-ratio :initform 1.0 :initarg :aspect-ratio :type real :accessor aspect-ratio))
   (:documentation "A collection of objects and a viewport."))
 
 (defmethod render ((viewer viewer) xform)
@@ -89,6 +90,11 @@
 
 
 (defmethod handle-resize ((viewer viewer) window width height)
+  (with-slots (aspect-ratio) viewer
+    (setf aspect-ratio
+          (if (< width height )
+              (/ height width 1.0)
+              (/ width height 1.0))))
   (loop
         for object in (objects viewer)
         do
