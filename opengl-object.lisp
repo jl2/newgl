@@ -17,7 +17,7 @@
 (defgeneric set-uniform (object name value)
   (:documentation "Set a uniform variable on object."))
 
-(defgeneric set-uniforms (object)
+(defgeneric assign-uniforms (object)
   (:documentation "Assign uniform shader variables for this object."))
 
 (defgeneric fill-buffers (object)
@@ -62,7 +62,7 @@
           (if (< width height )
               (3d-vectors:vec3 (/ height width 1.0) 1.0 1.0)
               (3d-vectors:vec3 (/ width height 1.0) 1.0 1.0))))
-  (set-uniforms object))
+  (assign-uniforms object))
 
 (defmethod handle-click ((object opengl-object) window click-info)
   (declare (ignorable object window click-info))
@@ -88,9 +88,9 @@
   (with-slots (shader-program) obj
     (set-uniform shader-program name value)))
 
-(defmethod set-uniforms ((object opengl-object))
-  ;; (with-slots (shader-program xform aspect-ratio) object
-  ;;   (set-uniform shader-program "transform" (m* xform (3d-matrices:mscaling aspect-ratio))))
+(defmethod assign-uniforms ((object opengl-object))
+  (with-slots (shader-program xform aspect-ratio) object
+    (set-uniform shader-program "transform" (m* xform (3d-matrices:mscaling aspect-ratio))))
   )
 
 (defmethod fill-buffers ((object opengl-object))
@@ -104,7 +104,7 @@
   (cleanup object)
   (fill-buffers object)
   (build-shader-program object)
-  (set-uniforms object))
+  (assign-uniforms object))
 
 (defmethod cleanup ((object opengl-object))
   (with-slots (vao vbos ebos shader-program) object

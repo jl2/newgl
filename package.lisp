@@ -30,7 +30,8 @@
            #:shader-program
            #:program
            #:gl-shader
-           #:set-uniforms
+           #:assign-uniforms
+           #:aspect-ratio
            #:build-shader-program
            #:bind-buffers
            #:fill-buffers
@@ -93,7 +94,7 @@
 
            #:display
 
-           #:scene
+           #:viewer
 
            #:quad
            #:make-uv-quad
@@ -116,8 +117,8 @@
            #:draw-line
            #:draw-triangle
 
-           #:test-scene
-           #:show-test-scene
+           #:test-viewer
+           #:show-test-viewer
 
            #:keyframe
            #:create-keyframe
@@ -127,8 +128,8 @@
            #:value-at
            #:create-simple-keyframe-sequence
 
-           #:display-in-rotating-scene
-           #:create-rotating-keyframe-scene
+           #:display-in-rotating-viewer
+           #:create-rotating-keyframe-viewer
 
            #:read-lines-from-text-file
            ))

@@ -1,35 +1,35 @@
-;; scene.lisp
+;; viewer.lisp
 ;;
 ;; Copyright (c) 2020 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 (in-package #:newgl)
 
-(defclass scene ()
+(defclass viewer ()
   ((objects :initform nil :initarg :objects :type (or null cons) :accessor objects)
    (view-xform :initform (meye 4) :initarg :xform :type mat4 :accessor viewport))
   (:documentation "A collection of objects and a viewport."))
 
-(defmethod render ((scene scene) xform)
-  (with-slots (objects view-xform) scene
+(defmethod render ((viewer viewer) xform)
+  (with-slots (objects view-xform) viewer
     (loop for object in objects
           do
           (render object (m* xform view-xform)))))
 
-(defmethod cleanup ((scene scene))
-  (loop for object in (objects scene)
+(defmethod cleanup ((viewer viewer))
+  (loop for object in (objects viewer)
         do
         (cleanup object)))
 
-(defmethod update ((scene scene) elapsed-seconds)
-  (loop for object in (objects scene)
+(defmethod update ((viewer viewer) elapsed-seconds)
+  (loop for object in (objects viewer)
         do
         (update object elapsed-seconds)))
 
-(defmethod reload-object ((scene scene))
-  (dolist (object (objects scene))
+(defmethod reload-object ((viewer viewer))
+  (dolist (object (objects viewer))
     (reload-object object)))
 
-(defmethod handle-key ((scene scene) window key scancode action mod-keys)
+(defmethod handle-key ((viewer viewer) window key scancode action mod-keys)
   (cond
     ;; ESC to exit
     ((and (eq key :escape) (eq action :press))
@@ -39,7 +39,7 @@
     ;; r to rebuild shaders
     ((and (eq key :r) (eq action :press))
      (format t "Rebuilding shaders...~%")
-     (with-slots (objects) scene
+     (with-slots (objects) viewer
        (dolist (object objects)
          (build-shader-program object)))
      (format t " Done.~%")
@@ -47,7 +47,7 @@
 
     ;; f to refill buffers
     ((and (eq key :b) (eq action :press))
-     (reload-object scene)
+     (reload-object viewer)
      t)
 
     ;; i to show gl info
@@ -84,31 +84,31 @@
      t)
     (t
      (funcall #'some #'identity
-              (loop for object in (objects scene)
+              (loop for object in (objects viewer)
                     collect (handle-key object window key scancode action mod-keys))))))
 
 
-(defmethod handle-resize ((scene scene) window width height)
+(defmethod handle-resize ((viewer viewer) window width height)
   (loop
-        for object in (objects scene)
+        for object in (objects viewer)
         do
         (handle-resize object window width height)))
 
-(defmethod handle-click ((scene scene) window click-info)
+(defmethod handle-click ((viewer viewer) window click-info)
   (loop
-        for object in (objects scene)
+        for object in (objects viewer)
         do
         (handle-click object window click-info)))
 
-(defmethod handle-scroll ((scene scene) window cpos x-scroll y-scroll)
+(defmethod handle-scroll ((viewer viewer) window cpos x-scroll y-scroll)
   (loop
-        for object in (objects scene)
+        for object in (objects viewer)
         do
         (handle-scroll object window cpos x-scroll y-scroll)))
 
-(defmethod handle-drag ((scene scene) window first-click-info current-pos)
+(defmethod handle-drag ((viewer viewer) window first-click-info current-pos)
   (loop
-        for object in (objects scene)
+        for object in (objects viewer)
         do
         (handle-drag object window first-click-info current-pos))
   t)
