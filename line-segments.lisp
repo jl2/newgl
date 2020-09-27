@@ -4,7 +4,7 @@
 
 (in-package #:newgl)
 
-(defclass line-segments (vertex-object)
+(defclass line-segments (geometry)
   ((vertices :initform (make-array 0
                                    :element-type 'single-float
                                    :initial-contents '()
@@ -21,6 +21,10 @@
                     (shader-from-file (newgl-shader "point-vertex.glsl"))
                    (shader-from-file (newgl-shader "point-fragment.glsl")))))
   (:documentation "Point cloud."))
+
+(defmethod vertex-buffers ((object line-segments))
+  (with-slots (vertices indices) object
+    (values vertices indices)))
 
 (defun make-line-segments ()
   (make-instance 'line-segments))
@@ -211,3 +215,16 @@
                               :p2 (car pts)
                               :c2 (vec4 0 1 0 1))
           finally (return (values ls (vec3 min-x -1.0 min-z) (vec3 max-x 1.0 max-z))))))
+
+(defun draw-line (container
+                  pt-1
+                 pt-2
+                  color-1
+                  &optional color-2)
+  (add-line-2 container :p1 pt-1 :c1 color-1 :p2 pt-2 :c2 (if color-2 color-2 color-1)))
+
+
+(defun draw-triangle (container pt-1 pt-2 pt-3 color)
+  (add-line-2 container :p1 pt-1 :c1 color :p2 pt-2 :c2 color)
+  (add-line-2 container :p1 pt-2 :c1 color :p2 pt-3 :c2 color)
+  (add-line-2 container :p1 pt-3 :c1 color :p2 pt-1 :c2 color))

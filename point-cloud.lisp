@@ -4,7 +4,7 @@
 
 (in-package #:newgl)
 
-(defclass point-cloud (vertex-object)
+(defclass point-cloud (geometry)
   ((vertices :initform (make-array 0
                                    :element-type 'single-float
                                    :initial-contents '()
@@ -19,9 +19,13 @@
    (shader-program :initform
                    (make-shader-program
                     (shader-from-file (newgl-shader "point-vertex.glsl"))
-                    (shader-from-file (newgl-shader "point-fragment.glsl"))))
-   (aspect-ratio :initarg :aspect-ratio :initform 1.0))
+                    (shader-from-file (newgl-shader "point-fragment.glsl")))))
   (:documentation "Point cloud."))
+
+(defmethod vertex-buffers ((object point-cloud))
+  (with-slots (vertices indices) object
+    (values vertices indices)))
+
 
 (defun make-point-cloud ()
   (make-instance 'point-cloud))

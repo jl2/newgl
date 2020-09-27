@@ -19,14 +19,13 @@
 (defpackage :newgl
   (:use #:cl #:j-utils #:alexandria #:glfw #:3d-vectors #:3d-matrices)
   (:export #:opengl-object
-           #:vertex-object
+           #:geometry
            #:vao
            #:ebos
            #:vbos
            #:primitive-type
            #:xform
-           #:vertices
-           #:indices
+           #:vertex-buffers
            #:shader-program
            #:program
            #:gl-shader
@@ -113,7 +112,6 @@
            #:shader-from-file
            #:make-shader-program
 
-           #:canvas
            #:draw-line
            #:draw-triangle
 

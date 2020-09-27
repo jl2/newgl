@@ -3,9 +3,9 @@
 ** About
 A CLOS wrapper around basic GLFW and OpenGL functionality.
 
-This library allows creating OpenGL objects by subclassing opengl-object or vertex-object and creating a viewer.
+This library allows creating OpenGL objects by subclassing opengl-object or geometry and creating a viewer.
 
-To draw using OpenGL, subclass opengl-object or vertex-object and implement the apropriate methods.
+To draw using OpenGL, subclass opengl-object or geometry and implement the apropriate methods.
 
 ** Opening the Viewer
 To open an empty viewer, run:

@@ -8,7 +8,7 @@
   (make-shader-program  (shader-from-file (newgl-shader "plastic-vertex.glsl"))
                         (shader-from-file (newgl-shader "plastic-fragment.glsl"))))
 
-(defclass tri-mesh (vertex-object)
+(defclass tri-mesh (geometry)
   ((vertices :initarg :vertices)
    (indices :initarg :indices)
    (shader-program :initform (make-plastic-program))
@@ -16,9 +16,10 @@
    (frame :initform 0))
   (:documentation "A triangle mesh."))
 
+(defmethod vertex-buffers ((object tri-mesh))
+  (with-slots (vertices indices) object
+    (values vertices indices)))
 
-(defmethod update ((object tri-mesh) elapsed-seconds)
-  )
 (defun add-point-tm (tm &key x y z (red 1.0f0) (green 1.0f0)  (blue 1.0f0) (alpha 1.0f0))
   (with-slots (vertices indices) tm
     (let ((index  (length indices)))

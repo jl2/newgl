@@ -7,7 +7,6 @@
 (defclass opengl-object ()
   ((vao :initform 0 :type fixnum)
    (xform :initform (meye 4) :initarg :xform :type mat4)
-   (aspect-ratio :initform (vec3 1.0 1.0 1.0) :type vec3)
    (shader-program :initarg :shader-program :accessor program))
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
@@ -17,7 +16,7 @@
 (defgeneric set-uniform (object name value)
   (:documentation "Set a uniform variable on object."))
 
-(defgeneric assign-uniforms (object)
+(defgeneric assign-uniforms (object &optional view-xform)
   (:documentation "Assign uniform shader variables for this object."))
 
 (defgeneric fill-buffers (object)
@@ -57,12 +56,7 @@
 
 (defmethod handle-resize ((object opengl-object) window width height)
   (declare (ignorable window width height))
-  (with-slots (aspect-ratio) object
-    (setf aspect-ratio
-          (if (< width height )
-              (3d-vectors:vec3 (/ height width 1.0) 1.0 1.0)
-              (3d-vectors:vec3 (/ width height 1.0) 1.0 1.0))))
-  (assign-uniforms object))
+  nil)
 
 (defmethod handle-click ((object opengl-object) window click-info)
   (declare (ignorable object window click-info))
@@ -77,21 +71,22 @@
   nil)
 
 
-(defmethod update ((object opengl-object) elapsed-seconds)
-  )
+(defmethod update ((object opengl-object) elapsed-seconds )
+  (declare (ignorable object elapsed-seconds)))
+
 
 (defmethod build-shader-program ((object opengl-object))
   (with-slots (shader-program) object
     (build-shader-program shader-program)))
 
+
 (defmethod set-uniform ((obj opengl-object) name value)
   (with-slots (shader-program) obj
     (set-uniform shader-program name value)))
 
-(defmethod assign-uniforms ((object opengl-object))
-  (with-slots (shader-program xform aspect-ratio) object
-    (set-uniform shader-program "transform" (m* xform (3d-matrices:mscaling aspect-ratio))))
-  )
+(defmethod assign-uniforms ((object opengl-object) &optional (view-xform (meye 4)))
+  (with-slots (shader-program xform) object
+    (set-uniform shader-program "transform" (m* view-xform xform))))
 
 (defmethod fill-buffers ((object opengl-object))
   (with-slots (vao) object
@@ -103,8 +98,7 @@
 (defmethod reload-object ((object opengl-object))
   (cleanup object)
   (fill-buffers object)
-  (build-shader-program object)
-  (assign-uniforms object))
+  (build-shader-program object))
 
 (defmethod cleanup ((object opengl-object))
   (with-slots (vao vbos ebos shader-program) object
@@ -121,15 +115,9 @@
 
 
 (defmethod render ((object opengl-object) view-xform)
-  (with-slots (shader-program xform aspect-ratio) object
+  (with-slots (shader-program xform) object
     (bind-buffers object)
-    (let ((old-xform xform))
-      (set-uniform shader-program
-                   "transform"
-                   (m* xform
-                       (mscaling aspect-ratio)
-                       view-xform))
-      (use-shader-program shader-program)
-      (setf xform old-xform))))
+    (assign-uniforms object view-xform)
+    (use-shader-program shader-program)))
 
 
