@@ -148,14 +148,6 @@
         (handle-resize object window width height)))
 
 (defmethod handle-click ((viewer viewer) window click-info)
-  (with-slots (mouse-release-info mouse-press-info) viewer
-    (with-slots (action) click-info
-      (when (eq action :press)
-        (setf mouse-release-info nil)
-        (setf mouse-press-info click-info))
-      (when (eq action :release)
-        (setf mouse-press-info nil)
-        (setf mouse-release-info click-info))))
   (loop
         for object in (objects viewer)
         do
@@ -166,13 +158,6 @@
         for object in (objects viewer)
         do
         (handle-scroll object window cpos x-scroll y-scroll)))
-
-(defmethod handle-drag ((viewer viewer) window first-click-info current-pos)
-  (loop
-        for object in (objects viewer)
-        do
-        (handle-drag object window first-click-info current-pos))
-  t)
 
 (defun init ()
   (glfw:initialize))
@@ -192,8 +177,8 @@
   (glfw:set-error-callback 'error-callback)
 
   (let* ((window (create-window :title (format nil "OpenGL Viewer Viewer (~,3f)" 0.0)
-                                :width 100
-                                :height 100
+                                :width 1000
+                                :height 1000
                                 :decorated t
                                 :opengl-profile :opengl-core-profile
                                 :context-version-major 4
@@ -234,54 +219,41 @@
       (loop
             with start-time = (get-time)
             with frame-count = 0
-            until (window-should-close-p)
-            
+            until (window-should-close-p window)
+
             for current-seconds = (get-time)
             for elapsed-seconds = (- current-seconds  previous-seconds)
             for elapsed-time = (- (get-time) start-time)
-            when (> elapsed-seconds 0.25)
+
+            when (and show-fps (> elapsed-seconds 0.25))
             do
+            (format t "OpenGL Viewer Viewer (~,3f)~%" (/ frame-count elapsed-seconds))
+            (set-window-title (format nil "OpenGL Viewer Viewer (~,3f)" (/ frame-count elapsed-seconds)))
             (setf previous-seconds current-seconds)
-            (when show-fps
-              (format t "OpenGL Viewer Viewer (~,3f)~%" (/ frame-count elapsed-seconds))
-              (set-window-title (format nil "OpenGL Viewer Viewer (~,3f)" (/ frame-count elapsed-seconds))))
             (setf frame-count 0)
 
-            ;; Save info about the mouse drag.
-            ;; TODO: clean this up or handle in viewer...
-            when (and (not (null mouse-press-info))
-                      (null mouse-release-info))
-            do
-            (let* ((cpos (glfw:get-cursor-position window))
-                   (handled (handle-drag viewer window previous-mouse-drag cpos)))
-              (when (not handled)
-                (setf previous-mouse-drag
-                      (with-slots (mod-keys action button time) mouse-press-info
-                        (make-instance 'mouse-click
-                                       :cursor-pos cpos
-                                       :mod-keys mod-keys
-                                       :action action
-                                       :button button
-                                       :time (get-time))))))
+            ;; This do is important...
             do
             ;; Update for next frame
-            (update viewer elapsed-time)
-            do
+            (with-context window
+              (update viewer elapsed-time))
+
             ;; Draw the viewer
             (gl:clear :color-buffer :depth-buffer)
             (if cull-face
                 (gl:enable :cull-face)
                 (gl:disable :cull-face))
+
             (gl:front-face front-face)
             (gl:polygon-mode :front-and-back (if wire-frame :line :fill))
 
-            (render viewer (m* view-transform view-xform))
+            (with-context window
+              (render viewer (m* view-transform view-xform)))
 
             (incf frame-count)
 
-            do (poll-events)
             do (swap-buffers window)
-            )
+            do (poll-events))
       
 
       ;; Cleanup before exit

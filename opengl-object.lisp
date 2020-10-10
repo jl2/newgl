@@ -66,7 +66,7 @@
   (declare (ignorable object window cpos x-scroll y-scroll))
   nil)
 
-(defmethod handle-drag ((object opengl-object) window first-click-info current-pos)
+(defmethod handle-drag ((object opengl-object) window current-pos)
   (declare (ignorable object window first-click-info current-pos))
   nil)
 

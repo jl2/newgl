@@ -19,7 +19,7 @@
 (defgeneric handle-scroll (object window cpos x-scroll y-scroll)
   (:documentation "Handle scrolling."))
 
-(defgeneric handle-drag (object window first-click-info current-pos)
+(defgeneric handle-drag (object window current-pos)
   (:documentation "Handle mouse drag."))
 
 (defgeneric handle-resize (object window width height)
