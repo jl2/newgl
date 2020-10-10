@@ -258,5 +258,5 @@
 
       ;; Cleanup before exit
       (cleanup viewer)
-      (remhash window *viewers*)
+      (remhash (cffi:pointer-address window) *viewers*)
       (glfw:destroy-window window))))
