@@ -5,9 +5,20 @@
 (in-package #:newgl)
 
 (defclass viewer ()
-  ((objects :initform nil :initarg :objects :type (or null cons) :accessor objects)
+  ((window :initform nil :initarg :window :accessor window)
+   (objects :initform nil :initarg :objects :type (or null cons) :accessor objects)
    (view-xform :initform (meye 4) :initarg :xform :type mat4 :accessor viewport)
-   (aspect-ratio :initform 1.0 :initarg :aspect-ratio :type real :accessor aspect-ratio))
+   (aspect-ratio :initform 1.0 :initarg :aspect-ratio :type real :accessor aspect-ratio)
+   (show-fps :initform nil :initarg :show-fps :type t :accessor show-fps)
+   (wire-frame :initform nil :initarg :wire-frame :type t :accessor wire-frame-p)
+   (cull-face :initform :cull-face :initarg :cull-face :accessor cull-face)
+   (front-face :initform :ccw :initarg :front-face :accessor front-face)
+   (background-color :initform (vec4 0.7f0 0.7f0 0.7f0 1.0) :initarg :background :accessor background-color)
+   (mouse-press-info :initform nil)
+   (mouse-release-info :initform nil)
+   (previous-mouse-drag :initform nil)
+   (previous-seconds :initform 0.0)
+   (frame-count :initform 1))
   (:documentation "A collection of objects and a viewport."))
 
 (defmethod render ((viewer viewer) xform)
@@ -30,11 +41,42 @@
   (dolist (object (objects viewer))
     (reload-object object)))
 
+(defun show-gl-state ()
+  "Print debug information about the OpenGL state."
+  (loop
+        for field in '(:active-texture
+                       :array-buffer-binding
+                       :blend
+                       :current-program
+                       :line-width
+                       :vertex-array-binding
+                       :viewport)
+        do
+        (format t "~a : ~a~%" field (gl:get-integer field))))
+
+(defun show-open-gl-info ()
+  "Print OpenGL limits"
+  (loop
+        for field in '(:max-combined-texture-image-units
+                       :max-cube-map-texture-size
+                       :max-draw-buffers
+                       :max-fragment-uniform-components
+                       :max-texture-size
+                       ;; :max-varying-floats
+                       :max-vertex-attribs
+                       :max-vertex-texture-image-units
+                       :max-vertex-uniform-components
+                       :max-viewport-dims
+                       :texture-binding-2d
+                       :stereo)
+        do
+        (format t "~a : ~a~%" field (gl:get-integer field))))
+
 (defmethod handle-key ((viewer viewer) window key scancode action mod-keys)
   (cond
     ;; ESC to exit
     ((and (eq key :escape) (eq action :press))
-     (set-window-should-close)
+     (set-window-should-close window)
      t)
 
     ;; r to rebuild shaders
@@ -63,26 +105,30 @@
 
     ;; c to toggle printing fps
     ((and (eq key :f) (eq action :press))
-     (setf *show-fps* (if *show-fps* nil t))
-     t)
+     (with-slots (show-fps) viewer
+       (setf show-fps (not show-fps))
+       t))
 
     ;; w to toggle wireframe
     ((and (eq key :w) (eq action :press))
-     (setf *wire-frame* (if *wire-frame* nil t))
-     t)
+     (with-slots (wire-frame) viewer
+       (setf wire-frame (if wire-frame nil t))
+       t))
 
     ;; f1
     ((and (eq key :f1) (eq action :press))
-     (setf *cull-face* (if (eq *cull-face* :cull-face)
+     (with-slots (cull-face) viewer
+       (setf cull-face (if (eq cull-face :cull-face)
                            nil
                            :cull-face))
-     t)
+       t))
 
     ((and (eq key :f2) (eq action :press))
-     (setf *front-face* (if (eq *front-face* :cw)
+     (with-slots (front-face) viewer
+       (setf front-face (if (eq front-face :cw)
                             :ccw
                             :cw))
-     t)
+       t))
     (t
      (funcall #'some #'identity
               (loop for object in (objects viewer)
@@ -91,6 +137,7 @@
 
 (defmethod handle-resize ((viewer viewer) window width height)
   (with-slots (aspect-ratio) viewer
+    (gl:viewport 0 0 width height)
     (setf aspect-ratio
           (if (< width height )
               (/ height width 1.0)
@@ -101,6 +148,14 @@
         (handle-resize object window width height)))
 
 (defmethod handle-click ((viewer viewer) window click-info)
+  (with-slots (mouse-release-info mouse-press-info) viewer
+    (with-slots (action) click-info
+      (when (eq action :press)
+        (setf mouse-release-info nil)
+        (setf mouse-press-info click-info))
+      (when (eq action :release)
+        (setf mouse-press-info nil)
+        (setf mouse-release-info click-info))))
   (loop
         for object in (objects viewer)
         do
@@ -118,3 +173,118 @@
         do
         (handle-drag object window first-click-info current-pos))
   t)
+
+(defun init ()
+  (glfw:initialize))
+
+(defun terminate ()
+  (glfw:terminate))
+
+(defmethod display ((viewer viewer) &key
+                                      (view-transform nil)
+                                      (background-color (vec4 0.7f0 0.7f0 0.7f0 1.0))
+                                      (debug nil))
+  (declare (ignorable debug background-color view-transform))
+  "GLFW Event Loop function that initializes GLFW and OpenGL, creates a window,
+   and runs an event loop."
+  (init)
+
+  (glfw:set-error-callback 'error-callback)
+
+  (let* ((window (create-window :title (format nil "OpenGL Viewer Viewer (~,3f)" 0.0)
+                                :width 100
+                                :height 100
+                                :decorated t
+                                :opengl-profile :opengl-core-profile
+                                :context-version-major 4
+                                :context-version-minor 0
+                                :opengl-forward-compat *want-forward-context*
+                                :samples 1
+                                :resizable t)))
+    
+    ;; GLFW Initialization
+    (setf %gl:*gl-get-proc-address* #'get-proc-address)
+
+    (setf (gethash (cffi:pointer-address window) *viewers*) viewer)
+    (set-key-callback 'keyboard-handler window)
+    (set-mouse-button-callback 'mouse-handler window)
+    (set-scroll-callback 'scroll-handler window)
+    (set-framebuffer-size-callback 'resize-handler window)
+
+    ;; Initialize OpenGL state
+    (gl:enable :line-smooth
+               :polygon-smooth
+               :depth-test
+               )
+
+    (gl:depth-func :less)
+
+    (gl:clear-color (vx background-color)
+                    (vy background-color)
+                    (vz background-color)
+                    (vw background-color))
+
+    ;; Load objects for the first time
+    (reload-object viewer)
+
+    ;; The event loop
+    (with-slots (previous-seconds show-fps mouse-press-info mouse-release-info previous-mouse-drag
+                                  cull-face front-face wire-frame view-xform)
+        viewer
+      (loop
+            with start-time = (get-time)
+            with frame-count = 0
+            until (window-should-close-p)
+            
+            for current-seconds = (get-time)
+            for elapsed-seconds = (- current-seconds  previous-seconds)
+            for elapsed-time = (- (get-time) start-time)
+            when (> elapsed-seconds 0.25)
+            do
+            (setf previous-seconds current-seconds)
+            (when show-fps
+              (format t "OpenGL Viewer Viewer (~,3f)~%" (/ frame-count elapsed-seconds))
+              (set-window-title (format nil "OpenGL Viewer Viewer (~,3f)" (/ frame-count elapsed-seconds))))
+            (setf frame-count 0)
+
+            ;; Save info about the mouse drag.
+            ;; TODO: clean this up or handle in viewer...
+            when (and (not (null mouse-press-info))
+                      (null mouse-release-info))
+            do
+            (let* ((cpos (glfw:get-cursor-position window))
+                   (handled (handle-drag viewer window previous-mouse-drag cpos)))
+              (when (not handled)
+                (setf previous-mouse-drag
+                      (with-slots (mod-keys action button time) mouse-press-info
+                        (make-instance 'mouse-click
+                                       :cursor-pos cpos
+                                       :mod-keys mod-keys
+                                       :action action
+                                       :button button
+                                       :time (get-time))))))
+            do
+            ;; Update for next frame
+            (update viewer elapsed-time)
+            do
+            ;; Draw the viewer
+            (gl:clear :color-buffer :depth-buffer)
+            (if cull-face
+                (gl:enable :cull-face)
+                (gl:disable :cull-face))
+            (gl:front-face front-face)
+            (gl:polygon-mode :front-and-back (if wire-frame :line :fill))
+
+            (render viewer (m* view-transform view-xform))
+
+            (incf frame-count)
+
+            do (poll-events)
+            do (swap-buffers window)
+            )
+      
+
+      ;; Cleanup before exit
+      (cleanup viewer)
+      (remhash window *viewers*)
+      (glfw:destroy-window window))))

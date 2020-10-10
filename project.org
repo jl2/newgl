@@ -12,7 +12,7 @@ To open an empty viewer, run:
 
 #+BEGIN_SRC lisp
 (ql:quickload :newgl)
-(newgl:viewer)
+(newgl:display)
 #+END_SRC
 
 #+RESULTS:
@@ -23,7 +23,7 @@ For an example object, see the [[https://github.com/jl2/gl-fractals][gl-fractals
 #+BEGIN_SRC lisp
 (ql:quickload :newgl)
 
-(newgl:viewer (make-instance 'newgl:tri-mesh :indices #(0 1 2) :vertices
+(newgl:display (make-instance 'newgl:tri-mesh :indices #(0 1 2) :vertices
                                       #(0.0f0 0.0f0 0.0f0
                                         0.0f0 1.0f0 0.0f0
                                         1.0f0 0.0f0 0.0f0 1.0f0
@@ -57,15 +57,16 @@ Copyright (c) 2020 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 
 * TODOs
-** TODO Implement more methods on scene class
-** TODO Move top level keyboard handler into scene
 ** TODO Wavefront OBJ load and render
 ** TODO Collada load and render
-** TODO More examples.
 ** TODO Parametric surfaces?
 
-** TODO Fix keyframe-sequence :repeat behavior that repeats first/last point causing flicker
 
 * DONEs
 ** DONE Look at creating complex-fractal-scene that handles drag itself?
 ** DONE aspect-ratio-corrected mix-in class - no longer needed?
+** DONE Implement more methods on scene class
+** DONE Move top level keyboard handler into scene
+** DONE More examples.
+** DONE Fix keyframe-sequence :repeat behavior that repeats first/last point causing flicker
+
