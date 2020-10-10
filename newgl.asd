@@ -42,6 +42,7 @@
                (:file "viewer")
                (:file "opengl-object")
                (:file "geometry")
+               (:file "textured-geometry")
                (:file "layouts")
                (:file "uniforms")
                (:file "gl-shader")

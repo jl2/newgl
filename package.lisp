@@ -56,7 +56,7 @@
            #:handle-drag
            #:handle-resize
            #:reload-object
-           #:make-plastic-program
+           #:plastic
            #:set-uniform
            #:shader-type
            #:source-file

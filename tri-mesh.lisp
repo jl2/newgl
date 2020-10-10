@@ -4,7 +4,7 @@
 
 (in-package #:newgl)
 
-(defun make-plastic-program ()
+(defun plastic ()
   (make-shader-program  (shader-from-file (newgl-shader "plastic-vertex.glsl"))
                         (shader-from-file (newgl-shader "plastic-fragment.glsl"))))
 

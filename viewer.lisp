@@ -85,11 +85,11 @@
      (with-slots (objects) viewer
        (dolist (object objects)
          (build-shader-program object)))
-     (format t " Done.~%")
      t)
 
     ;; f to refill buffers
     ((and (eq key :b) (eq action :press))
+     (format t "Reloading buffers ~%")
      (reload-object viewer)
      t)
 
@@ -113,6 +113,7 @@
     ((and (eq key :w) (eq action :press))
      (with-slots (wire-frame) viewer
        (setf wire-frame (if wire-frame nil t))
+       (format t "Wire-frame ~a~%" wire-frame)
        t))
 
     ;; f1
@@ -121,6 +122,7 @@
        (setf cull-face (if (eq cull-face :cull-face)
                            nil
                            :cull-face))
+       (format t "Cull face: ~a~%" cull-face)
        t))
 
     ((and (eq key :f2) (eq action :press))
@@ -128,6 +130,7 @@
        (setf front-face (if (eq front-face :cw)
                             :ccw
                             :cw))
+       (format t "Front face: ~a~%" front-face)
        t))
     (t
      (funcall #'some #'identity
@@ -186,7 +189,7 @@
                                 :opengl-forward-compat *want-forward-context*
                                 :samples 1
                                 :resizable t)))
-    
+
     ;; GLFW Initialization
     (setf %gl:*gl-get-proc-address* #'get-proc-address)
 
@@ -254,7 +257,6 @@
 
             do (swap-buffers window)
             do (poll-events))
-      
 
       ;; Cleanup before exit
       (cleanup viewer)

@@ -22,6 +22,10 @@
    (object :initarg :object :reader shader-object)
    (info-log :initarg :info-log :reader shader-compile-info-log)))
 
+(defmethod print-object ((shader-error shader-error) stream)
+  (with-slots (status object info-log) shader-error
+    (format stream "OpenGL Compiler Error: ~a~%Info log:~%==========~%~a" status info-log)))
+
 (defclass gl-shader ()
   ((layout :initarg :layout :initform nil :type (or null layout))
    (uniforms :initform (make-hash-table :test 'equal) :type hash-table)
@@ -44,8 +48,11 @@
 
 
 (defclass gl-file-shader (gl-shader)
-  ((source-file :initarg :source-file :type (or pathname string)))
+  ((source-file :initarg :source-file :type (or pathname string) :accessor source-file))
   (:documentation "An OpenGL shader whose source code is stored in a file."))
+
+(defmethod print-object ((shader gl-shader) stream)
+  (format stream "(make-instance 'newgl:gl-file-shader :source-file ~s )" (source-file shader)))
 
 (defun glsl-type-keyword (name)
   (intern (string-upcase name) "KEYWORD"))
