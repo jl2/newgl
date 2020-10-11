@@ -81,7 +81,7 @@
 
 (defmethod assign-uniforms ((object opengl-object) &optional (view-xform (meye 4)))
   (with-slots (shader-program xform) object
-    (let ((mv (m* xform view-xform )))
+    (let ((mv (m* view-xform xform  )))
       (set-uniform shader-program "transform" mv)
       (set-uniform shader-program "normalTransform" (mtranspose (minv mv))))
     (assign-uniforms shader-program view-xform)))

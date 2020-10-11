@@ -127,10 +127,10 @@
                    (vector-push-extend (coerce (vw color) 'single-float) vertices))
                  (vector-push-extend index indices)
                  (incf index)))
-        (loop for ui below (1+ u-steps)
+        (loop for ui below u-steps
               for uv = (+ u-min (* ui du))
               do
-              (loop for vi from 0 below (1+ v-steps)
+              (loop for vi from 0 below v-steps
                     for vv = (+ v-min (* vi dv))
                     do
                     (let* ((pt0 (f_u_v obj uv vv))
@@ -151,9 +151,9 @@
 (defclass sphere (parametric-surface)
   ((radius :initform 1.0 :initarg :radius)
    (u-min :initform 0.0 :initarg :u-min)
-   (v-min :initform 0.0 :initarg :v-min)
-   (u-max :initform pi :initarg :u-max)
-   (v-max :initform (* 2 pi) :initarg :v-max)))
+   (v-min :initform (- pi) :initarg :v-min)
+   (u-max :initform (* 2 pi) :initarg :u-max)
+   (v-max :initform pi :initarg :v-max)))
 
 (defmethod f_u_v ((sphere sphere) uv vv)
   (with-slots (radius) sphere
