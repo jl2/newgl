@@ -4,10 +4,6 @@
 
 (in-package #:newgl)
 
-(defun plastic ()
-  (make-shader-program  (shader-from-file (newgl-shader "plastic-vertex.glsl"))
-                        (shader-from-file (newgl-shader "plastic-fragment.glsl"))))
-
 (defclass tri-mesh (geometry)
   ((vertices :initarg :vertices)
    (indices :initarg :indices)

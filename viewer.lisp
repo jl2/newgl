@@ -169,10 +169,9 @@
   (glfw:terminate))
 
 (defmethod display ((viewer viewer) &key
-                                      (view-transform nil)
                                       (background-color (vec4 0.7f0 0.7f0 0.7f0 1.0))
                                       (debug nil))
-  (declare (ignorable debug background-color view-transform))
+  (declare (ignorable debug background-color))
   "GLFW Event Loop function that initializes GLFW and OpenGL, creates a window,
    and runs an event loop."
   (init)
@@ -251,7 +250,7 @@
             (gl:polygon-mode :front-and-back (if wire-frame :line :fill))
 
             (with-context window
-              (render viewer (m* view-transform view-xform)))
+              (render viewer (meye 4)))
 
             (incf frame-count)
 

@@ -17,7 +17,7 @@
                                   :fill-pointer 0))
    (primitive-type :initform :points)
    (shader-program :initform
-                   (make-shader-program
+                   (make-shader-program 'shader-program
                     (shader-from-file (newgl-shader "point-vertex.glsl"))
                     (shader-from-file (newgl-shader "point-fragment.glsl")))))
   (:documentation "Point cloud."))

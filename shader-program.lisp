@@ -12,17 +12,32 @@
 (defgeneric use-shader-program (program)
   (:documentation "Set uniform and layout variables for all shaders in the program."))
 
+(defgeneric get-layout-descriptor (shader))
 
-(defun make-shader-program (&rest shaders)
+(defmethod get-layout-descriptor ((shader shader-program))
+  (with-slots (shaders) shader
+    (let ((descriptors (mapcar #'layout (remove-if-not #'identity shaders :key #'layout))))
+      (if descriptors
+          (get-layout-descriptor (car descriptors))
+          nil))))
+
+(defun make-shader-program (shader-type &rest shaders)
   "Create a shader program using the specified shaders."
-  (make-instance 'shader-program :shaders shaders))
+  (make-instance shader-type :shaders shaders))
 
+(defmethod bind-buffers ((object shader-program)))
+
+(defmethod fill-buffers ((object shader-program)))
 
 (defmethod set-uniform ((obj shader-program) name value)
   "Set a uniform value for the shader program."
   (with-slots (shaders) obj
     (dolist (shader shaders)
       (set-uniform shader name value))))
+
+(defmethod assign-uniforms ((program shader-program) &optional (view-xform (meye 4)))
+  (declare (ignorable program view-xform))
+  t)
 
 (defmethod cleanup ((obj shader-program))
   "Delete a shader on the GPU."
@@ -92,3 +107,9 @@
   (with-slots (program shaders) shader-program
     (dolist (shader shaders)
       (use-shader-uniforms shader program))))
+
+
+(defun plastic ()
+  (make-shader-program 'shader-program
+                       (shader-from-file (newgl-shader "plastic-vertex.glsl"))
+                       (shader-from-file (newgl-shader "plastic-fragment.glsl"))))

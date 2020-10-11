@@ -57,6 +57,8 @@
            #:handle-resize
            #:reload-object
            #:plastic
+           #:blend2d-painted-plastic
+           #:sphere
            #:set-uniform
            #:shader-type
            #:source-file
@@ -94,6 +96,10 @@
            #:display
 
            #:viewer
+
+           #:sphere
+           #:blend2d-shader
+           #:blend2d-painted-plastic
 
            #:quad
            #:make-uv-quad

@@ -110,13 +110,11 @@
 
 
 (defgeneric display (object &key
-                              view-transform
                               background-color
                               debug)
   (:documentation "Display an object."))
 
 (defmethod display ((object t) &key
-                         (view-transform (meye 4))
                          (background-color (vec4 0.7f0 0.7f0 0.7f0 1.0))
                          (debug nil))
   "High level function to display an object or viewer."
@@ -132,16 +130,13 @@
                 (make-instance 'viewer
                                :objects (if object
                                             (ensure-list object)
-                                            nil)
-                               :xform view-transform)))))
+                                            nil))))))
     (if (not debug)
         (trivial-main-thread:with-body-in-main-thread ()
             (display viewer
-                     :view-transform view-transform
                      :background-color background-color
                      :debug debug))
         (display viewer
-                 :view-transform view-transform
                  :background-color background-color
                  :debug debug))))
 

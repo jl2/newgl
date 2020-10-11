@@ -27,7 +27,7 @@
     (format stream "OpenGL Compiler Error: ~a~%Info log:~%==========~%~a" status info-log)))
 
 (defclass gl-shader ()
-  ((layout :initarg :layout :initform nil :type (or null layout))
+  ((layout :initarg :layout :initform nil :type (or null layout) :accessor layout)
    (uniforms :initform (make-hash-table :test 'equal) :type hash-table)
    (shader :initform 0 :type fixnum)
    (shader-type :initarg :shader-type))

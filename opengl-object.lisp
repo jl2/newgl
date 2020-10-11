@@ -66,11 +66,6 @@
   (declare (ignorable object window cpos x-scroll y-scroll))
   nil)
 
-(defmethod handle-drag ((object opengl-object) window current-pos)
-  (declare (ignorable object window first-click-info current-pos))
-  nil)
-
-
 (defmethod update ((object opengl-object) elapsed-seconds )
   (declare (ignorable object elapsed-seconds)))
 
@@ -86,20 +81,26 @@
 
 (defmethod assign-uniforms ((object opengl-object) &optional (view-xform (meye 4)))
   (with-slots (shader-program xform) object
-    (set-uniform shader-program "transform" (m* view-xform xform))
-    (set-uniform shader-program "normalTransform" (mtranspose (minv (m* view-xform xform))))))
+    (let ((mv (m* xform view-xform )))
+      (set-uniform shader-program "transform" mv)
+      (set-uniform shader-program "normalTransform" (mtranspose (minv mv))))
+    (assign-uniforms shader-program view-xform)))
 
 (defmethod fill-buffers ((object opengl-object))
-  (with-slots (vao) object
+  (with-slots (shader-program vao) object
     (when (/= 0 vao)
       (error "fill-buffers called on object where vao != 0"))
     (setf vao (gl:gen-vertex-array))
     (gl:bind-vertex-array vao)))
 
+(defmethod fill-buffers :after ((object opengl-object))
+  (with-slots (shader-program vao) object
+    (fill-buffers shader-program)))
+
 (defmethod reload-object ((object opengl-object))
   (cleanup object)
-  (fill-buffers object)
-  (build-shader-program object))
+  (build-shader-program object)
+  (fill-buffers object))
 
 (defmethod cleanup ((object opengl-object))
   (with-slots (vao vbos ebos shader-program) object
@@ -111,9 +112,12 @@
       (setf vao 0))))
 
 (defmethod bind-buffers ((object opengl-object))
-  (with-slots (vao) object
+  (with-slots (shader-program vao) object
     (gl:bind-vertex-array vao)))
 
+(defmethod bind-buffers :after ((object opengl-object))
+  (with-slots (shader-program) object
+    (bind-buffers shader-program)))
 
 (defmethod render ((object opengl-object) view-xform)
   (with-slots (shader-program xform) object

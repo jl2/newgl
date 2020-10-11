@@ -2,26 +2,31 @@
 
 in vec3 normal;
 in vec3 position;
+in vec2 uv;
 
-out vec4 outColor;
-
-const vec3 lightPos = vec3(5.0, 5.0, -5.0);
+const vec3 lightPos = vec3(0.0, 8.0, 2.0);
 
 const vec3 ambientColor = vec3(0.1, 0.1, 0.1);
 const vec3 specColor = vec3(1.0, 1.0, 1.0);
-in vec4 diffuseColor;
+
+uniform sampler2D image;
+
+out vec4 outColor;
 
 void main()
 {
-     vec3 lightDir = normalize(lightPos - position);
+
+     vec4 diffuseColor = texture(image, uv);
+
+     vec3 lightDir = normalize(position - lightPos);
      vec3 reflectDir = reflect(-lightDir, normal);
-     vec3 viewDir = normalize(-position);
+     vec3 viewDir = normalize(position);
 
      float lambertian = max(dot(lightDir,normal), 0.0);
      float specular = 0.0;
      if (lambertian > 0.0) {
           float specAngle = max(dot(reflectDir, viewDir), 0.0);
-          specular = pow(specAngle, 8.0);
+          specular = pow(specAngle, 13.0);
      }
    outColor = vec4(ambientColor +
                    lambertian*vec3(diffuseColor) +

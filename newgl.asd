@@ -33,6 +33,8 @@
 
                #:cl-ppcre
 
+               #:blend2d
+
                #:bordeaux-threads
                #:trivial-main-thread)
 
@@ -42,7 +44,8 @@
                (:file "viewer")
                (:file "opengl-object")
                (:file "geometry")
-               (:file "textured-geometry")
+               (:file "textured-shader")
+               (:file "blend2d-shader")
                (:file "layouts")
                (:file "uniforms")
                (:file "gl-shader")
