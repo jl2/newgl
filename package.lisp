@@ -56,8 +56,6 @@
            #:handle-drag
            #:handle-resize
            #:reload-object
-           #:plastic
-           #:blend2d-painted-plastic
            #:sphere
            #:set-uniform
            #:shader-type
@@ -98,7 +96,9 @@
            #:viewer
 
            #:sphere
+           #:sombrero-surface
            #:blend2d-shader
+           #:plastic
            #:blend2d-painted-plastic
 
            #:quad
@@ -136,4 +136,8 @@
            #:create-rotating-keyframe-viewer
 
            #:read-lines-from-text-file
+
+           #:blend2d-shader
+           #:blend2d-painted-plastic
+           #:draw-image
            ))

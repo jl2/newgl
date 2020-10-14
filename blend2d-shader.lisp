@@ -25,6 +25,8 @@
           (bl:lookup-error (bl:context-set-fill-style-rgba32 ctx (random #16rffffffff)))
           (bl:lookup-error (bl:context-fill-geometry ctx bl:+geometry-type-circle+ circle))))))
 
+
+
 (defmethod fill-texture ((obj blend2d-shader))
   (with-slots (size tex-type textures) obj
     (bl:with-memory-image-context*
@@ -35,7 +37,7 @@
       (gl:tex-image-2d tex-type 0 :rgba size size 0 :rgba :unsigned-byte (bl:image-data.pixel-data data))
       (gl:generate-mipmap tex-type))))
 
-(defun blend2d-painted-plastic ()
-  (make-shader-program 'blend2d-shader
+(defun blend2d-painted-plastic ( &optional (shader 'blend2d-shader))
+  (make-shader-program shader
                        (shader-from-file (newgl-shader "painted-plastic-vertex.glsl"))
                        (shader-from-file (newgl-shader "painted-plastic-fragment.glsl"))))
