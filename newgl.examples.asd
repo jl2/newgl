@@ -32,6 +32,7 @@
             :components
             ((:file "package")
              (:file "keyframe-axis-rotation")
+             (:file "blend2d-sombrero")
              (:file "keyframe-axis-border")
              (:file "regular-polygons"))
             )))
