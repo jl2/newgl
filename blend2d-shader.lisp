@@ -37,7 +37,9 @@
       (gl:tex-image-2d tex-type 0 :rgba size size 0 :rgba :unsigned-byte (bl:image-data.pixel-data data))
       (gl:generate-mipmap tex-type))))
 
-(defun blend2d-painted-plastic ( &optional (shader 'blend2d-shader))
-  (make-shader-program shader
-                       (shader-from-file (newgl-shader "painted-plastic-vertex.glsl"))
-                       (shader-from-file (newgl-shader "painted-plastic-fragment.glsl"))))
+(defun blend2d-painted-plastic ( &key (shader 'blend2d-shader) (size 1024))
+  (make-instance shader
+                 :size size
+                 :shaders (list
+                           (shader-from-file (newgl-shader "painted-plastic-vertex.glsl"))
+                           (shader-from-file (newgl-shader "painted-plastic-fragment.glsl")))))

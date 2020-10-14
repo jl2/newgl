@@ -202,8 +202,9 @@
     (gl:enable :line-smooth
                :polygon-smooth
                :depth-test
+               :blend
                )
-
+    (gl:blend-func :src-alpha :one-minus-src-alpha)
     (gl:depth-func :less)
 
     (gl:clear-color (vx background-color)

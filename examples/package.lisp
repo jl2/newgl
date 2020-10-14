@@ -25,6 +25,7 @@
   (:export #:show-keyframe-axis-rotation
            #:show-keyframe-axis-border
            #:show-blend2d-sombrero
+           #:show-blend2d-tori
            #:polygon-scene
            #:make-polygon
            #:show-polygons

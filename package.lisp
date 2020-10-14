@@ -96,7 +96,8 @@
            #:viewer
 
            #:sphere
-           #:sombrero-surface
+           #:sombrero
+           #:torus
            #:blend2d-shader
            #:plastic
            #:blend2d-painted-plastic

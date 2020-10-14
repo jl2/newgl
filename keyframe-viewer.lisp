@@ -50,6 +50,7 @@
                                              :segments segments
                                              :dt dt
                                              )
+             :background-color (vec4 0.2 0.2 0.2 0.0)
              :debug debug))
 
 
