@@ -53,12 +53,12 @@
   (newgl:display-in-rotating-viewer
    (make-instance 'newgl:sombrero
                   :height 0.25
-                  :u-steps 32
-                  :v-steps 32
+                  :u-steps 128
+                  :v-steps 128
                   :u-min -4.0 :u-max 4.0
                   :v-min -4.0 :v-max 4.0
                   :shader-program (newgl:blend2d-painted-plastic
-                                   :size 1024
+                                   :size 512
                                    :shader 'blend2d-cubics))
    :radius 6
    :cam-height 4
