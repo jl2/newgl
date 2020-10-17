@@ -7,8 +7,8 @@
 (defclass geometry (opengl-object)
   ((vbos :initform nil :type (or null cons))
    (ebos :initform nil :type (or null cons))
-   (idx-count :initform 0)
-   (primitive-type :initarg :primitive-type :initform :triangles))
+   (primitive-type :initarg :primitive-type :initform :triangles)
+   (idx-count :initform 0))
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
 (defmethod cleanup ((object geometry))
@@ -23,21 +23,12 @@
         (setf ebos nil))
       (call-next-method)))
 
-(defgeneric vertex-buffers (object)
+(defgeneric allocate-and-fill-buffers (object)
   (:documentation "Generate vertices and indices for the object."))
 
-(defmethod vertex-buffers ((object geometry))
-  (values (make-array 0
-                      :element-type 'single-float
-                      :initial-contents '()
-                      :adjustable t
-                      :fill-pointer 0)
-         (make-array 0
-                      :element-type 'fixnum
-                      :initial-contents '()
-                      :adjustable t
-                      :fill-pointer 0)))
-
+(defmethod allocate-and-fill-buffers ((object geometry))
+  (values (allocate-gl-array :float 0)
+          (allocate-gl-array :unsigned-int 0)))
 
 (defmethod fill-buffers ((object geometry))
   (call-next-method)
@@ -50,18 +41,15 @@
     (setf vbos (gl:gen-buffers 1))
     (setf ebos (gl:gen-buffers 1))
 
-    (multiple-value-bind (vertices indices) (vertex-buffers object)
-      (let ((gl-vertices (to-gl-float-array vertices))
-            (gl-indices (to-gl-array indices :unsigned-int)))
+    (multiple-value-bind (vertices indices) (allocate-and-fill-buffers object)
+      (gl:bind-buffer :array-buffer (car vbos))
+      (gl:buffer-data :array-buffer :static-draw vertices)
+      (gl:free-gl-array vertices)
 
-        (gl:bind-buffer :array-buffer (car vbos))
-        (gl:buffer-data :array-buffer :dynamic-draw gl-vertices)
-        (gl:free-gl-array gl-vertices)
-
-        (gl:bind-buffer :element-array-buffer (car ebos))
-        (gl:buffer-data :element-array-buffer :dynamic-draw gl-indices)
-        (gl:free-gl-array gl-indices)
-        (setf idx-count (length indices))))))
+      (gl:bind-buffer :element-array-buffer (car ebos))
+      (gl:buffer-data :element-array-buffer :static-draw indices)
+      (setf idx-count (gl::gl-array-size indices))
+      (gl:free-gl-array indices))))
 
 (defmethod bind-buffers ((object geometry))
   (call-next-method)
@@ -77,7 +65,9 @@
   (declare (ignorable object view-xform))
   (call-next-method)
   (with-slots (primitive-type idx-count) object
-    (gl:draw-elements primitive-type (gl:make-null-gl-array :unsigned-int) :count idx-count)))
+    (gl:draw-elements primitive-type
+                      (gl:make-null-gl-array :unsigned-int)
+                      :count idx-count)))
 
 
 

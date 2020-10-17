@@ -27,13 +27,28 @@
 (defgeneric reload-object (object)
   (:documentation "Destroy and reload object's buffers."))
 
+(defclass gl-buffer ()
+  ((size :initform 0)
+   (type :initform :float)))
 
-(defun to-gl-float-array (arr)
+(defun allocate-gl-array (type count)
+  (gl:alloc-gl-array type count))
+
+(defun gl-set (array idx value type)
+  (setf (gl:glaref array idx)
+        (coerce value type)))
+
+(defun gl-get (array idx)
+  (gl:glaref array idx))
+
+(defun to-gl-float-array (sequence)
   "Create an OpenGL float array from a CL array of numbers.
    This is a convenience function that will coerce array elments to single-float."
   (declare (optimize (speed 3))
-           (type vector arr))
-  (let* ((count (length arr))
+           (type sequence sequence))
+  (let* (
+         (count (length sequence))
+         (arr (make-array (length sequence) :initial-contents sequence :element-type 'single-float))
          (gl-array (gl:alloc-gl-array :float count)))
     (dotimes (i count)
       (setf (gl:glaref gl-array i) (coerce (aref arr i) 'single-float)))
