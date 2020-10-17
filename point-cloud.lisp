@@ -22,9 +22,9 @@
                     (shader-from-file (newgl-shader "point-fragment.glsl")))))
   (:documentation "Point cloud."))
 
-(defmethod vertex-buffers ((object point-cloud))
+(defmethod allocate-and-fill-buffers ((object point-cloud))
   (with-slots (vertices indices) object
-    (values vertices indices)))
+    (values (to-gl-float-array vertices) (to-gl-array  indices))))
 
 
 (defun make-point-cloud ()

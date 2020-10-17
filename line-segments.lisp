@@ -22,9 +22,10 @@
                    (shader-from-file (newgl-shader "point-fragment.glsl")))))
   (:documentation "Point cloud."))
 
-(defmethod vertex-buffers ((object line-segments))
+(defmethod allocate-and-fill-buffers ((object line-segments))
   (with-slots (vertices indices) object
-    (values vertices indices)))
+    (values (to-gl-float-array vertices)
+            (to-gl-array indices :unsigned-int))))
 
 (defun make-line-segments ()
   (make-instance 'line-segments))
