@@ -16,20 +16,15 @@
 
 (defgeneric f_u_v (surface uv vv))
 
-(defmethod vertex-buffers ((obj parametric-surface))
+(defmethod allocate-and-fill-buffers ((obj parametric-surface))
   (with-slots (shader-program color u-min v-min u-max v-max u-steps v-steps) obj
     (let* ((desc (get-layout-descriptor shader-program))
-           (vertices (make-array (* u-steps v-steps (layout-stride desc))
-                                 :element-type 'single-float
-                                 :initial-element 0.0f0
-                                 :adjustable t
-                                 :fill-pointer 0))
-           (indices (make-array (* u-steps v-steps 2)
-                                :element-type 'fixnum
-                                :initial-element 0
-                                :adjustable t
-                                :fill-pointer 0))
-           (index 0)
+           (vertices (allocate-gl-array :float (* 2 3 u-steps v-steps (layout-stride desc))))
+           (indices (allocate-gl-array :unsigned-int (*  2 3 u-steps v-steps)))
+
+           (cur-vert-idx 0)
+           (cur-idx-idx 0)
+           
            (dst (/ 1.0 u-steps))
            (dtt (/ 1.0 v-steps))
 
@@ -38,23 +33,36 @@
       (with-slots (emit-position emit-normal emit-uv emit-color) desc
         (labels ((next-point ( pos normal st tt)
                    (when emit-position
-                     (vector-push-extend (coerce (vx pos) 'single-float) vertices)
-                     (vector-push-extend (coerce (vy pos) 'single-float) vertices)
-                     (vector-push-extend (coerce (vz pos) 'single-float) vertices))
+                     (gl-set vertices cur-vert-idx (vx pos) 'single-float)
+                     (incf cur-vert-idx)
+                     (gl-set vertices cur-vert-idx (vy pos) 'single-float)
+                     (incf cur-vert-idx)
+                     (gl-set vertices cur-vert-idx (vz pos) 'single-float)
+                     (incf cur-vert-idx))
                    (when emit-normal
-                     (vector-push-extend (coerce (vx normal) 'single-float) vertices)
-                     (vector-push-extend (coerce (vy normal) 'single-float) vertices)
-                     (vector-push-extend (coerce (vz normal) 'single-float) vertices))
+                     (gl-set vertices cur-vert-idx (vx normal) 'single-float)
+                     (incf cur-vert-idx)
+                     (gl-set vertices cur-vert-idx (vy normal) 'single-float)
+                     (incf cur-vert-idx)
+                     (gl-set vertices cur-vert-idx (vz normal) 'single-float)
+                     (incf cur-vert-idx))
                    (when emit-uv
-                     (vector-push-extend (coerce st 'single-float) vertices)
-                     (vector-push-extend (coerce tt 'single-float) vertices))
+                     (gl-set vertices cur-vert-idx st 'single-float)
+                     (incf cur-vert-idx)
+                     (gl-set vertices cur-vert-idx tt 'single-float)
+                     (incf cur-vert-idx))
                    (when emit-color
-                     (vector-push-extend (coerce (vx color) 'single-float) vertices)
-                     (vector-push-extend (coerce (vy color) 'single-float) vertices)
-                     (vector-push-extend (coerce (vz color) 'single-float) vertices)
-                     (vector-push-extend (coerce (vw color) 'single-float) vertices))
-                   (vector-push-extend index indices)
-                   (incf index)))
+                     (gl-set vertices cur-vert-idx (vx color) 'single-float)
+                     (incf cur-vert-idx)
+                     (gl-set vertices cur-vert-idx (vy color) 'single-float)
+                     (incf cur-vert-idx)
+                     (gl-set vertices cur-vert-idx (vz color) 'single-float)
+                     (incf cur-vert-idx)
+                     (gl-set vertices cur-vert-idx (vw color) 'single-float)
+                     (incf cur-vert-idx))
+                   (when (or emit-color emit-uv emit-normal emit-position)
+                     (gl-set indices cur-idx-idx cur-idx-idx 'fixnum)
+                     (incf cur-idx-idx))))
           (loop for ui below u-steps
                 for uv = (+ u-min (* ui du))
                 for st = (* ui dst)
