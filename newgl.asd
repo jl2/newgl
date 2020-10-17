@@ -44,6 +44,7 @@
                (:file "viewer")
                (:file "opengl-object")
                (:file "geometry")
+               (:file "instanced-geometry")
                (:file "parametric-surfaces")
                (:file "textured-shader")
                (:file "blend2d-shader")

@@ -4,7 +4,7 @@ in vec3 normal;
 in vec3 position;
 in vec2 uv;
 
-const vec3 lightPos = vec3(5.0, 5.0, -5.0);
+const vec3 lightPos = vec3(0.0, 5.0, 0.0);
 
 const vec3 ambientColor = vec3(0.1, 0.1, 0.1);
 const vec3 specColor = vec3(1.0, 1.0, 1.0);
