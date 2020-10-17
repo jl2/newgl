@@ -4,6 +4,10 @@ layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inNormal;
 layout(location = 2) in vec2 inUV;
 
+// layout(
+//      location = 3)
+//      in mat4 instance_xform;
+
 uniform mat4 transform;
 uniform mat4 normalTransform;
 
@@ -15,6 +19,7 @@ void main()
 {
     // Modified from
 //https://www.mathematik.uni-marburg.de/~thormae/lectures/graphics1/code/WebGLShaderLightMat/ShaderLightMat.html
+     // vec4 pos4 = transform * instance_xform * vec4(inPosition, 1.0);
      vec4 pos4 = transform * vec4(inPosition, 1.0);
      gl_Position = pos4;
 

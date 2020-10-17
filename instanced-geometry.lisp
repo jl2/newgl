@@ -6,57 +6,44 @@
 
 (defclass instanced-geometry (geometry)
   ((instance-count :initform 0 :initarg :instance-count :accessor instance-count)
-   (instance-vbo :initform 0)
+   (instance-vbos :initform 0)
    )
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
 
-(defmethod cleanup ((object geometry))
-  (with-slots (instance-vbo instance-count) object
-    ;; Do something
-    (format t "Cleaning up instanced-geometry leaking ~a.~%" instance-vbo))
+(defmethod cleanup ((object instanced-geometry))
+  (with-slots (instance-vbos) object
+      (when instance-vbos
+        (gl:bind-buffer :array-buffer 0)
+        (gl:delete-buffers instance-vbos)
+        (setf instance-vbos nil)))
   (call-next-method))
 
-(defmethod fill-buffers ((object geometry))
+(defgeneric alloc-and-fill-instance-data (object)
+  (:documentation "Allocated and fill an array of instance data."))
+
+(defmethod alloc-and-fill-instance-data ((object instanced-geometry))
+  (allocate-gl-array :float 0))
+
+(defmethod fill-buffers ((object instanced-geometry))
   (call-next-method)
-  (with-slots (instance-vbo) object
+  (with-slots (instance-vbos) object
     (setf instance-vbos (gl:gen-buffers 1))
-    (multiple-value-bind (vertices indices) (vertex-buffers object)
-      (let ((gl-vertices (to-gl-float-array vertices))
-            (gl-indices (to-gl-array indices :unsigned-int)))
+    (multiple-value-bind (data stride) (alloc-and-fill-instance-data object)
+      (gl:bind-buffer :array-buffer (car instance-vbos))
+      (gl:buffer-data :array-buffer :static-draw data)
+      (gl:free-gl-array data)
+      )))
 
-        (gl:bind-buffer :array-buffer (car vbos))
-        (gl:buffer-data :array-buffer :dynamic-draw gl-vertices)
-        (gl:free-gl-array gl-vertices)
+(defmethod bind-buffers ((object instanced-geometry))
+  (call-next-method)
+  (with-slots (instance-vbos) object
+    (when (null instance-vbos)
+      (error "vbos is null"))
+    (gl:bind-buffer :array-buffer (car instance-vbos))
+    (gl:bind-buffer :element-array-buffer (car ebos))))
 
-        (gl:bind-buffer :element-array-buffer (car ebos))
-        (gl:buffer-data :element-array-buffer :dynamic-draw gl-indices)
-        (gl:free-gl-array gl-indices)
-        (setf idx-count (length indices)))))
-  ;; (with-slots (vbos ebos idx-count) object
-  ;;   (when (not (null vbos))
-  ;;     (error "vbos is being rebound!"))
-  ;;   (when (not (null ebos))
-  ;;     (error "ebos is being rebound!"))
-
-  ;;   (setf vbos (gl:gen-buffers 1))
-  ;;   (setf ebos (gl:gen-buffers 1))
-
-  ;;   (multiple-value-bind (vertices indices) (vertex-buffers object)
-  ;;     (let ((gl-vertices (to-gl-float-array vertices))
-  ;;           (gl-indices (to-gl-array indices :unsigned-int)))
-
-  ;;       (gl:bind-buffer :array-buffer (car vbos))
-  ;;       (gl:buffer-data :array-buffer :dynamic-draw gl-vertices)
-  ;;       (gl:free-gl-array gl-vertices)
-
-  ;;       (gl:bind-buffer :element-array-buffer (car ebos))
-  ;;       (gl:buffer-data :element-array-buffer :dynamic-draw gl-indices)
-  ;;       (gl:free-gl-array gl-indices)
-  ;;       (setf idx-count (length indices)))))
-  )
-
-(defmethod render ((object geometry) view-xform)
+(defmethod render ((object instanced-geometry) view-xform)
   (declare (ignorable object view-xform))
   (call-next-method)
   (with-slots (instance-count primitive-type idx-count) object

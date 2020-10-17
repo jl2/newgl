@@ -15,6 +15,10 @@
    (descriptor :initform nil :accessor descriptor))
   (:documentation "A shader layout."))
 
+(defclass instanced-layout (layout)
+  ()
+  (:documentation "A shader layout that supports instance data in the last entry."))
+
 (defgeneric compatible (first second)
   (:documentation "Check if two layouts are compatible. (i.e. same types and number of entries)"))
 
@@ -35,6 +39,7 @@
    (emit-normal :initform nil :initarg :emit-normal :accessor emit-normal)
    (emit-uv :initform nil :initarg :emit-uv :accessor emit-uv)
    (emit-color :initform nil :initarg :emit-color :accessor emit-color)))
+
 (defun layout-stride (desc)
   (with-slots (emit-position emit-normal emit-uv emit-color) desc
     (+ (if emit-position 3 0)
@@ -75,10 +80,12 @@
                  :count count
                  :type type))
 
+(defmethod print-object ((obj layout-entry) stream)
+  (with-slots (name count type) obj
+    (format stream "(make-layout-entry ~a ~a ~a)" name count type)))
+
 (defun make-layout (entries)
   (make-instance 'layout :entries entries))
-
-
 
 (defun compute-stride (layout)
   (with-slots (entries) layout
@@ -94,14 +101,14 @@
                                         (slot-value entry 'count)))
        for entry in entries
        for idx from 0
-       do
-         (with-slots (count type name) entry
-           (let ((entry-attrib (gl:get-attrib-location program name)))
-             (when (>= entry-attrib 0)
-               (gl:enable-vertex-attrib-array entry-attrib)
-               (gl:vertex-attrib-pointer idx
-                                         count
-                                         type
-                                         :false
-                                         stride
-                                         offset)))))))
+          do
+          (with-slots (count type name) entry
+            (let ((entry-attrib (gl:get-attrib-location program name)))
+              (when (>= entry-attrib 0)
+                (gl:enable-vertex-attrib-array entry-attrib)
+                (gl:vertex-attrib-pointer idx
+                                          count
+                                          type
+                                          :false
+                                          stride
+                                          offset)))))))

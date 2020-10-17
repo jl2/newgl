@@ -19,11 +19,17 @@
     (bl:context-set-fill-style-rgba32 ctx #16r000000ff)
     (bl:context-fill-all ctx)
     (flet ((rp ()
-             (coerce (j-utils:random-between -50.0 (+ size 50.0)) 'double-float)))
-      (dotimes (n 10)
+             (coerce (j-utils:random-between (* 0.0 size) (* 1.0 size)) 'double-float)))
+      (dotimes (n 20)
         (bl:path-init path)
 
-        (bl:path-move-to path (rp) (rp))
+        (let ((ox (rp))
+              (oy (rp)))
+          (bl:path-move-to path ox oy)
+
+          (dotimes (i (+ 2 (random 3)))
+            (bl:path-line-to path (rp) (rp)))
+          (bl:path-line-to path ox oy))
 
         (bl:path-cubic-to path
                           (rp) (rp)
@@ -33,37 +39,30 @@
                           (rp) (rp)
                           (rp) (rp)
                           (rp) (rp))
-        (bl:path-cubic-to path
-                          (rp) (rp)
-                          (rp) (rp)
-                          (rp) (rp))
-        (bl:path-cubic-to path
-                          (rp) (rp)
-                          (rp) (rp)
-                          (rp) (rp))
-        (bl:path-cubic-to path
-                          (rp) (rp)
-                          (rp) (rp)
-                          (rp) (rp))
-        (bl:context-set-comp-op ctx bl:+comp-op-src-over+)
+
+        (bl:context-set-comp-op ctx bl:+comp-op-src-copy+)
+        (bl:context-set-stroke-style-rgba32 ctx #16rff0000ff)
+        (bl:context-stroke-path-d ctx path)
         (bl:context-set-fill-style-rgba32 ctx (random-blend2d-color))
-        (bl:context-fill-path-d ctx path)))))
+        (bl:context-fill-path-d ctx path)
+
+        ))))
 
 (defun show-blend2d-sombrero ()
   (newgl:display-in-rotating-viewer
    (make-instance 'newgl:sombrero
                   :height 0.25
-                  :u-steps 128
-                  :v-steps 128
-                  :u-min -4.0 :u-max 4.0
-                  :v-min -4.0 :v-max 4.0
+                  :u-min -6.0 :u-max 6.0
+                  :u-steps 80
+                  :v-min -6.0 :v-max 6.0
+                  :v-steps 80
                   :shader-program (newgl:blend2d-painted-plastic
-                                   :size 512
+                                   :size 2048
                                    :shader 'blend2d-cubics))
-   :radius 6
-   :cam-height 4
-   :dt (/ 0.125 4)
-   :debug t))
+   :radius 16
+   :cam-height 8
+   :dt (/ 0.125 12)
+   :debug nil))
 
 (defun show-blend2d-tori ()
   (newgl:display-in-rotating-viewer
@@ -86,8 +85,8 @@
                        objects))
            )
      objects)
-   :radius 12
-   :cam-height 10
+   :radius 16
+   :cam-height 12
    :dt (/ 0.125 4)
    :debug t))
 
