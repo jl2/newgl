@@ -16,6 +16,7 @@
 
 (defgeneric f_u_v (surface uv vv))
 
+
 (defmethod allocate-and-fill-buffers ((obj parametric-surface))
   (with-slots (shader-program color u-min v-min u-max v-max u-steps v-steps) obj
     (let* ((desc (get-layout-descriptor shader-program))
@@ -103,6 +104,7 @@
           (* radius (cos vv))
           (* radius (sin uv) (sin vv)))))
 
+
 (defclass sombrero (parametric-surface)
   ((height :initform 1.0 :initarg :height)
    (u-steps :initform 32 :initarg :u-steps)
@@ -122,6 +124,7 @@
                       0.001f0)))
             (* height (/ (sin (* 4 r)) r)))
           vv)))
+
 
 (defclass torus (parametric-surface)
   ((inner-radius :initform 0.25 :initarg :inner)

@@ -181,14 +181,13 @@
   (let* ((window (create-window :title (format nil "OpenGL Viewer Viewer (~,3f)" 0.0)
                                 :width 1000
                                 :height 1000
-                                :decorated t
+                                :decorated nil
                                 :opengl-profile :opengl-core-profile
                                 :context-version-major 4
                                 :context-version-minor 0
                                 :opengl-forward-compat *want-forward-context*
                                 :samples 1
                                 :resizable t)))
-
     ;; GLFW Initialization
     (setf %gl:*gl-get-proc-address* #'get-proc-address)
 

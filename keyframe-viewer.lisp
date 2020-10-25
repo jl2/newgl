@@ -22,9 +22,9 @@
                                  with theta-diff = (/ (* 2 pi) segments)
                                  for i below (1+ segments)
                                  for theta0 = (* theta-diff i)
-                                 for pt = (vec3 (* radius (cos theta0))
+                                 for pt = (vec3 (* radius (cos (- theta0)))
                                                 cam-height
-                                                (* radius (sin theta0)))
+                                                (* radius (sin (- theta0))))
                                  collect (create-keyframe pt (* dt i)))
                            :before :repeat
                            :after :repeat)
