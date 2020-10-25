@@ -20,5 +20,5 @@ void main()
      diffuseColor = inColor;
 
      position = vec3(pos4);
-     normal = normalize(mat3(normalTransform) * inNormal);
+     normal = normalize(normalTransform * vec4(inNormal, 0.0)).xyz;
 }
