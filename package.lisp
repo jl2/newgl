@@ -34,6 +34,7 @@
            #:build-shader-program
            #:bind-buffers
            #:fill-buffers
+           #:allocate-and-fill-buffers
            #:reload-object
            #:cleanup
            #:to-gl-array
