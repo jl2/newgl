@@ -13,7 +13,7 @@
    (wire-frame :initform nil :initarg :wire-frame :type t :accessor wire-frame-p)
    (cull-face :initform :cull-face :initarg :cull-face :accessor cull-face)
    (front-face :initform :ccw :initarg :front-face :accessor front-face)
-   (background-color :initform (vec4 0.7f0 0.7f0 0.7f0 1.0) :initarg :background :accessor background-color)
+   (background-color :initform (vec4 0.04f0 0.04f0 0.04f0 1.0) :initarg :background :accessor background-color)
    (mouse-press-info :initform nil)
    (mouse-release-info :initform nil)
    (previous-mouse-drag :initform nil)
@@ -168,10 +168,7 @@
 (defun terminate ()
   (glfw:terminate))
 
-(defmethod display ((viewer viewer) &key
-                                      (background-color (vec4 0.7f0 0.7f0 0.7f0 1.0))
-                                      (debug nil))
-  (declare (ignorable debug background-color))
+(defmethod display ((viewer viewer))
   "GLFW Event Loop function that initializes GLFW and OpenGL, creates a window,
    and runs an event loop."
   (init)
@@ -188,76 +185,78 @@
                                 :opengl-forward-compat *want-forward-context*
                                 :samples 1
                                 :resizable t)))
-    ;; GLFW Initialization
-    (setf %gl:*gl-get-proc-address* #'get-proc-address)
+    (unwind-protect
+         (progn
+           ;; GLFW Initialization
+           (setf %gl:*gl-get-proc-address* #'get-proc-address)
 
-    (setf (gethash (cffi:pointer-address window) *viewers*) viewer)
-    (set-key-callback 'keyboard-handler window)
-    (set-mouse-button-callback 'mouse-handler window)
-    (set-scroll-callback 'scroll-handler window)
-    (set-framebuffer-size-callback 'resize-handler window)
+           (setf (gethash (cffi:pointer-address window) *viewers*) viewer)
+           (set-key-callback 'keyboard-handler window)
+           (set-mouse-button-callback 'mouse-handler window)
+           (set-scroll-callback 'scroll-handler window)
+           (set-framebuffer-size-callback 'resize-handler window)
 
-    ;; Initialize OpenGL state
-    (gl:enable :line-smooth
-               :polygon-smooth
-               :depth-test
-               :blend
-               )
-    (gl:blend-func :src-alpha :one-minus-src-alpha)
-    (gl:depth-func :less)
+           ;; Initialize OpenGL state
+           (gl:enable :line-smooth
+                      :polygon-smooth
+                      :depth-test
+                      :blend
+                      )
+           (gl:blend-func :src-alpha :one-minus-src-alpha)
+           (gl:depth-func :less)
 
-    (gl:clear-color (vx background-color)
-                    (vy background-color)
-                    (vz background-color)
-                    (vw background-color))
+           ;; The event loop
+           (with-slots (previous-seconds show-fps mouse-press-info mouse-release-info previous-mouse-drag
+                        cull-face front-face wire-frame view-xform background-color)
+               viewer
 
-    ;; Load objects for the first time
-    (reload-object viewer)
+             (gl:clear-color (vx background-color)
+                             (vy background-color)
+                             (vz background-color)
+                             (vw background-color))
 
-    ;; The event loop
-    (with-slots (previous-seconds show-fps mouse-press-info mouse-release-info previous-mouse-drag
-                                  cull-face front-face wire-frame view-xform)
-        viewer
-      (loop
-            with start-time = (get-time)
-            with frame-count = 0
-            until (window-should-close-p window)
+             ;; Load objects for the first time
+             (reload-object viewer)
+             (loop
+               with start-time = (get-time)
+               with frame-count = 0
+               until (window-should-close-p window)
 
-            for current-seconds = (get-time)
-            for elapsed-seconds = (- current-seconds  previous-seconds)
-            for elapsed-time = (- (get-time) start-time)
+               for current-seconds = (get-time)
+               for elapsed-seconds = (- current-seconds  previous-seconds)
+               for elapsed-time = (- (get-time) start-time)
 
-            when (and show-fps (> elapsed-seconds 0.25))
-            do
-            (format t "OpenGL Viewer Viewer (~,3f)~%" (/ frame-count elapsed-seconds))
-            (set-window-title (format nil "OpenGL Viewer Viewer (~,3f)" (/ frame-count elapsed-seconds)))
-            (setf previous-seconds current-seconds)
-            (setf frame-count 0)
+               when (and show-fps (> elapsed-seconds 0.25))
+                 do
+                    (format t "OpenGL Viewer Viewer (~,3f)~%" (/ frame-count elapsed-seconds))
+                    (set-window-title (format nil "OpenGL Viewer Viewer (~,3f)" (/ frame-count elapsed-seconds)))
+                    (setf previous-seconds current-seconds)
+                    (setf frame-count 0)
 
-            ;; This do is important...
-            do
-            ;; Update for next frame
-            (with-context window
-              (update viewer elapsed-time))
+                    ;; This do is important...
+               do
+                  ;; Update for next frame
+                  (with-context window
+                    (update viewer elapsed-time))
 
-            ;; Draw the viewer
-            (gl:clear :color-buffer :depth-buffer)
-            (if cull-face
-                (gl:enable :cull-face)
-                (gl:disable :cull-face))
+                  ;; Draw the viewer
+                  (gl:clear :color-buffer :depth-buffer)
+                  (if cull-face
+                      (gl:enable :cull-face)
+                      (gl:disable :cull-face))
 
-            (gl:front-face front-face)
-            (gl:polygon-mode :front-and-back (if wire-frame :line :fill))
+                  (gl:front-face front-face)
+                  (gl:polygon-mode :front-and-back (if wire-frame :line :fill))
 
-            (with-context window
-              (render viewer (meye 4)))
+                  (with-context window
+                    (render viewer (meye 4)))
 
-            (incf frame-count)
+                  (incf frame-count)
 
-            do (swap-buffers window)
-            do (poll-events))
+               do (swap-buffers window)
+               do (poll-events))
 
-      ;; Cleanup before exit
-      (cleanup viewer)
-      (remhash (cffi:pointer-address window) *viewers*)
+             ;; Cleanup before exit
+             (cleanup viewer)
+             (remhash (cffi:pointer-address window) *viewers*)))
       (glfw:destroy-window window))))

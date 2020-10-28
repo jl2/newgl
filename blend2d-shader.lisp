@@ -11,19 +11,26 @@
 
 (defmethod draw-image ((obj blend2d-shader) img ctx size)
   (declare (ignorable obj img ctx size))
+  (bl:context-set-fill-style-rgba32 ctx #16r000000ff)
+  (bl:context-fill-all ctx)
+
   (bl:with-objects
       ((circle bl:circle))
-    (dotimes (i 2000)
-        (let* ((sx (random (coerce size 'double-float)))
-               (sy (random (coerce size 'double-float)))
-               (radius (coerce (random (/ size 50.0)) 'double-float)))
+    (dotimes (idx 200)
+      (dotimes (i size)
+        (let* ((sx i)
+               (sy (+ (* (/ size 2) (sin (/ i 30)))
+                      (/ size 2)
+                      (* idx 20)
+                      (random (/ size 100.0))))
+               (radius (random 5.0d0)))
 
-          (setf (bl:circle.cx circle) sx)
-          (setf (bl:circle.cy circle) sy)
-          (setf (bl:circle.r circle) radius)
+          (setf (bl:circle.cx circle) (coerce sx 'double-float))
+          (setf (bl:circle.cy circle) (coerce sy 'double-float))
+          (setf (bl:circle.r circle) (coerce radius 'double-float))
           (bl:lookup-error (bl:context-set-comp-op ctx bl:+comp-op-src-over+))
           (bl:lookup-error (bl:context-set-fill-style-rgba32 ctx (random #16rffffffff)))
-          (bl:lookup-error (bl:context-fill-geometry ctx bl:+geometry-type-circle+ circle))))))
+          (bl:lookup-error (bl:context-fill-geometry ctx bl:+geometry-type-circle+ circle)))))))
 
 
 

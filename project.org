@@ -1,5 +1,14 @@
 * newgl
 
+** Buffer Refactor
+shader-program will be primary class instead of geometry.
+Each layout entry has its own buffer of data.
+shader-program has (set-data layout-name gl-array-of-values)
+layout will have buffers
+
+(make-instance 'shader-program
+
+
 ** About
 A CLOS wrapper around basic GLFW and OpenGL functionality.
 

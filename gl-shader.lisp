@@ -101,7 +101,7 @@
          (shader (make-instance 'gl-file-shader :source-file file-name :shader-type stype))
          (source-code (get-source shader))
          (layout-rx "layout\\(location\\s*=\\s*(\\d+)\\)\\s*(in|out)\\s*(\\w+)\\\s*(\\w+);")
-         (uniform-rx "uniform\\s(\\w+)\\s(\\w+);"))
+         (uniform-rx "uniform\\s+(\\w+)\\s+(\\w+);"))
 
     ;; "Parse" layouts
     (cl-ppcre:do-register-groups (location is-in type name) (layout-rx source-code)
@@ -138,8 +138,9 @@
 
 (defmethod set-uniform ((shader gl-shader) name new-value)
   (with-slots (uniforms shader shader-type) shader
-    (when (gethash name uniforms)
-           (set-value (gethash name uniforms) new-value))))
+    (if (gethash name uniforms)
+        (set-value (gethash name uniforms) new-value)
+        (error "No uniform named ~a" name))))
 
 (defmethod cleanup ((shader gl-shader))
   (with-slots (shader uniforms) shader
