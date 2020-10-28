@@ -67,33 +67,32 @@
   #+darwin t
   "Whether or not to ask for a 'forward compatible' OpenGL context.  Required for OSX.")
 
+(defun find-viewer (window)
+  (gethash (cffi:pointer-address window) *viewers*))
+
 ;; Keyboard callback.
 ;; Implements top-level key handler, and forwards unhandled events to *viewer*
 (def-key-callback keyboard-handler (window key scancode action mod-keys)
-  (when-let (viewer  (gethash (cffi:pointer-address window) *viewers*))
+  (when-let (viewer (find-viewer window))
     (handle-key viewer window key scancode action mod-keys)))
 
 ;; Mouse handler callback
 ;; Forwards mouse events to *viewer*
 (def-mouse-button-callback mouse-handler (window button action mod-keys)
-  (let* ((viewer (gethash (cffi:pointer-address window) *viewers*))
-         (cpos (glfw:get-cursor-position window))
-         (click-info (make-instance 'mouse-click
-                                    :cursor-pos cpos
-                                    :mod-keys mod-keys
-                                    :action action
-                                    :button button
-                                    :time (get-time))))
-    ;; If no objects handle mouse clicks then save the click and release positions for later.
-    ;; TODO: Update gl-fractals/complex-fractal.lisp to save clicks to complex-fractal member variable
-    ;; and get rid of *mouse-release-info* and *mouse-press-info*
-    (when viewer
+  (when-let (viewer (find-viewer window))
+    (let* ((cpos (glfw:get-cursor-position window))
+           (click-info (make-instance 'mouse-click
+                                      :cursor-pos cpos
+                                      :mod-keys mod-keys
+                                      :action action
+                                      :button button
+                                      :time (get-time))))
       (handle-click viewer window click-info))))
 
 ;; GLFW scroll handler
 ;; Forwards scroll events to *viewer*
 (def-scroll-callback scroll-handler (window x-scroll y-scroll)
-  (when-let  (viewer (gethash (cffi:pointer-address window) *viewers*))
+  (when-let (viewer (find-viewer window))
     (let ((cpos (glfw:get-cursor-position window)))
       (handle-scroll viewer window cpos x-scroll y-scroll))))
 
@@ -104,41 +103,20 @@
 ;; Resize event handler
 ;; Forwards events to *viewer*
 (def-framebuffer-size-callback resize-handler (window width height)
-  (when-let  (viewer (gethash (cffi:pointer-address window) *viewers*))
+  (when-let (viewer (find-viewer window))
     (handle-resize viewer window width height)))
-  
 
 
-(defgeneric display (object &key
-                              background-color
-                              debug)
+
+(defgeneric display (object)
   (:documentation "Display an object."))
 
-(defmethod display ((object t) &key
-                         (background-color (vec4 0.7f0 0.7f0 0.7f0 1.0))
-                         (debug nil))
+(defmethod display ((object t))
   "High level function to display an object or viewer."
 
-  (let (
-        ;; If object is a viewer, then it's the viewer,
-        ;; otherwise if viewer is an object or list of objects,
-        ;; then they're the objects in the viewer
-        (viewer
-             (typecase object
-               (viewer object)
-               ((or null t)
-                (make-instance 'viewer
-                               :objects (if object
-                                            (ensure-list object)
-                                            nil))))))
-    (if (not debug)
-        (trivial-main-thread:with-body-in-main-thread ()
-            (display viewer
-                     :background-color background-color
-                     :debug debug))
-        (display viewer
-                 :background-color background-color
-                 :debug debug))))
+  (let ((viewer (make-instance 'viewer
+                               :objects (ensure-list object))))
+    (display viewer)))
 
 #+stl-to-open-gl
 (defun view-stl (stl-file-name)
