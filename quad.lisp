@@ -24,11 +24,11 @@
                                 u-max v-min))
             (to-gl-array '(0 1 2 1 3 2) :unsigned-int))))
 
-(defun make-uv-quad (u-min u-max v-min v-max shader-program)
+(defun make-uv-quad (u-min u-max v-min v-max shaders)
   (make-instance
    'quad
      :u-min u-min
      :u-max u-max
      :v-min v-min
      :v-max v-max
-     :shader-program shader-program))
+     :shaders shaders))

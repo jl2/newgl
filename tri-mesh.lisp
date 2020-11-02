@@ -7,7 +7,7 @@
 (defclass tri-mesh (geometry)
   ((vertices :initarg :vertices)
    (indices :initarg :indices)
-   (shader-program :initform (make-plastic-program))
+   (shaders :initform (plastic))
    (rotation :initform (/ pi 64))
    (frame :initform 0))
   (:documentation "A triangle mesh."))

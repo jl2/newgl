@@ -23,7 +23,7 @@
            ))))
 
 (defun show-test-viewer ()
-  (let ((tm (newgl:make-line-segments)))
+  (let ((tm (make-instance 'newgl:line-segments)))
     (newgl:add-line-2 tm
                       :p1 (vec3 0 0 0) :c1 (vec4 0 1 0 1)
                       :p2 (vec3 0 2 0) :c2 (vec4 0 1 0 1))

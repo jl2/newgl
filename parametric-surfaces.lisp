@@ -18,8 +18,8 @@
 
 
 (defmethod allocate-and-fill-buffers ((obj parametric-surface))
-  (with-slots (shader-program color u-min v-min u-max v-max u-steps v-steps) obj
-    (let* ((desc (get-layout-descriptor shader-program))
+  (with-slots (color u-min v-min u-max v-max u-steps v-steps) obj
+    (let* ((desc (get-layout-descriptor obj))
            (vertices (allocate-gl-array :float (* 2 3 u-steps v-steps (layout-stride desc))))
            (indices (allocate-gl-array :unsigned-int (*  2 3 u-steps v-steps)))
 
