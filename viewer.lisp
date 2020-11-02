@@ -14,7 +14,7 @@
 
 
 (defparameter *want-forward-context*
-  #+(or windows linux bsd :freebsd) nil
+  #+(or windows linux freebsd) nil
   #+darwin t
   "Whether or not to ask for a 'forward compatible' OpenGL context.  Required for OSX.")
 
@@ -273,6 +273,10 @@
                                 :opengl-forward-compat *want-forward-context*
                                 :samples 1
                                 :resizable t)))
+    (when (null window)
+      (format t "Could not create-window!")
+      (error "Could not create-window!"))
+
     (unwind-protect
          (progn
            ;; GLFW Initialization
