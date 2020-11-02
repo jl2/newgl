@@ -49,7 +49,7 @@
         ))))
 
 (defun show-blend2d-sombrero ()
-  (newgl:display-in-rotating-viewer
+  (newgl:rotating-display
    (make-instance 'newgl:sombrero
                   :height 0.25
                   :u-min -6.0 :u-max 6.0
@@ -63,7 +63,7 @@
    :dt (/ 0.125 12)))
 
 (defun show-blend2d-tori ()
-  (newgl:display-in-rotating-viewer
+  (newgl:rotating-display
    (let ((objects ()))
      (loop for i below 7 do
            (loop for j below 7 do
@@ -72,11 +72,13 @@
                                       :outer 0.65
                                       :u-steps 16
                                       :v-steps 16
-                                      :xform (3d-matrices:m* (3d-matrices:mtranslation (3d-vectors:vec3 (- (* 3 i 1.0) 9)
-                                                                                 0.0
-                                                                                 (- (* 3 j 1.0) 9)))
-                                                 (3d-matrices:mrotation 3d-vectors:+vy+ (* 0.25 pi j)))
-                                      :shaders (list (make-instance 'blend2d-cubics :size 256)))
+                                      :xform (3d-matrices:m* (3d-matrices:mtranslation
+                                                              (3d-vectors:vec3 (- (* 3 i 1.0) 9)
+                                                                               0.0
+                                                                               (- (* 3 j 1.0) 9)))
+                                                             (3d-matrices:mrotation 3d-vectors:+vy+ (* 0.25 pi j)))
+                                      :shaders (newgl:painted-plastic)
+                                      :textures (list (make-instance 'blend2d-cubics :size 256)))
                        objects))
            )
      objects)

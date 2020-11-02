@@ -124,8 +124,7 @@
            #:value-at
            #:create-simple-keyframe-sequence
 
-           #:display-in-rotating-viewer
-           #:create-rotating-keyframe-viewer
+           #:rotating-display
 
            #:read-lines-from-text-file
 
