@@ -78,7 +78,7 @@
                                                                                  0.0
                                                                                  (- (* 3 j 1.0) 9)))
                                                  (3d-matrices:mrotation +vy+ (* 0.25 pi j)))
-                                      :shader-program
+                                      :shaders
                                       (newgl:blend2d-painted-plastic
                                        :size 256
                                        :shader 'blend2d-cubics))

@@ -26,7 +26,6 @@
            #:primitive-type
            #:xform
            #:vertex-buffers
-           #:shader-program
            #:program
            #:gl-shader
            #:assign-uniforms
@@ -40,9 +39,6 @@
            #:to-gl-array
            #:to-gl-float-array
 
-           #:ensure-vao-bound
-           #:build-shader-program
-           #:use-shader-program
            #:enable-layout
            #:compile-shader
            #:use-layout
@@ -80,8 +76,6 @@
            #:random-point-cloud
            #:parametric-point-cloud
 
-           #:make-line-segments
-
            #:line-segments
            #:create-axis
            #:add-line
@@ -101,14 +95,11 @@
            #:torus
            #:blend2d-shader
            #:plastic
-           #:blend2d-painted-plastic
+           #:painted-plastic
 
            #:quad
            #:make-uv-quad
 
-           #:*previous-mouse-drag*
-           #:*mouse-press-info*
-           #:*mouse-release-info*
            #:mouse-click
            #:cursor-pos
            #:mod-keys
@@ -118,7 +109,6 @@
            #:viewer-thread-function
 
            #:shader-from-file
-           #:make-shader-program
 
            #:draw-line
            #:draw-triangle
@@ -139,7 +129,6 @@
 
            #:read-lines-from-text-file
 
-           #:blend2d-shader
-           #:blend2d-painted-plastic
+           #:blend2d-texture
            #:draw-image
            ))

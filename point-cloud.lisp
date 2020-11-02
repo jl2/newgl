@@ -16,15 +16,13 @@
                                   :adjustable t
                                   :fill-pointer 0))
    (primitive-type :initform :points)
-   (shader-program :initform
-                   (make-shader-program 'shader-program
-                    (shader-from-file (newgl-shader "point-vertex.glsl"))
-                    (shader-from-file (newgl-shader "point-fragment.glsl")))))
+   (shaders :initform (list (shader-from-file (newgl-shader "point-vertex.glsl"))
+                            (shader-from-file (newgl-shader "point-fragment.glsl")))))
   (:documentation "Point cloud."))
 
 (defmethod allocate-and-fill-buffers ((object point-cloud))
   (with-slots (vertices indices) object
-    (values (to-gl-float-array vertices) (to-gl-array  indices))))
+    (values (to-gl-float-array vertices) (to-gl-array indices :unsigned-int))))
 
 
 (defun make-point-cloud ()
@@ -89,9 +87,3 @@
                  (zv vv))
             (add-point-pc pc xv yv zv 0.0 1.0 0.0 0.0)))))
     pc))
-
-;; (newgl:viewer pc
-;;               :xform
-;;               (3d-matrices:m* (3d-matrices:mscaling (3d-vectors:vec3 scale scale scale))
-;;                               (3d-matrices:mrotation (3d-vectors:vec3 1.0 0.0 0.0) (/ pi 3))
-;;                               (3d-matrices:mrotation (3d-vectors:vec3 0.0 1.0 0.0) (/ pi 3)))))

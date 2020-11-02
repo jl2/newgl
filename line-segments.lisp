@@ -16,19 +16,15 @@
                                   :adjustable t
                                   :fill-pointer 0))
    (primitive-type :initform :lines)
-   (shader-program :initform
-                   (make-shader-program  'shader-program
-                    (shader-from-file (newgl-shader "point-vertex.glsl"))
-                   (shader-from-file (newgl-shader "point-fragment.glsl")))))
+   (shaders :initform (list 
+                       (shader-from-file (newgl-shader "point-vertex.glsl"))
+                       (shader-from-file (newgl-shader "point-fragment.glsl")))))
   (:documentation "Point cloud."))
 
 (defmethod allocate-and-fill-buffers ((object line-segments))
   (with-slots (vertices indices) object
     (values (to-gl-float-array vertices)
             (to-gl-array indices :unsigned-int))))
-
-(defun make-line-segments ()
-  (make-instance 'line-segments))
 
 (defun add-line-2 (lines
                    &key

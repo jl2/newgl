@@ -1,22 +1,22 @@
-;; blend2d-shader.lisp
+;; blend2d-texture.lisp
 ;;
 ;; Copyright (c) 2020 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 (in-package #:newgl)
 
-(defclass blend2d-shader (textured-shader)
+(defclass blend2d-texture (texture)
   ((size :initarg :size :initform 2048)))
 
 (defgeneric draw-image (obj img ctx size))
 
-(defmethod draw-image ((obj blend2d-shader) img ctx size)
+(defmethod draw-image ((obj blend2d-texture) img ctx size)
   (declare (ignorable obj img ctx size))
   (bl:context-set-fill-style-rgba32 ctx #16r000000ff)
   (bl:context-fill-all ctx)
 
   (bl:with-objects
       ((circle bl:circle))
-    (dotimes (idx 200)
+    (dotimes (idx 20)
       (dotimes (i size)
         (let* ((sx i)
                (sy (+ (* (/ size 2) (sin (/ i 30)))
@@ -32,9 +32,7 @@
           (bl:lookup-error (bl:context-set-fill-style-rgba32 ctx (random #16rffffffff)))
           (bl:lookup-error (bl:context-fill-geometry ctx bl:+geometry-type-circle+ circle)))))))
 
-
-
-(defmethod fill-texture ((obj blend2d-shader))
+(defmethod fill-texture ((obj blend2d-texture))
   (with-slots (size tex-type textures) obj
     (bl:with-memory-image-context*
         (img ctx :width size :height size)
@@ -43,10 +41,3 @@
       (bl:image-get-data img data)
       (gl:tex-image-2d tex-type 0 :rgba size size 0 :rgba :unsigned-byte (bl:image-data.pixel-data data))
       (gl:generate-mipmap tex-type))))
-
-(defun blend2d-painted-plastic ( &key (shader 'blend2d-shader) (size 1024))
-  (make-instance shader
-                 :size size
-                 :shaders (list
-                           (shader-from-file (newgl-shader "painted-plastic-vertex.glsl"))
-                           (shader-from-file (newgl-shader "painted-plastic-fragment.glsl")))))
