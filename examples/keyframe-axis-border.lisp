@@ -22,8 +22,8 @@
           (m* (mperspective 30.0 1.0 1.0 10000.0)
               (mlookat (vec3 10 10 10) (value-at target-pos elapsed-seconds) +vz+)))))
 
-(defun show-keyframe-axis-border ( &optional debug)
-  (let ((tm (make-line-segments)))
+(defun show-keyframe-axis-border ()
+  (let ((tm (make-instance 'line-segments)))
     (add-line-2 tm
                       :p1 (vec3 0 0 0) :c1 (vec4 0 1 0 1)
                       :p2 (vec3 0 2 0) :c2 (vec4 0 1 0 1))
@@ -35,4 +35,4 @@
                       :p2 (vec3 0 0 2) :c2 (vec4 0 0 1 1))
     (display (make-instance 'keyframe-axis-border-viewer
                             :objects (list tm)
-                            :xform (meye 4)) :debug debug)))
+                            :xform (meye 4)))))

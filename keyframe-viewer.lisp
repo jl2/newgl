@@ -41,17 +41,13 @@
                                            (radius 4.0)
                                            (cam-height (/ radius 2))
                                            (segments 180)
-                                           (dt (/ 0.125 16))
-                                           (debug nil))
+                                           (dt (/ 0.125 16)))
     (display (create-rotating-keyframe-viewer radius
                                              (cons (create-axis 2 :half nil)
                                                    (ensure-list object))
                                              :cam-height cam-height
                                              :segments segments
-                                             :dt dt
-                                             )
-             :background-color (vec4 0.2 0.2 0.2 0.0)
-             :debug debug))
+                                             :dt dt)))
 
 
 

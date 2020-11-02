@@ -138,9 +138,8 @@
 
 (defmethod set-uniform ((shader gl-shader) name new-value)
   (with-slots (uniforms shader shader-type) shader
-    (if (gethash name uniforms)
-        (set-value (gethash name uniforms) new-value)
-        (error "No uniform named ~a" name))))
+    (when (gethash name uniforms)
+      (set-value (gethash name uniforms) new-value))))
 
 (defmethod cleanup ((shader gl-shader))
   (with-slots (shader uniforms) shader
