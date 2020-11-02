@@ -88,7 +88,8 @@
                    :status status
                    :object program
                    :info-log (gl:get-program-info-log program))
-          (ignore-validation-error () t))))))
+          (ignore-validation-error () t)))))
+  program)
 
 
 (defmethod use-shader-program :before ((shader-program shader-program))

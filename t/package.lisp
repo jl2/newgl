@@ -36,6 +36,9 @@
 (defmethod near ((a vec2) (b vec2))
   (v< (vabs (v- b a)) (vec2 0.00001 0.00001)))
 
+(defmethod near ((a t) (b t))
+  (= a b))
+
 (def-suite :newgl-keyframes)
 (in-suite :newgl-keyframes)
 
