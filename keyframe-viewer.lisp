@@ -11,12 +11,20 @@
    (look-at :initarg :look-at :initform (vec3 0.0 0.0 0.0))
    (up-vector :initarg :up-vector :initform +vy+)))
 
-(defun create-rotating-keyframe-viewer (radius objects &key
-                                                    (cam-height 8.0)
-                                                    (segments 180)
-                                                    (dt (/ 0.125 16)))
-  (make-instance 'keyframe-viewer
-                 :objects objects
+(defmethod update ((viewer keyframe-viewer) elapsed-seconds)
+  (call-next-method)
+  (with-slots (view-xform eye-pos aspect-ratio) viewer
+    (setf view-xform
+          (m* (mperspective 60.0 aspect-ratio 1.0 10000.0)
+              (mlookat (value-at eye-pos elapsed-seconds) (vec3 0 0 0) +vy+)))))
+
+(defun rotating-display (objects &key
+                                       (radius 4.0)
+                                       (cam-height (/ radius 2))
+                                       (segments 180)
+                                       (dt (/ 0.125 16)))
+  (display (make-instance 'keyframe-viewer
+                 :objects (ensure-list objects)
                  :eye-pos (create-keyframe-sequence
                            (loop
                                  with theta-diff = (/ (* 2 pi) segments)
@@ -28,26 +36,4 @@
                                  collect (create-keyframe pt (* dt i)))
                            :before :repeat
                            :after :repeat)
-                 :look-at (vec3 0 0 0)))
-
-(defmethod update ((viewer keyframe-viewer) elapsed-seconds)
-  (call-next-method)
-  (with-slots (view-xform eye-pos aspect-ratio) viewer
-    (setf view-xform
-          (m* (mperspective 60.0 aspect-ratio 1.0 10000.0)
-              (mlookat (value-at eye-pos elapsed-seconds) (vec3 0 0 0) +vy+)))))
-
-(defun display-in-rotating-viewer (object &key
-                                           (radius 4.0)
-                                           (cam-height (/ radius 2))
-                                           (segments 180)
-                                           (dt (/ 0.125 16)))
-    (display (create-rotating-keyframe-viewer radius
-                                             (cons (create-axis 2 :half nil)
-                                                   (ensure-list object))
-                                             :cam-height cam-height
-                                             :segments segments
-                                             :dt dt)))
-
-
-
+                 :look-at (vec3 0 0 0))))

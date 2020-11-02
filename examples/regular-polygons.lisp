@@ -1,4 +1,4 @@
-;; keyframe-axis-rotation.lisp
+;; regular-polygons.lisp
 ;;
 ;; Copyright (c) 2020 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
@@ -33,7 +33,7 @@
                    (return ls))))
 
 (defun show-polygons ()
-  (display-in-rotating-viewer
+  (rotating-display
    (list
     (create-axis 5 :half nil)
     (make-polygon
