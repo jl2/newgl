@@ -4,7 +4,7 @@
 
 (in-package :newgl.examples)
 
-(defclass blend2d-cubics (newgl:blend2d-shader) ())
+(defclass blend2d-cubics (newgl:blend2d-texture) ())
 
 (defun random-blend2d-color (&optional alpha)
   (cond (alpha
@@ -56,13 +56,11 @@
                   :u-steps 80
                   :v-min -6.0 :v-max 6.0
                   :v-steps 80
-                  :shader-program (newgl:blend2d-painted-plastic
-                                   :size 2048
-                                   :shader 'blend2d-cubics))
+                  :shaders (newgl:painted-plastic)
+                  :textures (list (make-instance 'blend2d-cubics)))
    :radius 16
    :cam-height 8
-   :dt (/ 0.125 12)
-   :debug nil))
+   :dt (/ 0.125 12)))
 
 (defun show-blend2d-tori ()
   (newgl:display-in-rotating-viewer
@@ -74,20 +72,16 @@
                                       :outer 0.65
                                       :u-steps 16
                                       :v-steps 16
-                                      :xform (m* (3d-matrices:mtranslation (vec3 (- (* 3 i 1.0) 9)
+                                      :xform (3d-matrices:m* (3d-matrices:mtranslation (3d-vectors:vec3 (- (* 3 i 1.0) 9)
                                                                                  0.0
                                                                                  (- (* 3 j 1.0) 9)))
-                                                 (3d-matrices:mrotation +vy+ (* 0.25 pi j)))
-                                      :shaders
-                                      (newgl:blend2d-painted-plastic
-                                       :size 256
-                                       :shader 'blend2d-cubics))
+                                                 (3d-matrices:mrotation 3d-vectors:+vy+ (* 0.25 pi j)))
+                                      :shaders (list (make-instance 'blend2d-cubics :size 256)))
                        objects))
            )
      objects)
    :radius 16
    :cam-height 12
-   :dt (/ 0.125 4)
-   :debug t))
+   :dt (/ 0.125 4)))
 
 

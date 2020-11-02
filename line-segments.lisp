@@ -116,7 +116,7 @@
       (values idx0 index))))
 
 (defun random-line-cloud (&optional (n 100))
-  (let ((lines (make-line-segments)))
+  (let ((lines (make-instance 'line-segments)))
     (dotimes (i n)
       (add-line-2 lines
                   :p1 (vec3-random -0.98 0.98)
@@ -127,7 +127,7 @@
 
 
 (defun make-square ()
-  (let ((ls (make-line-segments)))
+  (let ((ls (make-instance 'line-segments)))
     (add-line ls
                     :x1 0.0 :y1 0.0 :z1 0.0
                     :x2 1.0 :y2 0.0 :z2 0.0)
@@ -145,7 +145,7 @@
 
 (defun create-axis (size &key (color t)
                            (half nil))
-  (let* ((axis (make-line-segments))
+  (let* ((axis (make-instance 'line-segments))
          x-color
          y-color
          z-color
@@ -179,7 +179,7 @@
     axis))
 
 (defun read-lines-from-text-file (filename)
-  (let ((ls (make-line-segments))
+  (let ((ls (make-instance 'line-segments))
         (pts (with-input-from-file (inf filename)
                (loop for xc = (read inf nil nil)
                      for yc = (read inf nil nil)
