@@ -26,97 +26,17 @@
 (deftype color ()
   'vec4)
 
-;; Flags to communicate between handlers and main loop.
-(defparameter *show-fps* nil
-  "Flag to turn on or off printing FPS.  Toggle with 'f' key.")
+(defun init ()
+  (glfw:initialize))
 
-(defparameter *wire-frame* t
-  "Toggle filled or wireframe drawing. Trigger with 'w' key.")
-
-(defparameter *cull-face* :cull-face
-  "Enable face culling when non-nil.  Toggle with 'F1' key.")
-
-(defparameter *front-face* :ccw
-  "Front face direction setting.  Toggle between :ccw (default) and :cw with 'F2' key.")
-
-(defclass mouse-click ()
-  ((cursor-pos :initarg :cursor-pos)
-   (button :initarg :button)
-   (action :initarg :action)
-   (mod-keys :initarg :mod-keys)
-   (time :initarg :time))
-  (:documentation "Mouse click information."))
-
-(defparameter *mouse-press-info* nil
-  "Location of last mouse press.")
-
-(defparameter *previous-mouse-drag* nil
-  "Location of last mouse drag update.")
-
-(defparameter *mouse-release-info* nil
-  "Location of last mouse release.")
-
-
-(defparameter *viewers* (make-hash-table :test 'equal))
-
-(defgeneric cleanup (obj)
-  (:documentation "Cleanup any OpenGL resources owned by obj."))
-
-(defparameter *want-forward-context*
-  #+(or windows linux bsd :freebsd) nil
-  #+darwin t
-  "Whether or not to ask for a 'forward compatible' OpenGL context.  Required for OSX.")
-
-(defun find-viewer (window)
-  (gethash (cffi:pointer-address window) *viewers*))
-
-;; Keyboard callback.
-;; Implements top-level key handler, and forwards unhandled events to *viewer*
-(def-key-callback keyboard-handler (window key scancode action mod-keys)
-  (when-let (viewer (find-viewer window))
-    (handle-key viewer window key scancode action mod-keys)))
-
-;; Mouse handler callback
-;; Forwards mouse events to *viewer*
-(def-mouse-button-callback mouse-handler (window button action mod-keys)
-  (when-let (viewer (find-viewer window))
-    (let* ((cpos (glfw:get-cursor-position window))
-           (click-info (make-instance 'mouse-click
-                                      :cursor-pos cpos
-                                      :mod-keys mod-keys
-                                      :action action
-                                      :button button
-                                      :time (get-time))))
-      (handle-click viewer window click-info))))
-
-;; GLFW scroll handler
-;; Forwards scroll events to *viewer*
-(def-scroll-callback scroll-handler (window x-scroll y-scroll)
-  (when-let (viewer (find-viewer window))
-    (let ((cpos (glfw:get-cursor-position window)))
-      (handle-scroll viewer window cpos x-scroll y-scroll))))
-
-;; GLFW error callback
-(def-error-callback error-callback (message)
-  (format t "Error: ~a~%" message))
-
-;; Resize event handler
-;; Forwards events to *viewer*
-(def-framebuffer-size-callback resize-handler (window width height)
-  (when-let (viewer (find-viewer window))
-    (handle-resize viewer window width height)))
-
-
+(defun terminate ()
+  (glfw:terminate))
 
 (defgeneric display (object)
   (:documentation "Display an object."))
 
-(defmethod display ((object t))
-  "High level function to display an object or viewer."
-
-  (let ((viewer (make-instance 'viewer
-                               :objects (ensure-list object))))
-    (display viewer)))
+(defgeneric cleanup (obj)
+  (:documentation "Cleanup any OpenGL resources owned by obj."))
 
 #+stl-to-open-gl
 (defun view-stl (stl-file-name)

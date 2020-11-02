@@ -135,8 +135,10 @@
     (bind-buffers shader-program)))
 
 (defmethod render ((object opengl-object) view-xform)
-  (with-slots (shader-program xform) object
-    (bind-buffers object)
+  (with-slots (vao shader-program xform) object
+    (if (zerop vao)
+        (fill-buffers object)
+        (bind-buffers object))
     (assign-uniforms object view-xform)
     (use-shader-program shader-program)))
 
