@@ -264,8 +264,8 @@
   (glfw:set-error-callback 'error-callback)
 
   (let* ((window (create-window :title "OpenGL Viewer"
-                                :width 1000
-                                :height 1000
+                                :width 100
+                                :height 100
                                 :decorated nil
                                 :opengl-profile :opengl-core-profile
                                 :context-version-major 4

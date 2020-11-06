@@ -13,15 +13,15 @@ in vec4 diffuseColor;
 
 const vec3 lightColor = vec3(1.0, 1.0, 1.0);
 const float lightPower = 40.0;
-const vec3 ambientColor = vec3(0.05, 0.05, 0.050);
+const vec3 ambientColor = vec3(0.00, 0.01, 0.000);
 const vec3 specColor = vec3(1.0, 1.0, 1.0);
-const float shininess = 32.0;
-const float screenGamma = 1.6; // ssume the monitor is calibrated to the sRGB color space
+const float shininess = 65.0;
+const float screenGamma = 1.3; // ssume the monitor is calibrated to the sRGB color space
 
 void main() {
 
      // vec3 real_normal = normalize(normal);
-     vec3 lightPos = vec3(transform * vec4(0.0, -10.0, 10.0, 1.0));
+     vec3 lightPos = vec3(transform * vec4(0.0, 10.0, -10.0, 1.0));
      vec3 lightDir = lightPos - position;
      float distance = length(lightDir);
      distance = distance * distance;
