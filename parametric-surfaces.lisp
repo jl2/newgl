@@ -12,13 +12,21 @@
    (u-max :initform pi :initarg :u-max)
 
    (v-min :initform (- pi) :initarg :v-min)
-   (v-max :initform pi :initarg :v-max)))
+   (v-max :initform pi :initarg :v-max)
+
+   (s-min :initform 0.0 :initarg :s-min)
+   (s-max :initform 1.0 :initarg :s-max)
+   (t-min :initform 0.0 :initarg :t-min)
+   (t-max :initform 1.0 :initarg :t-max)
+  ))
 
 (defgeneric f_u_v (surface uv vv))
 
 
 (defmethod allocate-and-fill-buffers ((obj parametric-surface))
-  (with-slots (color u-min v-min u-max v-max u-steps v-steps) obj
+  (format t "In allocated-and-fill-buffers.~%")
+  (with-slots (color u-min v-min u-max v-max u-steps v-steps
+               s-min s-max t-min t-max) obj
     (let* ((desc (get-layout-descriptor obj))
            (vertices (allocate-gl-array :float (* 2 3 u-steps v-steps (layout-stride desc))))
            (indices (allocate-gl-array :unsigned-int (*  2 3 u-steps v-steps)))
@@ -26,11 +34,12 @@
            (cur-vert-idx 0)
            (cur-idx-idx 0)
            
-           (dst (/ 1.0 u-steps))
-           (dtt (/ 1.0 v-steps))
+           (dst (/ (- s-max s-min) u-steps))
+           (dtt (/ (- t-max t-min) v-steps))
 
            (du (/ (- u-max u-min) u-steps 1.0f0))
            (dv (/ (- v-max v-min) v-steps 1.0f0)))
+      (format t "desc: ~a~%" desc)
       (with-slots (emit-position emit-normal emit-uv emit-color) desc
         (labels ((next-point ( pos normal st tt)
                    (when emit-position
@@ -48,6 +57,7 @@
                      (gl-set vertices cur-vert-idx (vz normal) 'single-float)
                      (incf cur-vert-idx))
                    (when emit-uv
+                     (format t "Emit uv ~a ~a~%" st tt)
                      (gl-set vertices cur-vert-idx st 'single-float)
                      (incf cur-vert-idx)
                      (gl-set vertices cur-vert-idx tt 'single-float)
@@ -66,11 +76,11 @@
                      (incf cur-idx-idx))))
           (loop for ui below u-steps
                 for uv = (+ u-min (* ui du))
-                for st = (* ui dst)
+                for st = (+ s-min (* ui dst))
                 do
                 (loop for vi from 0 below v-steps
                       for vv = (+ v-min (* vi dv))
-                      for tt = (* vi dtt)
+                      for tt = (+ t-min (* vi dtt))
                       do
                     (let* ((pt0 (f_u_v obj uv vv))
                            (pt1 (f_u_v obj (+ du uv) vv))

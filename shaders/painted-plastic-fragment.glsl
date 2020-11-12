@@ -11,12 +11,13 @@ uniform sampler2D image;
 
 uniform int mode = 1;
 
+const vec3 lightPos = vec3(vec4(0.0, -8.0, 0.0, 1.0));
 const vec3 lightColor = vec3(1.0, 1.0, 1.0);
 const float lightPower = 120.0;
 const vec3 ambientColor = vec3(0.025, 0.025, 0.0250);
 const vec3 specColor = vec3(1.0, 1.0, 1.0);
-const float shininess = 80.0;
-const float screenGamma = 1.8; // ssume the monitor is calibrated to the sRGB color space
+const float shininess = 128.0;
+const float screenGamma = 1.6; // ssume the monitor is calibrated to the sRGB color space
 
 out vec4 outColor;
 
@@ -24,8 +25,6 @@ void main()
 {
 
      vec4 diffuseColor = texture(image, uv);
-     // vec3 real_normal = normalize(normal);
-     vec3 lightPos = vec3(transform * vec4(0.0, -10.0, 10.0, 1.0));
      vec3 lightDir = lightPos - position;
      float distance = length(lightDir);
      distance = distance * distance;

@@ -45,6 +45,7 @@
                (:file "layouts")
                (:file "uniforms")
                (:file "gl-shader")
+               (:file "fractal-shaders")
                (:file "opengl-object")
                (:file "geometry")
                (:file "instanced-geometry")

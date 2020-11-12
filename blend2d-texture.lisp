@@ -22,8 +22,8 @@
                (sy (+ (* (/ size 2) (sin (/ i 30)))
                       (/ size 2)
                       (* idx 20)
-                      (random (/ size 100.0))))
-               (radius (random 5.0d0)))
+                      (random (/ size 10.0))))
+               (radius (random (1+ (* size 80.0d0)))))
 
           (setf (bl:circle.cx circle) (coerce sx 'double-float))
           (setf (bl:circle.cy circle) (coerce sy 'double-float))
