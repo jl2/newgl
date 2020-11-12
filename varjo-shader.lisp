@@ -1,20 +1,3 @@
-;;;; gl-shader.lisp
-;;;;
-;;;; Copyright (c) 2020 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
-
-(in-package #:newgl)
-
-;; This library depends on a number of conventions to automatically handle shaders.
-;; 1. Shader file names must specify the shader type as part of the file name.
-;;    For example, 'plastic-fragment.glsl', 'plastic-vertex.glsl'
-;; 2. Uniforms and layout information is 'parsed' out of the shader using regular expressions.
-;;    They work for the shader's I write, but may need improvements or replacements.
-
-(defparameter *shader-dir* (asdf:system-relative-pathname :newgl "shaders/")
-  "Directory containing newgl shaders.")
-
-(defun newgl-shader (fname)
-  (merge-pathnames *shader-dir* fname))
 
 ;; Shader
 (define-condition shader-error (error)
@@ -59,25 +42,23 @@
 
 
 (defun glsl-type-size (tname)
-  (when-let ((val (assoc tname
-                         '(("vec3" :float 3)
-                           ("vec4" :float 4)
-                           ("vec2" :float 2)
-                           ("dvec3" :float 3)
-                           ("dvec4" :float 4)
-                           ("dvec2" :float 2)
-
-                           ("mat4" float 16)
-                           ("mat3" :float 9)
-                           ("dmat4" float 16)
-                           ("dmat3" :float 9)
-
-                           ("double" double 1)
-                           ("float" :float 1)
-                           ("int" s :int 1))
-                         :test #'string=)))
-    (values (cadr val) (caddr val))))
-                  
+  (cond
+    ((string= tname "vec3")
+     (values :float 3))
+    ((string= tname "vec4")
+     (values :float 4))
+    ((string= tname "vec2")
+     (values :float 2))
+    ((string= tname "mat4")
+     (values :float 16))
+    ((string= tname "mat3")
+     (values :float 9))
+    ((string= tname "float")
+     (values :float 1))
+    ((string= tname "int")
+     (values :int 1))
+    ((string= tname "double")
+     (values :double 1))))
 
 (defun lookup-shader-type (file-name)
   (let ((pn (pathname-name file-name)))

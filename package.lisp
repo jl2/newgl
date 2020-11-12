@@ -130,4 +130,6 @@
 
            #:blend2d-texture
            #:draw-image
+
+           #:mandelbrot-set-shaders
            ))

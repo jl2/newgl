@@ -22,13 +22,13 @@
                                 u-max v-max
                                 1.0f0 -1.0f0 0.0f0
                                 u-max v-min))
-            (to-gl-array '(0 1 2 1 3 2) :unsigned-int))))
+            (to-gl-array #(0 1 2 1 3 2) :unsigned-int))))
 
-(defun make-uv-quad (u-min u-max v-min v-max shaders)
-  (make-instance
-   'quad
-     :u-min u-min
-     :u-max u-max
-     :v-min v-min
-     :v-max v-max
-     :shaders shaders))
+(defun make-uv-quad (&key u-min u-max v-min v-max shaders)
+  (when (every (compose #'not #'null) (list u-min u-max v-min v-max))
+    (make-instance 'uv-quad
+                   :u-min u-min
+                   :u-max u-max
+                   :v-min v-min
+                   :v-max v-max
+                   :shaders shaders)))

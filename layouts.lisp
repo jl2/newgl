@@ -49,21 +49,25 @@
 
 (defmethod get-layout-descriptor ((layout layout))
   (if (descriptor layout)
-      (descriptor layout)
+      (progn
+        (format t "Returning descriptor: ~a~%" (descriptor layout))
+        (descriptor layout))
       (with-slots (descriptor entries) layout
         (setf descriptor (make-instance 'layout-description))
         (with-slots (emit-position emit-normal emit-uv emit-color) descriptor
           (loop for entry in entries
                 do
-                (cond ((search "position" (string-downcase (layout-entry-name entry)) :test #'string=)
-                       (setf emit-position t))
-                      ((search "normal" (string-downcase (layout-entry-name entry)) :test #'string=)
-                       (setf emit-normal t))
-                      ((or (search "uv" (string-downcase (layout-entry-name entry)) :test #'string=)
-                           (search "st" (string-downcase (layout-entry-name entry)) :test #'string=))
-                       (setf emit-uv t))
-                      ((search "color" (string-downcase (layout-entry-name entry)) :test #'string=)
-                       (setf emit-color t)))))
+                   (let ((lower-name (string-downcase (layout-entry-name entry))))
+                   (format t "Entry: ~a~%" lower-name)
+                     (cond ((search "position" lower-name :test #'string=)
+                            (setf emit-position t))
+                           ((search "normal" lower-name :test #'string=)
+                            (setf emit-normal t))
+                           ((or (search "uv" lower-name :test #'string=)
+                                (search "st" lower-name :test #'string=))
+                            (setf emit-uv t))
+                           ((search "color" lower-name :test #'string=)
+                            (setf emit-color t))))))
         descriptor)))
 
 (defgeneric enable-layout (layout program)

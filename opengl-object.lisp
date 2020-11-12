@@ -9,8 +9,7 @@
    (xform :initform (meye 4) :initarg :xform :type mat4)
    (shaders :initarg :shaders :initform nil :type (or null list))
    (textures :initarg :textures :initform nil :type (or null list))
-   (program :initform 0)
-   )
+   (program :initform 0))
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
 (defgeneric build-shader-program (object)
@@ -200,9 +199,12 @@
 
 (defmethod get-layout-descriptor ((object opengl-object))
   (with-slots (shaders) object
+    
     (let ((descriptors (mapcar #'layout (remove-if-not #'identity shaders :key #'layout))))
       (if descriptors
-          (get-layout-descriptor (car descriptors))
+          (progn 
+            (format t "Found ~a descriptors...~%" (length descriptors))
+            (get-layout-descriptor (car descriptors)))
           nil))))
 
 (defun plastic ()
