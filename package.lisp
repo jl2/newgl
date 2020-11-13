@@ -94,6 +94,10 @@
            #:sombrero
            #:torus
            #:blend2d-shader
+
+           #:st-quad
+           #:make-st-quad
+
            #:plastic
            #:painted-plastic
 
@@ -132,4 +136,7 @@
            #:draw-image
 
            #:mandelbrot-set-shaders
+           #:julia-set-shaders
+           #:burning-ship-shaders
+           #:bs-js-shaders
            ))

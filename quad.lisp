@@ -4,31 +4,35 @@
 
 (in-package #:newgl)
 
-(defclass uv-quad (geometry)
-  ((u-min :initarg :u-min)
-   (v-min :initarg :v-min)
-   (u-max :initarg :u-max)
-   (v-max :initarg :v-max))
+(defclass st-quad (geometry)
+  ((s-min :initarg :s-min)
+   (t-min :initarg :t-min)
+   (s-max :initarg :s-max)
+   (t-max :initarg :t-max))
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
-(defmethod allocate-and-fill-buffers ((object uv-quad))
-  (with-slots (u-min u-max v-min v-max) object
+(defmethod allocate-and-fill-buffers ((object st-quad))
+  (with-slots (s-min s-max t-min t-max) object
     (values (to-gl-float-array (list
                                 -1.0f0  1.0f0 0.0f0
-                                u-min v-max
+                                0.0f0 0.0f0 1.0f0
+                                s-min t-max
                                 -1.0f0 -1.0f0 0.0f0
-                                u-min v-min
+                                0.0f0 0.0f0 1.0f0
+                                s-min t-min
                                 1.0f0  1.0f0 0.0f0
-                                u-max v-max
+                                0.0f0 0.0f0 1.0f0
+                                s-max t-max
                                 1.0f0 -1.0f0 0.0f0
-                                u-max v-min))
+                                0.0f0 0.0f0 1.0f0
+                                s-max t-min))
             (to-gl-array #(0 1 2 1 3 2) :unsigned-int))))
 
-(defun make-uv-quad (&key u-min u-max v-min v-max shaders)
-  (when (every (compose #'not #'null) (list u-min u-max v-min v-max))
-    (make-instance 'uv-quad
-                   :u-min u-min
-                   :u-max u-max
-                   :v-min v-min
-                   :v-max v-max
+(defun make-st-quad (&key s-min s-max t-min t-max shaders)
+  (when (every (compose #'not #'null) (list s-min s-max t-min t-max))
+    (make-instance 'st-quad
+                   :s-min (coerce s-min 'single-float)
+                   :s-max (coerce s-max 'single-float)
+                   :t-min (coerce t-min 'single-float)
+                   :t-max (coerce t-max 'single-float)
                    :shaders shaders)))

@@ -93,7 +93,7 @@
                :initarg :wire-frame
                :type t
                :accessor wire-frame-p)
-   (cull-face :initform :cull-face
+   (cull-face :initform nil
               :initarg :cull-face
               :accessor cull-face)
    (front-face :initform :ccw
@@ -259,9 +259,9 @@
 (defmethod display ((viewer viewer))
   "GLFW Event Loop function that initializes GLFW and OpenGL, creates a window,
    and runs an event loop."
+  (glfw:set-error-callback 'error-callback)
   (init)
 
-  (glfw:set-error-callback 'error-callback)
 
   (let* ((window (create-window :title "OpenGL Viewer"
                                 :width 100

@@ -203,8 +203,7 @@
     (let ((descriptors (mapcar #'layout (remove-if-not #'identity shaders :key #'layout))))
       (if descriptors
           (progn 
-            (format t "Found ~a descriptors...~%" (length descriptors))
-            (get-layout-descriptor (car descriptors)))
+            (get-layout-descriptor (cadr descriptors)))
           nil))))
 
 (defun plastic ()

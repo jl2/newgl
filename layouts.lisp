@@ -50,7 +50,6 @@
 (defmethod get-layout-descriptor ((layout layout))
   (if (descriptor layout)
       (progn
-        (format t "Returning descriptor: ~a~%" (descriptor layout))
         (descriptor layout))
       (with-slots (descriptor entries) layout
         (setf descriptor (make-instance 'layout-description))
@@ -58,7 +57,6 @@
           (loop for entry in entries
                 do
                    (let ((lower-name (string-downcase (layout-entry-name entry))))
-                   (format t "Entry: ~a~%" lower-name)
                      (cond ((search "position" lower-name :test #'string=)
                             (setf emit-position t))
                            ((search "normal" lower-name :test #'string=)
