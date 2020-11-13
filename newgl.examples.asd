@@ -31,6 +31,7 @@
   ((:module "examples"
             :components
             ((:file "package")
+             (:file "fractals")
              (:file "keyframe-axis-rotation")
              (:file "blend2d-sombrero")
              (:file "keyframe-axis-border")

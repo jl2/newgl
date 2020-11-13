@@ -8,7 +8,7 @@ in vec2 complexCoordinate;
 uniform mat4 transform;
 uniform mat4 normalTransform;
 
-uniform int mode = 2;
+uniform int mode = 1;
 
 out vec4 outColor;
 
@@ -22,16 +22,14 @@ const float screenGamma = 1.3; // ssume the monitor is calibrated to the sRGB co
 
 uniform int maxIterations;
 
-vec4 mandelbrotColor(int maxIter, vec2 compCoord) {
+vec4 mandelbrotColor(int maxIter, vec2 pos) {
      int iter;
-     float tempzx, tempzy, Creal, Cimag;
+     float tempzx, tempzy;
      float r2 = 0.0;
 
-     float zx = compCoord.x;
-     float zy = compCoord.y;
+     float zx = pos.x;
+     float zy = pos.y;
 
-     Creal = zx;
-     Cimag = zy;
      float ox = zx;
      float oy = zy;
      for (iter = 0; iter < maxIter; iter++)
@@ -40,45 +38,30 @@ vec4 mandelbrotColor(int maxIter, vec2 compCoord) {
           tempzy = zy;
           zx = (tempzx * tempzx) - (tempzy * tempzy);
           zy = 2 * tempzx * tempzy;
-          zx += Creal;
-          zy += Cimag;
+          zx += ox;
+          zy += oy;
           r2 = r2 * r2;
           r2 = (zx * zx) + (zy * zy);
           if (r2 >= 4)
                break;
      }
-     vec4 color;
      if (r2 < 4) {
-          return vec4 (0.0, 0.0, 0.0, 1.0); // black
+          return vec4(0.0, 0.0, 0.0, 1.0); // black
      }
-     else
-     {
-          float tmpval, tmpval2, red, green, blue, pi, fi;
-          pi = 3.141592654;
+     float tmpval, tmpval2, red, green, blue, pi, fi;
+     pi = 3.141592654;
 
-          // tmpval = fract(iter / 8422.0);
-          // tmpval2 = fract(iter / 11133.0);
-          // red = tmpval2;
-          // green = (1.0 - tmpval);
-          // blue = tmpval;
+     fi = (0.5 + sin(pi * (iter/200.0))) / 2.0;
+     red =   clamp(pow((1.0 - fi), (zx*zy)), 0.0, 1.0);
+     green = clamp(pow(fi, abs(sin(fi+zy))), 0.0, 1.0);
+     blue =  clamp(abs(tan(fi - sin(fi + zx))), 0.0, 1.0);
 
-          fi = (0.5 + sin(pi * (iter/200.0))) / 2.0;
-          red =   clamp(pow((1.0 - fi), (zx*zy)), 0.0, 1.0);
-          green = clamp(pow(fi, abs(sin(fi+zy))), 0.0, 1.0);
-          blue =  clamp(abs(tan(fi - sin(fi + zx))), 0.0, 1.0);
-
-          return vec4(red, green, blue, 1.0);
-     }
+     return vec4(red, green, blue, 1.0);
 }
 void main() {
 
      vec4 diffuseColor = mandelbrotColor(maxIterations, complexCoordinate);
      outColor = diffuseColor;
-     if (mode == 1) {
-          outColor = diffuseColor;
-     } else {
-          outColor = vec4(0, 1, 0, 1);
-          }
      //      vec3 lightDir = lightPos - position;
      //      float distance = length(lightDir);
      //      distance = distance * distance;
