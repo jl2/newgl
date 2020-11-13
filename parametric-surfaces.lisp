@@ -24,7 +24,6 @@
 
 
 (defmethod allocate-and-fill-buffers ((obj parametric-surface))
-  (format t "In allocated-and-fill-buffers.~%")
   (with-slots (color u-min v-min u-max v-max u-steps v-steps
                s-min s-max t-min t-max) obj
     (let* ((desc (get-layout-descriptor obj))
@@ -39,7 +38,6 @@
 
            (du (/ (- u-max u-min) u-steps 1.0f0))
            (dv (/ (- v-max v-min) v-steps 1.0f0)))
-      (format t "desc: ~a~%" desc)
       (with-slots (emit-position emit-normal emit-uv emit-color) desc
         (labels ((next-point ( pos normal st tt)
                    (when emit-position
@@ -57,7 +55,6 @@
                      (gl-set vertices cur-vert-idx (vz normal) 'single-float)
                      (incf cur-vert-idx))
                    (when emit-uv
-                     (format t "Emit uv ~a ~a~%" st tt)
                      (gl-set vertices cur-vert-idx st 'single-float)
                      (incf cur-vert-idx)
                      (gl-set vertices cur-vert-idx tt 'single-float)

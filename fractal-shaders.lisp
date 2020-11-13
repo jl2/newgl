@@ -10,9 +10,41 @@
 (defun set-iterations (fractal iterations)
   (newgl:set-uniform fractal "maxIterations" iterations))
 
+
 (defun mandelbrot-set-shaders (max-iterations)
   (let ((shaders (list (shader-from-file (merge-pathnames *fractal-shader-dir* "mandel-fragment.glsl"))
                        (shader-from-file (merge-pathnames *fractal-shader-dir* "complex-vertex.glsl")))))
-    (set-uniform (car shaders) "maxIterations" max-iterations)
-    (set-uniform (cadr shaders) "maxIterations" max-iterations)
+    (dolist (shader shaders)
+      (set-uniform shader "maxIterations" max-iterations)
+    (set-uniform shader "mode" 1))
     shaders))
+
+(defun burning-ship-shaders (max-iterations)
+  (let ((shaders (list (shader-from-file (merge-pathnames *fractal-shader-dir* "burning-ship-fragment.glsl"))
+                       (shader-from-file (merge-pathnames *fractal-shader-dir* "complex-vertex.glsl")))))
+    (dolist (shader shaders)
+      (set-uniform shader "maxIterations" max-iterations)
+    (set-uniform shader "mode" 1))
+    shaders))
+
+
+(defun julia-set-shaders (&key (max-iterations 100) (real 0.0f0) (imag 0.0f0))
+  (let ((shaders (list (shader-from-file (merge-pathnames *fractal-shader-dir* "julia-set-fragment.glsl"))
+                       (shader-from-file (merge-pathnames *fractal-shader-dir* "complex-vertex.glsl")))))
+    (dolist (shader shaders)
+      (set-uniform shader "maxIterations" max-iterations)
+      (set-uniform shader "cReal" real)
+      (set-uniform shader "cImag" imag)
+      (set-uniform shader "mode" 1))
+    shaders))
+
+(defun bs-js-shaders (&key (max-iterations 100) (real 0.0f0) (imag 0.0f0))
+  (let ((shaders (list (shader-from-file (merge-pathnames *fractal-shader-dir* "bs-js-fragment.glsl"))
+                       (shader-from-file (merge-pathnames *fractal-shader-dir* "complex-vertex.glsl")))))
+    (dolist (shader shaders)
+      (set-uniform shader "maxIterations" max-iterations)
+      (set-uniform shader "cReal" real)
+      (set-uniform shader "cImag" imag)
+      (set-uniform shader "mode" 1))
+    shaders))
+
