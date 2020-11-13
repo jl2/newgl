@@ -30,6 +30,7 @@
            #:make-polygon
            #:show-polygons
 
+           #:show-fractals
            ))
 
 (in-package :newgl.examples)
