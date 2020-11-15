@@ -108,11 +108,14 @@
    (frame-count :initform 1))
   (:documentation "A collection of objects and a viewport."))
 
-(defmethod render ((viewer viewer) xform)
+(defmethod render ((viewer viewer))
   (with-slots (objects view-xform) viewer
-    (loop for object in objects
-          do
-          (render object (m* xform view-xform)))))
+    (let ((norm-xform (mtranspose (minv view-xform))))
+      (loop for object in objects
+            do
+               (set-uniform object "transform" view-xform)
+               (set-uniform object "normalTransform" norm-xform)
+               (render object)))))
 
 (defmethod cleanup ((viewer viewer))
   (loop for object in (objects viewer)
@@ -271,7 +274,7 @@
                                 :context-version-major 4
                                 :context-version-minor 0
                                 :opengl-forward-compat *want-forward-context*
-                                :samples 1
+                                :samples 0
                                 :resizable t)))
     (when (null window)
       (format t "Could not create-window!")
@@ -345,7 +348,7 @@
                                        :fill))
 
 
-                  (render viewer (meye 4))
+                  (render viewer)
                do (swap-buffers window)
                do (poll-events))
 

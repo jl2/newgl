@@ -4,7 +4,7 @@
 
 (in-package #:newgl)
 
-(defgeneric render (object view-xform)
+(defgeneric render (object)
   (:documentation "Make OpenGL API calls to render the object.  Binding correct VAO is handled by before and after methods."))
 
 (defgeneric update (object elapsed-seconds)
@@ -18,9 +18,6 @@
 
 (defgeneric handle-scroll (object window cpos x-scroll y-scroll)
   (:documentation "Handle scrolling."))
-
-(defgeneric handle-drag (object window current-pos)
-  (:documentation "Handle mouse drag."))
 
 (defgeneric handle-resize (object window width height)
   (:documentation "Handle window resize."))

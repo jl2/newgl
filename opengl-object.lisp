@@ -18,9 +18,6 @@
 (defgeneric set-uniform (object name value)
   (:documentation "Set a uniform variable on object."))
 
-(defgeneric assign-uniforms (object &optional view-xform)
-  (:documentation "Assign uniform shader variables for this object."))
-
 (defgeneric fill-buffers (object)
   (:documentation "Copy this objects data into OpenGL buffers.  Binding correct VAO is handled by before and after methods."))
 
@@ -43,6 +40,7 @@
 (defun gl-get (array idx)
   (gl:glaref array idx))
 
+(declaim (inline to-gl-float-array to-gl-array))
 (defun to-gl-float-array (sequence)
   "Create an OpenGL float array from a CL array of numbers.
    This is a convenience function that will coerce array elments to single-float."
@@ -135,12 +133,6 @@
     (dolist (shader shaders)
       (set-uniform shader name value))))
 
-(defmethod assign-uniforms ((object opengl-object) &optional (view-xform (meye 4)))
-  (with-slots (xform) object
-    (let ((mv (m* view-xform xform  )))
-      (set-uniform object "transform" mv)
-      (set-uniform object "normalTransform" (mtranspose (minv mv))))))
-
 (defmethod fill-buffers ((object opengl-object))
   (with-slots (vao textures) object
     (when (/= 0 vao)
@@ -180,13 +172,11 @@
     (dolist (texture textures)
       (bind-buffers texture))))
 
-(defmethod render ((object opengl-object) view-xform)
+(defmethod render ((object opengl-object))
   (with-slots (vao shaders program xform) object
     (if (zerop vao)
         (fill-buffers object)
         (bind-buffers object))
-    (assign-uniforms object view-xform)
-
     (dolist (shader shaders)
       (use-shader-layout shader program))
 

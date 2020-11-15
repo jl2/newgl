@@ -50,7 +50,6 @@
            #:handle-key
            #:handle-click
            #:handle-scroll
-           #:handle-drag
            #:handle-resize
            #:reload-object
            #:sphere
