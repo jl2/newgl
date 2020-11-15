@@ -10,8 +10,6 @@ uniform float cImag;
 uniform mat4 transform;
 uniform mat4 normalTransform;
 
-uniform int mode = 2;
-
 out vec4 outColor;
 
 const vec3 lightPos = vec3(vec4(0.0, -8.0, -8.0, 1.0));
@@ -60,6 +58,7 @@ vec4 bsJsColor(int maxIter, vec2 pos) {
      blue = clamp(zx * zx * (iter % 24)/23.0, 0.0, 1.0);
      return vec4(red, green, blue, 1.0);
 }
+
 void main() {
      vec4 diffuseColor = bsJsColor(maxIterations, complexCoordinate);
      outColor = diffuseColor;

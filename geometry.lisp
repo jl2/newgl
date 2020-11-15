@@ -61,8 +61,8 @@
     (gl:bind-buffer :array-buffer (car vbos))
     (gl:bind-buffer :element-array-buffer (car ebos))))
 
-(defmethod render ((object geometry) view-xform)
-  (declare (ignorable object view-xform))
+(defmethod render ((object geometry))
+  (declare (ignorable object))
   (call-next-method)
   (with-slots (primitive-type idx-count) object
     (gl:draw-elements primitive-type
