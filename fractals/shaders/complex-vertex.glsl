@@ -4,7 +4,6 @@ layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec2 inUV;
 
 uniform mat4 transform;
-uniform mat4 normalTransform;
 
 out vec3 position;
 out vec2 complexCoordinate;

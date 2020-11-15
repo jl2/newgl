@@ -1,13 +1,11 @@
 #version 400 core
 
-in vec3 normal;
 in vec3 position;
 in vec2 complexCoordinate;
 
-out vec4 outColor;
-
-
 uniform int maxIterations;
+
+out vec4 outColor;
 
 vec4 burningShipColor(int maxIter, vec2 pos) {
      int iter;
@@ -19,7 +17,7 @@ vec4 burningShipColor(int maxIter, vec2 pos) {
 
      float ox = zx;
      float oy = zy;
-     
+
      for (iter = 0; iter < maxIterations; iter++)
      {
           float xtemp = zx * zx - zy * zy + ox;
