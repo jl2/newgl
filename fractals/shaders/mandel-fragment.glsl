@@ -3,12 +3,9 @@
 in vec3 position;
 in vec2 complexCoordinate;
 
-uniform mat4 transform;
-uniform mat4 normalTransform;
+uniform int maxIterations;
 
 out vec4 outColor;
-
-uniform int maxIterations;
 
 vec4 mandelbrotColor(int maxIter, vec2 pos) {
      int iter;

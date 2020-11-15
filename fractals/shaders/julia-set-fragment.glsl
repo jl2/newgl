@@ -1,26 +1,13 @@
 #version 400 core
 
-in vec3 normal;
 in vec3 position;
-
 in vec2 complexCoordinate;
+
+uniform int maxIterations;
 uniform float cReal;
 uniform float cImag;
 
-uniform mat4 transform;
-uniform mat4 normalTransform;
-
 out vec4 outColor;
-
-const vec3 lightPos = vec3(vec4(0.0, -8.0, -8.0, 1.0));
-const vec3 lightColor = vec3(1.0, 1.0, 1.0);
-const float lightPower = 80.0;
-const vec3 ambientColor = vec3(0.00, 0.00, 0.000);
-const vec3 specColor = vec3(1.0, 1.0, 1.0);
-const float shininess = 38.0;
-const float screenGamma = 1.3; // Assume the monitor is calibrated to the sRGB color space
-
-uniform int maxIterations;
 
 vec4 juliaSetColor(int maxIter, vec2 pos) {
      int iter;
@@ -53,9 +40,10 @@ vec4 juliaSetColor(int maxIter, vec2 pos) {
      tmpval = fract(iter / 8422.0);
      tmpval2 = fract(iter / 11133.0);
 
-     red = clamp(zy * zx * zx * (iter % 67)/66.0, 0.0, 1.0);
-     green = clamp(zy * zy * (iter % 47)/46.0, 0.0, 1.0);
-     blue = clamp(zx * zx * (iter % 24)/23.0, 0.0, 1.0);
+     fi = (0.5 + sin(pi * (iter/200.0))) / 2.0;
+     red =   clamp(pow((1.0 - fi), (zx*zy)), 0.0, 1.0);
+     green = clamp(pow(fi, abs(sin(fi+zy))), 0.0, 1.0);
+     blue =  clamp(abs(tan(fi - sin(fi + zx))), 0.0, 1.0);
 
      return vec4(red, green, blue, 1.0);
 }
