@@ -82,8 +82,8 @@
                        objects))
            )
      objects)
-   :radius 16
-   :cam-height 12
+   :radius 3
+   :cam-height 2
    :dt (/ 0.125 4)))
 
 

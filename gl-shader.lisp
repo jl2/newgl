@@ -1,6 +1,6 @@
-;;;; gl-shader.lisp
-;;;;
-;;;; Copyright (c) 2020 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
+;; gl-shader.lisp
+;;
+;; Copyright (c) 2020 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 (in-package #:newgl)
 
@@ -118,7 +118,10 @@
     ;; Kind of lame to scan the file a second time...
     ;; TODO: merge this loop with the previous
     (cl-ppcre:do-register-groups (type name) (uniform-rx source-code)
-      (setf (gethash name uniforms) (make-instance 'uniform :name name :type (glsl-type-keyword type))))
+      (setf (gethash name uniforms)
+            (make-instance 'uniform
+                           :name name
+                           :type (glsl-type-keyword type))))
     (setf (slot-value shader 'uniforms) uniforms)
     shader))
 
