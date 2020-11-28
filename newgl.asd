@@ -21,7 +21,7 @@
   :description "New opengl graphics library."
   :author "Jeremiah LaRocco <jeremiah_larocco@fastmail.com>"
   :license  "ISC"
-  :version "0.0.1"
+  :version "0.1.0"
   :serial t
   :depends-on (#:alexandria
                #:j-utils

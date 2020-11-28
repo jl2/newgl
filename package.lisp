@@ -17,125 +17,18 @@
 
 (setf *features* (remove :3D-VECTORS-DOUBLE-FLOATS *features*))
 (defpackage :newgl
-  (:use #:cl #:j-utils #:alexandria #:glfw #:3d-vectors #:3d-matrices)
-  (:export #:opengl-object
-           #:geometry
-           #:vao
-           #:ebos
-           #:vbos
-           #:primitive-type
-           #:xform
-           #:vertex-buffers
-           #:program
-           #:gl-shader
-           #:assign-uniforms
-           #:aspect-ratio
-           #:build-shader-program
-           #:bind-buffers
-           #:fill-buffers
-           #:allocate-and-fill-buffers
-           #:reload-object
-           #:cleanup
-           #:to-gl-array
-           #:to-gl-float-array
-
-           #:enable-layout
-           #:compile-shader
-           #:use-layout
-           #:get-source
-           #:cleanup
-           #:render
-           #:update
-           #:fill-buffers
-           #:handle-key
-           #:handle-click
-           #:handle-scroll
-           #:handle-resize
-           #:reload-object
-           #:sphere
-           #:set-uniform
-           #:shader-type
-           #:source-file
-           #:layout
-           #:shader
-           #:view-xform
-
+  (:use #:cl
+        #:j-utils
+        #:alexandria
+        #:3d-vectors
+        #:3d-matrices
+        )
+  (:export #:display
            #:tri-mesh
-           #:add-point-tm
-           #:parametric-tri-mesh
-           #+stl-to-open-gl #:view-stl
-
-           #:make-layout
-           #:make-layout-entry
-
-           #:point-cloud
-           #:make-point-cloud
-           #:add-point-pc
-           #:make-square
-           #:random-point-cloud
-           #:parametric-point-cloud
-
-           #:line-segments
-           #:create-axis
-           #:add-line
-           #:add-line-2
-           #:add-line-by-pt-index
-           #:add-line-by-pt-index-2
-           #:add-line-by-index
-           #:random-line-cloud
-           #:fractal-tree
-
-           #:display
-
-           #:viewer
-
            #:sphere
-           #:sombrero
-           #:torus
-           #:blend2d-shader
-
-           #:st-quad
-           #:make-st-quad
-
-           #:plastic
-           #:painted-plastic
-
-           #:quad
-           #:make-uv-quad
-
-           #:mouse-click
-           #:cursor-pos
-           #:mod-keys
-           #:action
-           #:button
-           #:time
-           #:viewer-thread-function
-
-           #:shader-from-file
-
-           #:draw-line
-           #:draw-triangle
-
-           #:test-viewer
-           #:show-test-viewer
-
-           #:keyframe
-           #:create-keyframe
+           #:point-cloud
+           #:line-segments
            #:create-keyframe-sequence
-           #:keyframe-sequence
-           #:keyframe-count
-           #:value-at
-           #:create-simple-keyframe-sequence
-
-           #:rotating-display
-
-           #:read-lines-from-text-file
-
-           #:blend2d-texture
-           #:draw-image
-
-           #:mandelbrot-set-shaders
-           #:julia-set-shaders
-           #:burning-ship-shaders
-           #:bs-js-shaders
-           ))
+           #:create-keyframe
+           #:add-line-2
+   ))

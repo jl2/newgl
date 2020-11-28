@@ -58,7 +58,7 @@
                  (call-next-method)
                  nil))))
     (when need-reload
-      (reload-object object)
+      (initialize object)
       t)))
 
 
@@ -74,7 +74,7 @@
 ;;                                                   zoom-window)
 ;;                       (cursor-position-to-complex cursor-pos zoom-window))))
 ;;     (setf newgl:vertices (to-vertices zoom-window))
-;;     (newgl:reload-object object)
+;;     (newgl:initialize object)
 ;;     (with-slots (newgl:cursor-pos newgl:mod-keys newgl:action newgl:button newgl:time) click
 ;;     (setf newgl:*previous-mouse-drag* (make-instance 'complex-fractal-click
 ;;                                                      :window zoom-window
@@ -118,5 +118,5 @@
          (cur-height (cadr win-size)))
     (glfw:set-cursor-position (coerce (/ cur-width 2.0) 'double-float)
                               (coerce (/ cur-height 2.0) 'double-float)))
-  (newgl:reload-object object)
+  (newgl:initialize object)
   t)

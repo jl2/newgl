@@ -39,12 +39,12 @@
     (setf viewers (make-hash-table :test 'equal))))
 
 ;; Keyboard callback.
-(def-key-callback keyboard-handler (window key scancode action mod-keys)
+(glfw:def-key-callback keyboard-handler (window key scancode action mod-keys)
   (when-let (viewer (find-viewer window))
     (handle-key viewer window key scancode action mod-keys)))
 
 ;; Mouse handler callback
-(def-mouse-button-callback mouse-handler (window button action mod-keys)
+(glfw:def-mouse-button-callback mouse-handler (window button action mod-keys)
   (when-let (viewer (find-viewer window))
     (let* ((cpos (glfw:get-cursor-position window))
            (click-info (make-instance 'mouse-click
@@ -52,21 +52,21 @@
                                       :mod-keys mod-keys
                                       :action action
                                       :button button
-                                      :time (get-time))))
+                                      :time (glfw:get-time))))
       (handle-click viewer window click-info))))
 
 ;; GLFW scroll handler
-(def-scroll-callback scroll-handler (window x-scroll y-scroll)
+(glfw:def-scroll-callback scroll-handler (window x-scroll y-scroll)
   (when-let (viewer (find-viewer window))
     (let ((cpos (glfw:get-cursor-position window)))
       (handle-scroll viewer window cpos x-scroll y-scroll))))
 
 ;; GLFW error callback
-(def-error-callback error-callback (message)
+(glfw:def-error-callback error-callback (message)
   (format t "Error: ~a~%" message))
 
 ;; Resize event handler
-(def-framebuffer-size-callback resize-handler (window width height)
+(glfw:def-framebuffer-size-callback resize-handler (window width height)
   (when-let (viewer (find-viewer window))
     (handle-resize viewer window width height)))
 
@@ -109,27 +109,27 @@
   (:documentation "A collection of objects and a viewport."))
 
 (defmethod render ((viewer viewer))
+  (loop for object in (objects viewer)
+        do
+           (render object)))
+
+(defmethod cleanup ((viewer viewer))
+  (loop for object in (objects viewer)
+        do
+           (cleanup object)))
+
+(defmethod update ((viewer viewer) elapsed-seconds)
   (with-slots (objects view-xform) viewer
     (let ((norm-xform (mtranspose (minv view-xform))))
       (loop for object in objects
             do
                (set-uniform object "transform" view-xform)
                (set-uniform object "normalTransform" norm-xform)
-               (render object)))))
+               (update object elapsed-seconds)))))
 
-(defmethod cleanup ((viewer viewer))
-  (loop for object in (objects viewer)
-        do
-        (cleanup object)))
-
-(defmethod update ((viewer viewer) elapsed-seconds)
-  (loop for object in (objects viewer)
-        do
-        (update object elapsed-seconds)))
-
-(defmethod reload-object ((viewer viewer))
+(defmethod initialize ((viewer viewer))
   (dolist (object (objects viewer))
-    (reload-object object)))
+    (initialize object)))
 
 (defun show-gl-state ()
   "Print debug information about the OpenGL state."
@@ -166,7 +166,7 @@
   (cond
     ;; ESC to exit
     ((and (eq key :escape) (eq action :press))
-     (set-window-should-close window)
+     (glfw:set-window-should-close window)
      t)
 
     ;; r to rebuild shaders
@@ -180,7 +180,7 @@
     ;; f to refill buffers
     ((and (eq key :b) (eq action :press))
      (format t "Reloading buffers ~%")
-     (reload-object viewer)
+     (initialize viewer)
      t)
 
     ;; i to show gl info
@@ -266,7 +266,7 @@
   (init)
 
 
-  (let* ((window (create-window :title "OpenGL Viewer"
+  (let* ((window (glfw:create-window :title "OpenGL Viewer"
                                 :width 100
                                 :height 100
                                 :decorated nil
@@ -283,14 +283,14 @@
     (unwind-protect
          (progn
            ;; GLFW Initialization
-           (setf %gl:*gl-get-proc-address* #'get-proc-address)
+           (setf %gl:*gl-get-proc-address* #'glfw:get-proc-address)
 
            (add-viewer window viewer)
 
-           (set-key-callback 'keyboard-handler window)
-           (set-mouse-button-callback 'mouse-handler window)
-           (set-scroll-callback 'scroll-handler window)
-           (set-framebuffer-size-callback 'resize-handler window)
+           (glfw:set-key-callback 'keyboard-handler window)
+           (glfw:set-mouse-button-callback 'mouse-handler window)
+           (glfw:set-scroll-callback 'scroll-handler window)
+           (glfw:set-framebuffer-size-callback 'resize-handler window)
 
            ;; Initialize OpenGL state
            (gl:enable :line-smooth
@@ -312,13 +312,13 @@
                              (vw background-color))
 
              ;; Load objects for the first time
-             (reload-object viewer)
+             (initialize viewer)
              (loop
-               with start-time = (get-time)
+               with start-time = (glfw:get-time)
                for frame-count from 0
-               until (window-should-close-p window)
+               until (glfw:window-should-close-p window)
 
-               for current-seconds = (get-time)
+               for current-seconds = (glfw:get-time)
                for elapsed-seconds = (- current-seconds previous-seconds)
                for elapsed-time = (- current-seconds start-time)
 
@@ -349,8 +349,8 @@
 
 
                   (render viewer)
-               do (swap-buffers window)
-               do (poll-events))
+               do (glfw:swap-buffers window)
+               do (glfw:poll-events))
 
              ;; Cleanup before exit
              (cleanup viewer)

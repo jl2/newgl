@@ -5,8 +5,8 @@ in vec3 position;
 
 out vec4 outColor;
 
-uniform mat4 transform;
-uniform mat4 normalTransform;
+uniform mat4 view_transform;
+uniform mat4 normal_view_transform;
 
 uniform int mode = 2;
 in vec4 diffuseColor;

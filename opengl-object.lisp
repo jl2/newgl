@@ -23,9 +23,6 @@
 
 (defgeneric bind-buffers (object))
 
-(defgeneric reload-object (object)
-  (:documentation "Destroy and reload object's buffers."))
-
 (defclass gl-buffer ()
   ((size :initform 0)
    (type :initform :float)))
@@ -142,7 +139,7 @@
     (dolist (texture textures)
       (fill-buffers texture))))
 
-(defmethod reload-object ((object opengl-object))
+(defmethod initialize ((object opengl-object))
   (cleanup object)
   (build-shader-program object)
   (fill-buffers object))

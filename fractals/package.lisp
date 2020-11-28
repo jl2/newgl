@@ -17,7 +17,7 @@
 
 (setf *features* (remove :3D-VECTORS-DOUBLE-FLOATS *features*))
 (defpackage :newgl.fractals
-  (:use #:cl #:j-utils #:alexandria #:glfw #:3d-vectors #:3d-matrices #:newgl)
+  (:use #:cl #:j-utils #:alexandria #:3d-vectors #:3d-matrices #:newgl)
   (:export #:fractal-viewer
            #:burning-ship-viewer
            #:mandelbrot-set-viewer

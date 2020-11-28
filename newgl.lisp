@@ -17,15 +17,6 @@
 
 (in-package :newgl)
 
-(deftype point ()
-  'vec3)
-
-(deftype normal ()
-  'vec3)
-
-(deftype color ()
-  'vec4)
-
 (defun init ()
   (glfw:initialize))
 
@@ -34,9 +25,6 @@
 
 (defgeneric display (object)
   (:documentation "Display an object."))
-
-(defgeneric cleanup (obj)
-  (:documentation "Cleanup any OpenGL resources owned by obj."))
 
 #+stl-to-open-gl
 (defun view-stl (stl-file-name)
