@@ -89,6 +89,10 @@
              :initarg :show-fps
              :type t
              :accessor show-fps)
+   (desired-fps :initform 60
+                :initarg desired-fps
+                :type fixnum
+                :accessor desired-fps)
    (wire-frame :initform nil
                :initarg :wire-frame
                :type t
@@ -302,7 +306,7 @@
            (gl:depth-func :less)
 
            ;; The event loop
-           (with-slots (previous-seconds show-fps
+           (with-slots (previous-seconds show-fps desired-fps
                         cull-face front-face wire-frame view-xform background-color)
                viewer
 
@@ -350,7 +354,16 @@
 
                   (render viewer)
                do (glfw:swap-buffers window)
-               do (glfw:poll-events))
+
+               do (glfw:poll-events)
+               do (let* ((now (glfw:get-time))
+                         (rem-time (- (+ current-seconds (/ 1.0 desired-fps))
+                                      now)))
+                    ;; (format t "Start: ~a now ~a sleep ~a~%" current-seconds Now rem-time)
+                    (when (> rem-time 0)
+                           (sleep rem-time))
+                           ))
+
 
              ;; Cleanup before exit
              (cleanup viewer)

@@ -7,17 +7,19 @@
 (defclass spirograph (mp3-fft-animation)
   ((newgl:primitive-type :initform :lines)
    (newgl:usage :initform :dynamic-draw)
-   (newgl:shaders :initform (list 
+   (newgl:shaders :initform (list
                        (newgl:shader-from-file (newgl:newgl-shader "point-vertex.glsl"))
                        (newgl:shader-from-file (newgl:newgl-shader "point-fragment.glsl"))))
    (steps :initform 240 :initarg :steps)
    (color :initform (vec4 0.0 1.0 0.0 1.0) :initarg :color)
-   (a-var :initform (make-animated-var :val 16.0
+   (a-var :initarg :a-var :initform (make-animated-var :val 16.0
                                        :buckets '(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19)))
-  (b-var :initform (make-animated-var :val 7.0 :buckets '(6 7 8 9 10)))
-  (h-var :initform (make-animated-var :val 9.0 :buckets '(16 16 17 17 18 18 19 19)))
-  (dt-1-var :initform (make-animated-var :val 1.15 :buckets '()))
-  (dt-2-var :initform (make-animated-var :val 0.25 :buckets '()))
+  (b-var :initarg :b-var :initform (make-animated-var :val 7.0 :buckets '(6 7 8 9 10)))
+  (h-var :initarg :h-var :initform (make-animated-var :val 9.0 :buckets '(16 16 17 17 18 18 19 19)))
+  (dt-1-var :initarg :dt-1-var :initform (make-animated-var :val 1.15 :buckets '()))
+   (dt-2-var :initarg :dt-2-var :initform (make-animated-var :val 0.25 :buckets '()))
+   (vertices :initform nil)
+   (indices :initform nil)
   (stype :initform :hypotrochoid :initarg :stype)))
 
 (defun reset-spirograph (spiro)
@@ -74,6 +76,22 @@
                       (with-slots (val offset) b-var (+ val offset)))
                    (with-slots (val offset) h-var (+ val offset)))))))
 
+(defmethod newgl:initialize ((object spirograph))
+  (call-next-method)
+  (with-slots (vertices indices steps) object
+    (setf vertices (allocate-gl-array :float (* 2 7 steps)))
+    (setf indices (allocate-gl-array :unsigned-int (*  2 steps)))))
+
+(defmethod newgl:cleanup ((object spirograph))
+  (with-slots (vertices indices) object
+    (when vertices
+      (gl:free-gl-array vertices))
+    (when indices
+      (gl:free-gl-array indices))
+    (setf vertices nil)
+    (setf indices nil))
+  (call-next-method))
+
 (defmethod newgl:update ((object spirograph) current-time)
   (call-next-method)
   (with-slots (a-var b-var h-var dt-1-var dt-2-var left-fft-data right-fft-data) object
@@ -85,14 +103,22 @@
   (newgl:update-buffers object))
 
 (defmethod newgl:allocate-and-fill-buffers ((obj spirograph))
-  (with-slots (color steps a-var b-var h-var offset dt-2-var dt-1-var stype) obj
-    (let* ((vertices (allocate-gl-array :float (* 2 7 steps)))
-           (indices (allocate-gl-array :unsigned-int (*  2 steps)))
+  (with-slots (color steps a-var b-var h-var offset dt-2-var dt-1-var stype vertices indices) obj
+    (let* (
 
            (cur-vert-idx 0)
            (cur-idx-idx 0)
-           (x-aspect-ratio 1.0)
-           (y-aspect-ratio 1.0)
+           (win-size (glfw:get-window-size))
+           (width (car win-size))
+           (height (cadr win-size))
+           (x-aspect-ratio (if (< height width)
+                               (/ height width 1.0d0)
+                               1.0d0))
+           (y-aspect-ratio (if (< height width)
+                               1.0d0
+                               (/ width height 1.0d0)))
+           ;; (x-aspect-ratio 1.0)
+           ;; (y-aspect-ratio 1.0)
            (rdt-1 (+ (animated-var-val dt-1-var) (animated-var-offset dt-1-var)))
 
            (max-radius (max-radius obj))
@@ -107,7 +133,7 @@
                   (r-b (with-slots (val offset) b-var (+ val offset)))
                   (r-h (with-slots (val offset) h-var (+ val offset)))
                   (r-dt-2 (with-slots (val offset) dt-2-var (+ val offset)))
-                  
+
                   (x1 (map-val (* x-aspect-ratio (funcall x-fun  r-a r-b r-h cur-t))
                                (- max-radius) max-radius
                                -1.0d0 1.0d0))

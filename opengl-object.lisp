@@ -145,10 +145,15 @@
     (dolist (texture textures)
       (update-buffers texture))))
 
+(defmethod initialize :before ((object opengl-object))
+  (cleanup object))
+
 (defmethod initialize ((object opengl-object))
-  (cleanup object)
-  (build-shader-program object)
+  (build-shader-program object))
+
+(defmethod initialize :after ((object opengl-object))
   (fill-buffers object))
+
 
 (defmethod cleanup ((object opengl-object))
   (with-slots (vao vbos ebos shaders program textures) object
@@ -192,10 +197,10 @@
 
 (defmethod get-layout-descriptor ((object opengl-object))
   (with-slots (shaders) object
-    
+
     (let ((descriptors (mapcar #'layout (remove-if-not #'identity shaders :key #'layout))))
       (if descriptors
-          (progn 
+          (progn
             (get-layout-descriptor (cadr descriptors)))
           nil))))
 

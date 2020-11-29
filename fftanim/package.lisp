@@ -19,4 +19,11 @@
 (defpackage :newgl.fftanim
   (:use #:cl #:j-utils #:anim-utils #:alexandria #:3d-vectors #:3d-matrices #:newgl)
   (:export #:spirograph
+           #:a-var
+           #:b-var
+           #:h-var
+           #:dt-1-var
+           #:dt-2-var
+           #:hypotrochoid
+           #:epitrochoid
            ))
