@@ -16,33 +16,7 @@
 ;; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 (setf *features* (remove :3D-VECTORS-DOUBLE-FLOATS *features*))
-(defpackage :newgl
-  (:use #:cl
-        #:j-utils
-        #:alexandria
-        #:3d-vectors
-        #:3d-matrices
-        )
-  (:export #:display
-           #:tri-mesh
-           #:sphere
-           #:point-cloud
-           #:line-segments
-           #:create-keyframe-sequence
-           #:create-keyframe
-           #:add-line-2
-           #:geometry
-           #:newgl-shader
-           #:shader-from-file
-           #:primitive-type
-           #:initialize
-           #:update
-           #:update-buffers
-           #:cleanup
-           #:render
-           #:allocate-and-fill-buffers
-           #:shaders
-           #:gl-set
-           #:usage
-           #:allocate-gl-array
+(defpackage :newgl.fftanim
+  (:use #:cl #:j-utils #:anim-utils #:alexandria #:3d-vectors #:3d-matrices #:newgl)
+  (:export #:spirograph
            ))

@@ -1,4 +1,4 @@
-;; package.lisp
+;; newgl.fftanim.asd
 ;;
 ;; Copyright (c) 2020 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
@@ -15,34 +15,28 @@
 ;; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 ;; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-(setf *features* (remove :3D-VECTORS-DOUBLE-FLOATS *features*))
-(defpackage :newgl
-  (:use #:cl
-        #:j-utils
-        #:alexandria
-        #:3d-vectors
-        #:3d-matrices
-        )
-  (:export #:display
-           #:tri-mesh
-           #:sphere
-           #:point-cloud
-           #:line-segments
-           #:create-keyframe-sequence
-           #:create-keyframe
-           #:add-line-2
-           #:geometry
-           #:newgl-shader
-           #:shader-from-file
-           #:primitive-type
-           #:initialize
-           #:update
-           #:update-buffers
-           #:cleanup
-           #:render
-           #:allocate-and-fill-buffers
-           #:shaders
-           #:gl-set
-           #:usage
-           #:allocate-gl-array
-           ))
+(in-package :cl-user)
+(defpackage :newgl.fftanim-asd
+  (:use :cl :asdf))
+(in-package :newgl.fftanim-asd)
+
+(asdf:defsystem #:newgl.fftanim
+  :description "Example use of newgl."
+  :author "Jeremiah LaRocco <jeremiah_larocco@fastmail.com>"
+  :license  "ISC"
+  :version "0.0.1"
+  :serial t
+  :depends-on (#:newgl
+               #:anim-utils
+               #:j-utils
+               #:mixalot-mp3
+               #:cl-opengl
+               #:cl-glu
+               #:trivial-main-thread)
+  :components
+  ((:module "fftanim"
+            :components
+            ((:file "package")
+             (:file "fftanim")
+             (:file "spirograph")
+            ))))

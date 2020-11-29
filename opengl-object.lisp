@@ -139,6 +139,12 @@
     (dolist (texture textures)
       (fill-buffers texture))))
 
+(defmethod update-buffers ((object opengl-object))
+  (with-slots (vao textures) object
+    (gl:bind-vertex-array vao)
+    (dolist (texture textures)
+      (update-buffers texture))))
+
 (defmethod initialize ((object opengl-object))
   (cleanup object)
   (build-shader-program object)

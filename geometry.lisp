@@ -8,6 +8,10 @@
   ((vbos :initform nil :type (or null cons))
    (ebos :initform nil :type (or null cons))
    (primitive-type :initarg :primitive-type :initform :triangles)
+   (usage :initform :static-draw :initarg :usage)
+   ;; :type '(or :stream-draw :stream-copy :stream-read
+   ;;                                                         :static-draw :static-copy :static-read
+   ;;                                                         :dynamic-draw :dynamic-copy :dynamic-read))
    (idx-count :initform 0))
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
@@ -32,7 +36,7 @@
 
 (defmethod fill-buffers ((object geometry))
   (call-next-method)
-  (with-slots (vbos ebos idx-count) object
+  (with-slots (vbos ebos idx-count usage) object
     (when (not (null vbos))
       (error "vbos is being rebound!"))
     (when (not (null ebos))
@@ -43,13 +47,27 @@
 
     (multiple-value-bind (vertices indices) (allocate-and-fill-buffers object)
       (gl:bind-buffer :array-buffer (car vbos))
-      (gl:buffer-data :array-buffer :static-draw vertices)
-      (gl:free-gl-array vertices)
+      (gl:buffer-data :array-buffer usage vertices)
 
       (gl:bind-buffer :element-array-buffer (car ebos))
-      (gl:buffer-data :element-array-buffer :static-draw indices)
-      (setf idx-count (gl::gl-array-size indices))
-      (gl:free-gl-array indices))))
+      (gl:buffer-data :element-array-buffer usage indices)
+      (setf idx-count (gl::gl-array-size indices)))))
+
+(defmethod update-buffers ((object geometry))
+  (call-next-method)
+  (with-slots (vbos ebos idx-count) object
+    (when (null vbos)
+      (error "vbos is null"))
+    (when (null ebos)
+      (error "ebos is null"))
+
+    (multiple-value-bind (vertices indices) (allocate-and-fill-buffers object)
+      (gl:bind-buffer :array-buffer (car vbos))
+      (gl:buffer-sub-data :array-buffer vertices)
+
+      (gl:bind-buffer :element-array-buffer (car ebos))
+      (gl:buffer-sub-data :element-array-buffer indices)
+      (setf idx-count (gl::gl-array-size indices)))))
 
 (defmethod bind-buffers ((object geometry))
   (call-next-method)
