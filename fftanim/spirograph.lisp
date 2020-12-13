@@ -10,16 +10,16 @@
    (newgl:shaders :initform (list
                        (newgl:shader-from-file (newgl:newgl-shader "point-vertex.glsl"))
                        (newgl:shader-from-file (newgl:newgl-shader "point-fragment.glsl"))))
-   (steps :initform 240 :initarg :steps)
-   (color :initform (vec4 0.0 1.0 0.0 1.0) :initarg :color)
-   (a-var :initarg :a-var :initform (make-animated-var :val 16.0
-                                       :buckets '(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19)))
-  (b-var :initarg :b-var :initform (make-animated-var :val 7.0 :buckets '(6 7 8 9 10)))
-  (h-var :initarg :h-var :initform (make-animated-var :val 9.0 :buckets '(16 16 17 17 18 18 19 19)))
-  (dt-1-var :initarg :dt-1-var :initform (make-animated-var :val 1.15 :buckets '()))
-   (dt-2-var :initarg :dt-2-var :initform (make-animated-var :val 0.25 :buckets '()))
    (vertices :initform nil)
    (indices :initform nil)
+   (color :initform (vec4 0.0 1.0 0.0 1.0) :initarg :color)
+   (steps :initform 240 :initarg :steps)
+   (a-var :initarg :a-var :initform (make-animated-var :val 16.0
+                                                       :buckets '(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19)))
+   (b-var :initarg :b-var :initform (make-animated-var :val 7.0 :buckets '(6 7 8 9 10)))
+   (h-var :initarg :h-var :initform (make-animated-var :val 9.0 :buckets '(16 16 17 17 18 18 19 19)))
+   (dt-1-var :initarg :dt-1-var :initform (make-animated-var :val 1.15 :buckets '()))
+   (dt-2-var :initarg :dt-2-var :initform (make-animated-var :val 0.25 :buckets '()))
   (stype :initform :hypotrochoid :initarg :stype)))
 
 (defun reset-spirograph (spiro)

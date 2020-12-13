@@ -18,7 +18,8 @@
 (setf *features* (remove :3D-VECTORS-DOUBLE-FLOATS *features*))
 (defpackage :newgl.fftanim
   (:use #:cl #:j-utils #:anim-utils #:alexandria #:3d-vectors #:3d-matrices #:newgl)
-  (:export #:spirograph
+  (:export #:mp3-fft-viz
+           #:spirograph
            #:a-var
            #:b-var
            #:h-var

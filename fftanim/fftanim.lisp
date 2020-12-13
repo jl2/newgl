@@ -16,7 +16,9 @@
    (window-size :initform 256 :initarg :window-size)
    (window-buffer :initform nil)
    (left-fft-data :initform nil)
-   (right-fft-data :initform nil))
+   (right-fft-data :initform nil)
+   (components :initform nil :initarg :components)
+   )
   (:documentation "An animation that uses FFT data computed from an MP3 file."))
 
 

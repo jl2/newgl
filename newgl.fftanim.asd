@@ -38,5 +38,6 @@
             :components
             ((:file "package")
              (:file "fftanim")
+             (:file "fftgraph")
              (:file "spirograph")
             ))))
