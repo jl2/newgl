@@ -12,6 +12,17 @@
    (program :initform 0))
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
+(defmethod show-info ((object opengl-object))
+  (dolist (slot '(vao xform shaders textures program))
+    (format t "  ~a: ~a~%" slot (slot-value object slot)))
+  (with-slots (program) object
+    (let ((shaders (gl:get-attached-shaders program)))
+      (format t "Shaders: ~a~%" shaders)
+      (dolist (shader shaders)
+        (dolist (attrib '(:shader-type
+                          :delete-status :compile-status :info-log-length :shader-source-length))
+        (Format t "~a ~a: ~a~%" shader attrib (gl:get-shader shader attrib)))))))
+  
 (defgeneric build-shader-program (object)
   (:documentation "Build this object's shader programs.  Binding correct VAO is handled by before and after methods."))
 

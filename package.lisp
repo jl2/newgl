@@ -26,6 +26,7 @@
   (:export #:display
            #:tri-mesh
            #:sphere
+           #:torus
            #:point-cloud
            #:line-segments
            #:create-keyframe-sequence
@@ -45,4 +46,9 @@
            #:gl-set
            #:usage
            #:allocate-gl-array
+           #:viewer
+           #:info-viewer
+           #:plastic
+           #:sphere
+           #:show-info
            ))

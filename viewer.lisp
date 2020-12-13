@@ -166,6 +166,19 @@
         do
         (format t "~a : ~a~%" field (gl:get-integer field))))
 
+(defgeneric show-info (object)
+  (:documentation "Show OpenGL information for an object."))
+
+(defmethod show-info ((viewer viewer))
+  (dolist (slot '(objects view-xform aspect-ratio show-fps desired-fps
+                  wire-frame cull-face front-face background-color
+                  window previous-seconds frame-count))
+    (format t "~a: ~a~%" slot (slot-value viewer slot)))
+  (with-slots (objects) viewer
+    (dolist (object objects)
+      (show-info object)))
+  )
+
 (defmethod handle-key ((viewer viewer) window key scancode action mod-keys)
   (cond
     ;; ESC to exit
@@ -189,7 +202,7 @@
 
     ;; i to show gl info
     ((and (eq key :i) (eq action :press))
-     (show-open-gl-info)
+     (show-info viewer)
      t)
 
     ;; s to show gl state

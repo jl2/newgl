@@ -34,18 +34,7 @@
           return nil)
     t))
 
-(defclass layout-description ()
-  ((emit-position :initform t :initarg :emit-position :accessor emit-position)
-   (emit-normal :initform nil :initarg :emit-normal :accessor emit-normal)
-   (emit-uv :initform nil :initarg :emit-uv :accessor emit-uv)
-   (emit-color :initform nil :initarg :emit-color :accessor emit-color)))
 
-(defun layout-stride (desc)
-  (with-slots (emit-position emit-normal emit-uv emit-color) desc
-    (+ (if emit-position 3 0)
-       (if emit-normal 3 0)
-       (if emit-uv 2 0)
-       (if emit-color 4 0))))
 
 (defmethod get-layout-descriptor ((layout layout))
   (if (descriptor layout)
