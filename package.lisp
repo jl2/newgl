@@ -34,6 +34,8 @@
            #:add-line-2
            #:geometry
            #:newgl-shader
+           #:gl-shader
+           #:gl-file-shader
            #:shader-from-file
            #:primitive-type
            #:initialize
