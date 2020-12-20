@@ -29,16 +29,14 @@
 
 (defmethod update ((viewer info-viewer) elapsed-seconds)
   (with-slots (objects view-xform) viewer
-    (let ((norm-xform (mtranspose (minv view-xform))))
-      (loop for object in objects
-            do
-               (set-uniform object "transform" view-xform)
-               (set-uniform object "normalTransform" norm-xform)
-               (update object elapsed-seconds)))))
+    (loop for object in objects
+          do
+             (update object elapsed-seconds))))
 
 (defmethod initialize ((viewer info-viewer))
   (dolist (object (objects viewer))
-    (initialize object)))
+    (initialize object)
+    (set-uniform object "view_transform" view-xform)))
 
 (defun show-gl-state ()
   "Print debug information about the OpenGL state."

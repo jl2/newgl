@@ -1,9 +1,10 @@
 #version 400 core
 
-in vec4 Color;
-out vec4 outColor;
+in vec3 diffuse_color;
+
+out vec4 out_color;
 
 void main()
 {
-    outColor = vec4(Color.rgb, 1.0);
+    out_color = diffuse_color;
 }

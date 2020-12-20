@@ -1,57 +1,50 @@
 #version 400 core
 
+uniform mat4 view_transform;
+uniform mat4 obj_transform;
+
 in vec3 normal;
 in vec3 position;
+in vec4 diffuse_color;
 
-out vec4 outColor;
+out vec4 out_color;
 
-uniform mat4 view_transform;
-uniform mat4 normal_view_transform;
-
-uniform int mode = 2;
-in vec4 diffuseColor;
-
-const vec3 lightPos = vec3(vec4(0.0, -8.0, 0.0, 1.0));
-const vec3 lightColor = vec3(1.0, 1.0, 1.0);
-const float lightPower = 40.0;
-const vec3 ambientColor = vec3(0.00, 0.01, 0.000);
-const vec3 specColor = vec3(1.0, 1.0, 1.0);
+const vec3 light_pos = vec3(vec4(0.0, 8.0, 0.0, 1.0));
+const vec3 light_color = vec3(1.0, 1.0, 1.0);
+const float light_power = 40.0;
+const vec3 ambient_color = vec3(0.00, 0.01, 0.000);
+const vec3 spec_color = vec3(1.0, 1.0, 1.0);
 const float shininess = 128.0;
-const float screenGamma = 1.3; // ssume the monitor is calibrated to the sRGB color space
+const float screen_gamma = 1.3; // ssume the monitor is calibrated to the sRGB color space
 
 void main() {
 
-     vec3 lightDir = lightPos - position;
-     float distance = length(lightDir);
+     vec3 light_dir = light_pos - position;
+     float distance = length(light_dir);
      distance = distance * distance;
-     lightDir = normalize(lightDir);
+     light_dir = normalize(light_dir);
 
-     float lambertian = max(dot(lightDir, normal), 0.0);
+     float lambertian = max(dot(light_dir,
+                                normal),
+                            0.0);
      float specular = 0.0;
 
      if (lambertian > 0.0) {
 
-          vec3 viewDir = normalize(-position);
+          vec3 view_dir = normalize(-position);
 
-          // this is blinn phong
-          vec3 halfDir = normalize(lightDir - viewDir);
-          float specAngle = max(dot(halfDir, normal), 0.0);
-          specular = pow(specAngle, shininess);
+          // Blinn-Phong
+          vec3 half_dir = normalize(light_dir - view_dir);
+          float spec_angle = max(dot(half_dir, normal), 0.0);
+          specular = pow(spec_angle, shininess);
 
-          // this is phong (for comparison)
-          if (mode == 2) {
-               vec3 reflectDir = reflect(-lightDir, normal);
-               specAngle = max(dot(reflectDir, viewDir), 0.0);
-               // note that the exponent is different here
-               specular = pow(specAngle, shininess/4.0);
-          }
      }
-     vec3 colorLinear = ambientColor +
-          diffuseColor.rgb * lambertian * lightColor * lightPower / distance +
-          specColor * specular * lightColor * lightPower / distance;
-     // apply gamma correction (assume ambientColor, diffuseColor and specColor
+     vec3 color_linear = ambient_color +
+          diffuse_color.rgb * lambertian * light_color * light_power / distance +
+          spec_color * specular * light_color * light_power / distance;
+     // apply gamma correction (assume ambient_color, diffuseColor and spec_color
      // have been linearized, i.e. have no gamma correction in them)
-     vec3 colorGammaCorrected = pow(colorLinear, vec3(1.0 / screenGamma));
+     vec3 color_gamma_corrected = pow(color_linear, vec3(1.0 / screen_gamma));
      // use the gamma corrected color in the fragment
-     outColor = vec4(colorGammaCorrected, 1.0);
+     out_color = vec4(color_gamma_corrected, diffuse_color.a);
 }

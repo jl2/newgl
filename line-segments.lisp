@@ -17,7 +17,7 @@
                                   :fill-pointer 0))
    (primitive-type :initform :lines)
    (shaders :initform (list 
-                       (shader-from-file (newgl-shader "point-vertex.glsl"))
+                       (shader-from-file (newgl-shader "color-position-vertex.glsl"))
                        (shader-from-file (newgl-shader "point-fragment.glsl")))))
   (:documentation "Point cloud."))
 

@@ -16,21 +16,17 @@
 
   (bl:with-objects
       ((circle bl:circle))
-    (dotimes (idx 20)
-      (dotimes (i size)
-        (let* ((sx i)
-               (sy (+ (* (/ size 2) (sin (/ i 30)))
-                      (/ size 2)
-                      (* idx 20)
-                      (random (/ size 10.0))))
-               (radius (random (1+ (* size 80.0d0)))))
+    (dotimes (i 800)
+      (let* ((sx (random size))
+             (sy (random size))
+             (radius (random 700.0)))
 
-          (setf (bl:circle.cx circle) (coerce sx 'double-float))
-          (setf (bl:circle.cy circle) (coerce sy 'double-float))
-          (setf (bl:circle.r circle) (coerce radius 'double-float))
-          (bl:lookup-error (bl:context-set-comp-op ctx bl:+comp-op-src-over+))
-          (bl:lookup-error (bl:context-set-fill-style-rgba32 ctx (random #16rffffffff)))
-          (bl:lookup-error (bl:context-fill-geometry ctx bl:+geometry-type-circle+ circle)))))))
+        (setf (bl:circle.cx circle) (coerce sx 'double-float))
+        (setf (bl:circle.cy circle) (coerce sy 'double-float))
+        (setf (bl:circle.r circle) (coerce radius 'double-float))
+        (bl:lookup-error (bl:context-set-comp-op ctx bl:+comp-op-src-over+))
+        (bl:lookup-error (bl:context-set-fill-style-rgba32 ctx (random #16rffffffff)))
+        (bl:lookup-error (bl:context-fill-geometry ctx bl:+geometry-type-circle+ circle))))))
 
 (defmethod fill-texture ((obj blend2d-texture))
   (with-slots (size tex-type textures) obj

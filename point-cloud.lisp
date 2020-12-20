@@ -16,7 +16,7 @@
                                   :adjustable t
                                   :fill-pointer 0))
    (primitive-type :initform :points)
-   (shaders :initform (list (shader-from-file (newgl-shader "point-vertex.glsl"))
+   (shaders :initform (list (shader-from-file (newgl-shader "color-position-vertex.glsl"))
                             (shader-from-file (newgl-shader "point-fragment.glsl")))))
   (:documentation "Point cloud."))
 

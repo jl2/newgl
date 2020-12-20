@@ -11,12 +11,13 @@
    (look-at :initarg :look-at :initform (vec3 0.0 0.0 0.0))
    (up-vector :initarg :up-vector :initform +vy+)))
 
-(defmethod update ((viewer keyframe-viewer) elapsed-seconds)
+(defmethod update-view-xform ((viewer keyframe-viewer) elapsed-seconds)
   (call-next-method)
   (with-slots (view-xform eye-pos aspect-ratio) viewer
     (setf view-xform
           (m* (mperspective 60.0 aspect-ratio 1.0 10000.0)
-              (mlookat (value-at eye-pos elapsed-seconds) (vec3 0 0 0) +vy+)))))
+              (mlookat (value-at eye-pos elapsed-seconds) (vec3 0 0 0) +vy+))))
+  t)
 
 (defun rotating-display (objects &key
                                        (radius 4.0)

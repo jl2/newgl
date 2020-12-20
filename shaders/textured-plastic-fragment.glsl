@@ -3,6 +3,8 @@
 uniform mat4 view_transform;
 uniform mat4 obj_transform;
 
+uniform sampler2D image;
+
 in vec3 normal;
 in vec3 position;
 in vec2 uv;
@@ -18,17 +20,7 @@ const float shininess = 128.0;
 const float screen_gamma = 1.3; // ssume the monitor is calibrated to the sRGB color space
 
 void main() {
-
-     float dsquared = uv.x * uv.x + uv.y * uv.y;
-
-     float radius = 0.5;
-     float rsquared = radius*radius;
-     vec4 diffuse_color;
-     if (dsquared < rsquared) {
-          diffuse_color = vec4(0.0, 1.0, 0.0, 1.0);
-     } else {
-          diffuse_color = vec4(0, 0, 0, 0);
-     }
+     vec4 diffuse_color = texture(image, uv);
 
      vec3 light_dir = light_pos - position;
      float distance = length(light_dir);

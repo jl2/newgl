@@ -12,7 +12,7 @@
   ((newgl:primitive-type :initform :lines)
    (newgl:usage :initform :dynamic-draw)
    (newgl:shaders :initform (list
-                             (newgl:shader-from-file (newgl:newgl-shader "point-vertex.glsl"))
+                             (newgl:shader-from-file (newgl:newgl-shader "color-position-vertex.glsl"))
                              (newgl:shader-from-file (newgl:newgl-shader "point-fragment.glsl"))))
    (vertices :initform nil)
    (indices :initform nil)

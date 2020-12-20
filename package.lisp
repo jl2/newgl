@@ -27,6 +27,7 @@
            #:tri-mesh
            #:sphere
            #:torus
+           #:blend2d-texture
            #:point-cloud
            #:line-segments
            #:create-keyframe-sequence
@@ -51,6 +52,9 @@
            #:viewer
            #:info-viewer
            #:plastic
+           #:painted-plastic
+           #:circled-plastic
            #:sphere
            #:show-info
+           #:rotating-display
            ))

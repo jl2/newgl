@@ -51,5 +51,5 @@
 
 (defun painted-plastic ()
   (list
-   (shader-from-file (newgl-shader "painted-plastic-vertex.glsl"))
-   (shader-from-file (newgl-shader "painted-plastic-fragment.glsl"))))
+   (shader-from-file (newgl-shader "uv-normal-position-vertex.glsl"))
+   (shader-from-file (newgl-shader "textured-plastic-fragment.glsl"))))

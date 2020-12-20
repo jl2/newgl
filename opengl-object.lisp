@@ -160,7 +160,9 @@
   (cleanup object))
 
 (defmethod initialize ((object opengl-object))
-  (build-shader-program object))
+  (build-shader-program object)
+  (with-slots (xform) object
+    (set-uniform object "obj_transform" xform)))
 
 (defmethod initialize :after ((object opengl-object))
   (fill-buffers object))
@@ -217,5 +219,10 @@
 
 (defun plastic ()
   (list
-   (shader-from-file (newgl-shader "plastic-vertex.glsl"))
+   (shader-from-file (newgl-shader "color-normal-position-vertex.glsl"))
    (shader-from-file (newgl-shader "plastic-fragment.glsl"))))
+
+(defun circled-plastic ()
+  (list
+   (shader-from-file (newgl-shader "uv-normal-position-vertex.glsl"))
+   (shader-from-file (newgl-shader "circle-fragment.glsl"))))

@@ -113,27 +113,39 @@
   (:documentation "A collection of objects and a viewport."))
 
 (defmethod render ((viewer viewer))
-  (loop for object in (objects viewer)
-        do
-           (render object)))
+  (with-slots (objects view-xform) viewer
+    (loop for object in objects
+          do
+             (render object))))
 
 (defmethod cleanup ((viewer viewer))
   (loop for object in (objects viewer)
         do
            (cleanup object)))
 
+(defgeneric update-view-xform (object elapsed-seconds)
+  (:documentation "Upate view-xform uniform if it has changed.")
+  )
+
+(defmethod update-view-xform ((viewer viewer) elapsed-seconds)
+  nil)
+
 (defmethod update ((viewer viewer) elapsed-seconds)
-  (with-slots (objects view-xform) viewer
-    (let ((norm-xform (mtranspose (minv view-xform))))
+  (let ((changed (update-view-xform viewer elapsed-seconds)))
+    (with-slots (objects view-xform) viewer
       (loop for object in objects
             do
-               (set-uniform object "transform" view-xform)
-               (set-uniform object "normalTransform" norm-xform)
+               (when changed
+                 (set-uniform object "view_transform" view-xform))
                (update object elapsed-seconds)))))
 
 (defmethod initialize ((viewer viewer))
-  (dolist (object (objects viewer))
-    (initialize object)))
+  (with-slots (objects view-xform) viewer
+    (setf view-xform (meye 4))
+    (loop for object in objects
+          do
+             (set-uniform object "view_transform" view-xform)
+             (initialize object))))
 
 (defun show-gl-state ()
   "Print debug information about the OpenGL state."
