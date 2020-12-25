@@ -9,6 +9,7 @@
    (xform :initform (meye 4) :initarg :xform :type mat4)
    (shaders :initarg :shaders :initform nil :type (or null list))
    (textures :initarg :textures :initform nil :type (or null list))
+   (buffers)
    (program :initform 0))
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
@@ -34,12 +35,17 @@
 
 (defgeneric bind-buffers (object))
 
+
 (defclass gl-buffer ()
-  ((size :initform 0)
+  ((size :initform 0 :initarg :size)
    (type :initform :float)))
 
+(declaim (inline allocate-gl-array free-gl-array gl-set gl-get to-gl-float-array to-gl-array))
 (defun allocate-gl-array (type count)
   (gl:alloc-gl-array type count))
+
+(defun free-gl-array (array)
+  (gl:free-gl-array array))
 
 (defun gl-set (array idx value type)
   (setf (gl:glaref array idx)
@@ -48,28 +54,14 @@
 (defun gl-get (array idx)
   (gl:glaref array idx))
 
-(declaim (inline to-gl-float-array to-gl-array))
-(defun to-gl-float-array (sequence)
-  "Create an OpenGL float array from a CL array of numbers.
-   This is a convenience function that will coerce array elments to single-float."
-  (declare (optimize (speed 3))
-           (type sequence sequence))
-  (let* (
-         (count (length sequence))
-         (arr (make-array (length sequence) :initial-contents sequence :element-type 'single-float))
-         (gl-array (gl:alloc-gl-array :float count)))
-    (dotimes (i count)
-      (setf (gl:glaref gl-array i) (coerce (aref arr i) 'single-float)))
-    gl-array))
-
-(defun to-gl-array (arr type)
+(defun to-gl-array (gl-type arr)
   "Create an OpenGL array of the specified type, initialized with the contents of arr."
   (declare (optimize (speed 3))
            (type (vector) arr))
   (let* ((count (length arr))
-         (gl-array (gl:alloc-gl-array type count)))
+         (gl-array (allocate-gl-array type count)))
     (dotimes (i count)
-      (setf (gl:glaref gl-array i) (aref arr i)))
+      (setf (gl:glaref gl-array i) (coerce (aref arr i) gl-type)))
     gl-array))
 
 

@@ -11,7 +11,7 @@ in vec2 uv;
 
 out vec4 out_color;
 
-const vec3 light_pos = vec3(vec4(0.0, 8.0, 0.0, 1.0));
+const vec3 light_pos = vec3(vec4(0.0, 12.0, 12.0, 1.0));
 const vec3 light_color = vec3(1.0, 1.0, 1.0);
 const float light_power = 40.0;
 const vec3 ambient_color = vec3(0.00, 0.01, 0.000);

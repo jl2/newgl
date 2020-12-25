@@ -14,8 +14,8 @@
 
 (defmethod allocate-and-fill-buffers ((object tri-mesh))
   (with-slots (vertices indices) object
-    (values (to-gl-float-array vertices)
-            (to-gl-array indices :unsigned-int))))
+    (values (to-gl-array :float vertices)
+            (to-gl-array :unsigned-int indices))))
 
 (defun add-point-tm (tm &key x y z (red 1.0f0) (green 1.0f0)  (blue 1.0f0) (alpha 1.0f0))
   (with-slots (vertices indices) tm

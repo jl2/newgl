@@ -12,7 +12,8 @@
 
 (defmethod allocate-and-fill-buffers ((object complex-window))
   (multiple-value-bind (real-min real-max imag-min imag-max) (compute-min-max object)
-    (values (to-gl-float-array (list
+    (values (to-gl-array :float
+                         (list
                                 -1.0f0  1.0f0  0.0f0
                                 (coerce real-min 'single-float) (coerce imag-max 'single-float)
 
@@ -24,7 +25,8 @@
 
                                 1.0f0 -1.0f0  0.0f0
                                 (coerce real-max 'single-float) (coerce imag-min 'single-float)))
-            (to-gl-array #(0 1 2 1 3 2) :unsigned-int))))
+                         
+            (to-gl-array :unsigned-int #(0 1 2 1 3 2)))))
 
 (defun window-from-center-radius (center radius)
   (make-instance 'complex-window

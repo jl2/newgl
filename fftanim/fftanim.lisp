@@ -81,5 +81,5 @@
     (setf the-mp3 nil)
     (setf window-buffer nil)
     (setf left-fft-data nil)
-    (setf right-fft-data nil)
-    ))
+    (setf right-fft-data nil))
+  (call-next-method))

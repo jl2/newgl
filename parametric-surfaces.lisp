@@ -6,8 +6,6 @@
 
 (defclass parametric-surface (geometry)
   ((color :initform (vec4 0.0 0.9 0.0 1.0) :initarg :color)
-   (vertices :initform nil)
-   (indices :initform nil)
    (u-steps :initform 16 :initarg :u-steps)
    (v-steps :initform 16 :initarg :v-steps)
    (u-min :initform (- pi) :initarg :u-min)

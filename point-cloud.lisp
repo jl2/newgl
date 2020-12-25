@@ -5,7 +5,11 @@
 (in-package #:newgl)
 
 (defclass point-cloud (geometry)
-  ((vertices :initform (make-array 0
+  ((needs-update :initform t)
+   (vert-pointer :initform nil)
+   (idx-pointer :initform nil)
+
+   (vertices :initform (make-array 0
                                    :element-type 'single-float
                                    :initial-contents '()
                                    :adjustable t
@@ -22,11 +26,19 @@
 
 (defmethod allocate-and-fill-buffers ((object point-cloud))
   (with-slots (vertices indices) object
-    (values (to-gl-float-array vertices) (to-gl-array indices :unsigned-int))))
+    (values (to-gl-array :float vertices) (to-gl-array :unsigned-int indices))))
 
 
 (defun make-point-cloud ()
   (make-instance 'point-cloud))
+
+(defmethod cleanup ((points point-cloud))
+  (with-slots (needs-update vert-pointer idx-pointer) lines
+    (free-gl-array vert-pointer)
+    (free-gl-array idx-pointer)
+    (setf vert-pointer nil)
+    (setf idx-pointer nil)
+    (setf needs-update t)))
 
 (defun add-point-pc (cloud x y z red green blue alpha)
   (with-slots (vertices indices) cloud
