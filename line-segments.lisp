@@ -4,6 +4,24 @@
 
 (in-package #:newgl)
 
+(gl:define-gl-array-format position-color
+  (gl:vertex :type :float :components (x y z))
+  (gl:color :type :float :components (r g b a)))
+
+(defun set-vert (array idx &optional (vert) (color) (uv))
+  (when vert
+    (setf (gl:glaref array idx 'x) (vx vert))
+    (setf (gl:glaref array idx 'y) (vy vert))
+    (setf (gl:glaref array idx 'z) (vz vert)))
+  (when color
+    (setf (gl:glaref array idx 'r) (vx color))
+    (setf (gl:glaref array idx 'g) (vy color))
+    (setf (gl:glaref array idx 'b) (vz color))
+    (setf (gl:glaref array idx 'a) (vw color)))
+  (when uv
+    (setf (gl:glaref array idx 'u) (vx uv))
+    (setf (gl:glaref array idx 'v) (vy uv))))
+  
 (defclass line-segments (geometry)
   ((vertices :initform (make-array 0
                                    :element-type 'vec3
@@ -12,6 +30,11 @@
                                    :fill-pointer 0))
    (colors :initform (make-array 0
                                    :element-type 'vec4
+                                   :initial-contents '()
+                                   :adjustable t
+                                   :fill-pointer 0))
+   (indices :initform (make-array 0
+                                   :element-type 'fixnum
                                    :initial-contents '()
                                    :adjustable t
                                    :fill-pointer 0))
@@ -38,34 +61,54 @@
                       collect (vz c)
                     collect (vw c)))))
 
+
 (defmethod allocate-and-fill-buffers ((object line-segments))
   (with-slots (needs-update vert-pointer idx-pointer colors vertices indices) object
-    (when (and needs-update (> (length vertices) 0) (> (length indices) 0))
+    (when (and needs-update
+               (> (length vertices) 0)
+               (> (length indices) 0))
+
       (when vert-pointer
         (free-gl-array vert-pointer))
+
       (when idx-pointer
         (free-gl-array idx-pointer))
-      (setf vert-pointer (to-vertex-buffer vertices colors))
-      (setf idx-pointer (to-gl-array :unsigned-int (loop for i below (/ (length vertices) 2) collecting i)))))
-  (values vert-pointer idx-pointer))
+
+      (setf vert-pointer (allocate-gl-array  '(:struct position-color) (length vertices)))
+      (setf idx-pointer (allocate-gl-array :unsigned-int (length indices)))
+
+      (loop for vert across vertices
+            for color across colors
+            for idx from 0
+            do
+               (set-vert vert-pointer idx vert color)
+            )
+      (loop for idx across indices
+            for i from 0 do
+              (setf (gl:glaref idx-pointer i) idx)))
+    (values vert-pointer idx-pointer)))
 
 (defmethod cleanup ((lines line-segments))
   (with-slots (needs-update vert-pointer idx-pointer) lines
-    (free-gl-array vert-pointer)
-    (free-gl-array idx-pointer)
+    (when vert-pointer
+      (free-gl-array vert-pointer))
+    (when idx-pointer
+      (free-gl-array idx-pointer))
     (setf vert-pointer nil)
     (setf idx-pointer nil)
     (setf needs-update t)))
 
 (defun add-line (lines p1 c1 p2 c2)
-  (with-slots (vertices colors) lines
+  (with-slots (vertices colors indices) lines
 
     (let ((index  (length vertices)))
       (vector-push-extend p1 vertices)
       (vector-push-extend p2 vertices)
       (vector-push-extend c1 colors)
       (vector-push-extend c2 colors)
-      (values (index (1+ index))))))
+      (vector-push-extend index indices)
+      (vector-push-extend (1+ index) indices)
+      (values index (1+ index)))))
 
 
 (defun add-line-by-index (lines idx0 idx1)
@@ -174,11 +217,11 @@
           minimizing (vy first) into min-y
           minimizing (vz first) into min-z
 
-          finally (add-line-2 ls
+          finally (add-line ls
                                second
-                               (vec4 0 1 0 1)
+                               (vec4 0.0 1.0 0.0 1.0)
                                (car pts)
-                               (vec4 0 1 0 1))
+                               (vec4 0.0 1.0 0.0 1.0))
           finally (return (values ls (vec3 min-x -1.0 min-z) (vec3 max-x 1.0 max-z))))))
 
 

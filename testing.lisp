@@ -24,15 +24,15 @@
 
 (defun show-test-viewer ()
   (let ((tm (make-instance 'newgl:line-segments)))
-    (newgl:add-line-2 tm
-                      :p1 (vec3 0 0 0) :c1 (vec4 0 1 0 1)
-                      :p2 (vec3 0 2 0) :c2 (vec4 0 1 0 1))
-    (newgl:add-line-2 tm
-                      :p1 (vec3 0 0 0) :c1 (vec4 1 0 0 1)
-                      :p2 (vec3 2 0 0) :c2 (vec4 1 0 0 1))
-    (newgl:add-line-2 tm
-                      :p1 (vec3 0 0 0) :c1 (vec4 0 0 1 1)
-                      :p2 (vec3 0 0 2) :c2 (vec4 0 0 1 1))
+    (add-line tm
+                       (vec3 0 0 0)  (vec4 0 1 0 1)
+                       (vec3 0 2 0)  (vec4 0 1 0 1))
+    (add-line tm
+                       (vec3 0 0 0)  (vec4 1 0 0 1)
+                       (vec3 2 0 0)  (vec4 1 0 0 1))
+    (add-line tm
+                       (vec3 0 0 0)  (vec4 0 0 1 1)
+                       (vec3 0 0 2)  (vec4 0 0 1 1))
     (display (make-instance 'test-viewer
                             :objects (list tm)
                             :xform (meye 4)) :debug nil)))

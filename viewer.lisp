@@ -291,13 +291,13 @@
 (defmethod display ((viewer viewer))
   "GLFW Event Loop function that initializes GLFW and OpenGL, creates a window,
    and runs an event loop."
-  (glfw:set-error-callback 'error-callback)
-  (init)
+  ;; (glfw:set-error-callback 'error-callback)
+  (Init)
 
 
   (let* ((window (glfw:create-window :title "OpenGL Viewer"
-                                :width 100
-                                :height 100
+                                :width 1000
+                                :height 1000
                                 :decorated nil
                                 :opengl-profile :opengl-core-profile
                                 :context-version-major 4

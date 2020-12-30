@@ -57,11 +57,14 @@
 (defun to-gl-array (gl-type arr)
   "Create an OpenGL array of the specified type, initialized with the contents of arr."
   (declare (optimize (speed 3))
-           (type (vector) arr))
+           (type (vector (or single-float fixnum)) arr))
   (let* ((count (length arr))
-         (gl-array (allocate-gl-array type count)))
+         (cl-type (assoc-value '((:float . 'single-float)
+                                 (:unsigned-int . 'fixnum))
+                               gl-type))
+         (gl-array (allocate-gl-array gl-type count)))
     (dotimes (i count)
-      (setf (gl:glaref gl-array i) (coerce (aref arr i) gl-type)))
+      (setf (gl:glaref gl-array i) (coerce (aref arr i) cl-type)))
     gl-array))
 
 

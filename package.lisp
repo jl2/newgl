@@ -32,7 +32,8 @@
            #:line-segments
            #:create-keyframe-sequence
            #:create-keyframe
-           #:add-line-2
+           #:add-line
+           #:create-axis
            #:geometry
            #:newgl-shader
            #:gl-shader

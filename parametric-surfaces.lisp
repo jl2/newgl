@@ -23,6 +23,8 @@
    (emit-normal :initform t :initarg :emit-normal)
    (emit-uv :initform nil :initarg :emit-uv)
    (emit-color :initform t :initarg :emit-color)
+   (vertices :initform nil)
+   (indices :initform nil)
   ))
 
 (defgeneric f_u_v (surface uv vv))
