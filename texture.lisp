@@ -18,28 +18,21 @@
 
 (defgeneric fill-texture (obj))
 
-(defmethod fill-texture ((obj texture))
-  (with-slots (size tex-type textures) obj
-    (let ((color (allocate-gl-array :unsigned-byte 4)))
-      (gl-set color 0 255 :unsigned-byte)
-      (gl:tex-image-2d tex-type 0 :rgba 1 1 0 :rgba :unsigned-byte color)
-      (gl:generate-mipmap tex-type))))
-
-
-(defmethod bind-buffers ((object texture))
+(defmethod bind ((object texture))
   (with-slots (textures) object
     (when textures
       (gl:bind-texture :texture-2d (car textures)))))
 
-(defmethod fill-buffers ((object texture))
-  (with-slots (parameters tex-type textures) object
+(defmethod fill-texture ((object texture))
+  (with-slots (size parameters tex-type textures) object
     (when textures
-      (error "fill-buffers called twice!"))
-    (setf textures (gl:gen-textures 1))
-    (gl:bind-texture tex-type (car textures))
+      (error "fill-texture called twice!"))
+    (setf textures (car (gl:gen-textures 1)))
+    (gl:bind-texture tex-type textures)
     (dolist (param parameters)
       (gl:tex-parameter tex-type (car param) (cdr param)))
-    (fill-texture object)))
+    (gl:tex-image-2d tex-type 0 :rgba 1 1 0 :rgba :unsigned-byte #(255 0 0 255))
+    (gl:generate-mipmap tex-type)))
 
 (defmethod cleanup ((obj texture))
   "Delete a shader on the GPU."
@@ -49,7 +42,3 @@
       (gl:delete-textures textures)
       (setf textures nil))))
 
-(defun painted-plastic ()
-  (list
-   (shader-from-file (newgl-shader "uv-normal-position-vertex.glsl"))
-   (shader-from-file (newgl-shader "textured-plastic-fragment.glsl"))))

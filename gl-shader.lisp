@@ -7,7 +7,7 @@
 ;; This library depends on a number of conventions to automatically handle shaders.
 ;; 1. Shader file names must specify the shader type as part of the file name.
 ;;    For example, 'plastic-fragment.glsl', 'plastic-vertex.glsl'
-;; 2. Uniforms and layout information is 'parsed' out of the shader using regular expressions.
+;; 2. Layout information is 'parsed' out of the shader using regular expressions.
 ;;    They work for the shader's I write, but may need improvements or replacements.
 
 (defparameter *shader-dir* (asdf:system-relative-pathname :newgl "shaders/")
@@ -27,9 +27,7 @@
     (format stream "OpenGL Compiler Error: ~a~%Info log:~%==========~%~a" status info-log)))
 
 (defclass gl-shader ()
-  ((layout :initarg :layout :initform nil :type (or null layout) :accessor layout)
-   (uniforms :initform (make-hash-table :test 'equal) :type hash-table)
-   (shader :initform 0 :type fixnum)
+  ((shader :initform 0 :type fixnum)
    (shader-type :initarg :shader-type))
   (:documentation "An opengl shader class."))
 
@@ -40,44 +38,57 @@
 (defgeneric compile-shader (shader)
   (:documentation "Read source from source file and compile shader"))
 
-(defgeneric use-shader-layout (shader program)
-  (:documentation "Return shader's layout."))
-
-(defgeneric use-shader-uniforms (shader program)
-  (:documentation "Return shader's layout."))
-
-
 (defclass gl-file-shader (gl-shader)
   ((source-file :initarg :source-file :type (or pathname string) :accessor source-file))
   (:documentation "An OpenGL shader whose source code is stored in a file."))
 
-(defmethod print-object ((shader gl-shader) stream)
-  (format stream "(make-instance 'newgl:gl-file-shader :source-file ~s )" (source-file shader)))
+;; (defmethod print-object ((shader gl-shader) stream)
+;;   (format stream "(make-instance 'newgl:gl-file-shader :source-file ~s )" (source-file shader)))
 
 (defun glsl-type-keyword (name)
   (intern (string-upcase name) "KEYWORD"))
 
 
-(defun glsl-type-size (tname)
+(defparameter *glsl-type-db*
+  '((:vec3 :float 3)
+    (:vec4 :float 4)
+    (:vec2 :float 2)
+
+    (:mat4 :float 16)
+    (:mat3 :float 9)
+
+    (:float :float 1)
+    (:double :double 1)
+    (:int :int 1)
+
+    (:dvec3 :double 3)
+    (:dvec4 :double 4)
+    (:dvec2 :double 2)
+    
+    (:dmat4 :double 16)
+    (:dmat3 :double 9)
+    
+    ))
+
+
+(defun glsl-base-type (tname)
   (when-let ((val (assoc tname
-                         '(("vec3" :float 3)
-                           ("vec4" :float 4)
-                           ("vec2" :float 2)
-                           ("dvec3" :float 3)
-                           ("dvec4" :float 4)
-                           ("dvec2" :float 2)
+                         *glsl-type-db*)))
+    (cadr val)))
 
-                           ("mat4" float 16)
-                           ("mat3" :float 9)
-                           ("dmat4" float 16)
-                           ("dmat3" :float 9)
+(defun glsl-base-count (tname)
+  (when-let ((val (assoc tname
+                         *glsl-type-db*)))
+    (caddr val)))
 
-                           ("double" double 1)
-                           ("float" :float 1)
-                           ("int" s :int 1))
-                         :test #'string=)))
-    (values (cadr val) (caddr val))))
+(defun glsl-type-info (tname)
+  (when-let ((val (assoc tname
+                         *glsl-type-db*)))
+    (values  (cadr val) (caddr val))))
                   
+(defun glsl-type-size (tname)
+  (multiple-value-bind (type count) (glsl-type-info  tname)
+    (* count (cffi:foreign-type-size type))))
 
 (defun lookup-shader-type (file-name)
   (let ((pn (pathname-name file-name)))
@@ -96,43 +107,14 @@
 
 ;; TODO: This is fragile, to say the least.  Improve as necessary.
 (defun shader-from-file (file-name &optional type)
-  "Read a shader language file and parse out basic information, like type, layout, uniforms."
-  (let* (entries
-         (stype (if type type (lookup-shader-type file-name)))
-         (uniforms (make-hash-table :test 'equal))
-         (shader (make-instance 'gl-file-shader :source-file file-name :shader-type stype))
-         (source-code (get-source shader))
-         (layout-rx "layout\\(location\\s*=\\s*(\\d+)\\)\\s*(in|out)\\s*(\\w+)\\\s*(\\w+);")
-         (uniform-rx "uniform\\s+(\\w+)\\s+(\\w+);"))
-
-    ;; "Parse" layouts
-    (cl-ppcre:do-register-groups (location is-in type name) (layout-rx source-code)
-      (declare (ignorable location))
-      (when (string= "in" is-in)
-        (multiple-value-bind (gtype count) (glsl-type-size type)
-          (push (make-layout-entry name count gtype) entries))))
-
-    (setf (slot-value shader 'layout) (make-layout (reverse entries)))
-
-    ;; Look for uniforms
-    ;; Kind of lame to scan the file a second time...
-    ;; TODO: merge this loop with the previous
-    (cl-ppcre:do-register-groups (type name) (uniform-rx source-code)
-      (setf (gethash name uniforms)
-            (make-instance 'uniform
-                           :name name
-                           :type (glsl-type-keyword type))))
-    (setf (slot-value shader 'uniforms) uniforms)
-    shader))
-
-(defmethod use-shader-layout ((shader gl-shader) program )
-  (with-slots (layout) shader
-    (enable-layout layout program)))
-
-(defmethod use-shader-uniforms ((shader gl-shader) program )
-  (with-slots (uniforms) shader
-    (loop for uniform being the hash-values of uniforms do
-      (use-uniform uniform program))))
+  "Read a shader language file and parse out basic information, like type and layout"
+  (let ((stype (if type type (lookup-shader-type file-name)))
+        (real-name (if (uiop:file-exists-p file-name)
+                       file-name
+                       (newgl-shader file-name))))
+    (when (not (uiop:file-exists-p real-name))
+      (error "~a ~a do not exist!" file-name real-name))
+    (make-instance 'gl-file-shader :source-file real-name :shader-type stype)))
 
 (defmethod get-source ((shader gl-shader))
   "")
@@ -141,16 +123,13 @@
   (with-slots (source-file) shader
     (ju:read-file source-file)))
 
-(defmethod set-uniform ((shader gl-shader) name new-value)
-  (with-slots (uniforms shader shader-type) shader
-    (when (gethash name uniforms)
-      (set-value (gethash name uniforms) new-value))))
+(defmethod initialize ((shader gl-shader) &key)
+  (compile-shader shader))
 
-(defmethod cleanup ((shader gl-shader))
-  (with-slots (shader uniforms) shader
-    (when (> 0 shader)
+(defmethod cleanup ((shade gl-shader))
+  (with-slots (shader) shade
+    (when (> shader 0)
       (gl:delete-shader shader))
-    ;; (setf uniforms (make-hash-table :test 'equal))
     (setf shader 0)))
 
 (define-condition shader-compile-error (shader-error) ())
@@ -167,3 +146,23 @@
                :status compile-result
                :object shadr
                :info-log (gl:get-shader-info-log shader))))))
+
+(defun plastic ()
+  (list
+   (shader-from-file "position-color-normal-vertex.glsl")
+   (shader-from-file "plastic-fragment.glsl")))
+
+(defun painted-plastic ()
+  (list
+   (shader-from-file "position-normal-uv-vertex.glsl")
+   (shader-from-file "textured-plastic-fragment.glsl")))
+
+(defun circled-plastic ()
+  (list
+   (shader-from-file "position-normal-uv-vertex.glsl")
+   (shader-from-file "circle-fragment.glsl")))
+
+(defun point-shader ()
+  (list
+   (shader-from-file "position-color-vertex.glsl")
+   (shader-from-file "point-fragment.glsl")))

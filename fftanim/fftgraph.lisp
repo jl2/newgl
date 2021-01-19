@@ -21,7 +21,7 @@
   (:documentation "An animation that uses FFT data computed from an MP3 file."))
 
 
-(defmethod newgl:initialize ((object mp3-fft-viz))
+(defmethod newgl:initialize ((object mp3-fft-viz) &key)
   (call-next-method)
   (with-slots (vertices indices steps) object
     (setf vertices (allocate-gl-array :float (* 2 7 steps)))

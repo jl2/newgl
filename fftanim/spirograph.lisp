@@ -76,7 +76,7 @@
                       (with-slots (val offset) b-var (+ val offset)))
                    (with-slots (val offset) h-var (+ val offset)))))))
 
-(defmethod newgl:initialize ((object spirograph))
+(defmethod newgl:initialize ((object spirograph) &key)
   (call-next-method)
   (with-slots (vertices indices steps) object
     (setf vertices (allocate-gl-array :float (* 2 7 steps)))

@@ -112,11 +112,13 @@
    (frame-count :initform 1))
   (:documentation "A collection of objects and a viewport."))
 
-(defmethod render ((viewer viewer))
+(defmethod initialize ((viewer viewer) &key)
   (with-slots (objects view-xform) viewer
     (loop for object in objects
           do
-             (render object))))
+             (initialize object)
+             (set-uniform object "view_transform" view-xform :mat4))))
+
 
 (defmethod cleanup ((viewer viewer))
   (loop for object in (objects viewer)
@@ -128,6 +130,7 @@
   )
 
 (defmethod update-view-xform ((viewer viewer) elapsed-seconds)
+  (declare (ignorable viewer elapsed-seconds))
   nil)
 
 (defmethod update ((viewer viewer) elapsed-seconds)
@@ -136,60 +139,15 @@
       (loop for object in objects
             do
                (when changed
-                 (set-uniform object "view_transform" view-xform))
+                 (set-uniform object "view_transform" view-xform :mat4))
                (update object elapsed-seconds)))))
 
-(defmethod initialize ((viewer viewer))
+(defmethod render ((viewer viewer))
   (with-slots (objects view-xform) viewer
-    (setf view-xform (meye 4))
     (loop for object in objects
           do
-             (set-uniform object "view_transform" view-xform)
-             (initialize object))))
+             (render object))))
 
-(defun show-gl-state ()
-  "Print debug information about the OpenGL state."
-  (loop
-        for field in '(:active-texture
-                       :array-buffer-binding
-                       :blend
-                       :current-program
-                       :line-width
-                       :vertex-array-binding
-                       :viewport)
-        do
-        (format t "~a : ~a~%" field (gl:get-integer field))))
-
-(defun show-open-gl-info ()
-  "Print OpenGL limits"
-  (loop
-        for field in '(:max-combined-texture-image-units
-                       :max-cube-map-texture-size
-                       :max-draw-buffers
-                       :max-fragment-uniform-components
-                       :max-texture-size
-                       ;; :max-varying-floats
-                       :max-vertex-attribs
-                       :max-vertex-texture-image-units
-                       :max-vertex-uniform-components
-                       :max-viewport-dims
-                       :texture-binding-2d
-                       :stereo)
-        do
-        (format t "~a : ~a~%" field (gl:get-integer field))))
-
-(defgeneric show-info (object)
-  (:documentation "Show OpenGL information for an object."))
-
-(defmethod show-info ((viewer viewer))
-  (dolist (slot '(objects view-xform aspect-ratio show-fps desired-fps
-                  wire-frame cull-face front-face background-color
-                  window previous-seconds frame-count))
-    (format t "~a: ~a~%" slot (slot-value viewer slot)))
-  (with-slots (objects) viewer
-    (dolist (object objects)
-      (show-info object)))
-  )
 
 (defmethod handle-key ((viewer viewer) window key scancode action mod-keys)
   (cond
@@ -394,3 +352,48 @@
              (cleanup viewer)
              (rm-viewer window)))
       (glfw:destroy-window window))))
+
+(defun show-gl-state ()
+  "Print debug information about the OpenGL state."
+  (loop
+        for field in '(:active-texture
+                       :array-buffer-binding
+                       :blend
+                       :current-program
+                       :line-width
+                       :vertex-array-binding
+                       :viewport)
+        do
+        (format t "~a : ~a~%" field (gl:get-integer field))))
+
+(defun show-open-gl-info ()
+  "Print OpenGL limits"
+  (loop
+        for field in '(:max-combined-texture-image-units
+                       :max-cube-map-texture-size
+                       :max-draw-buffers
+                       :max-fragment-uniform-components
+                       :max-texture-size
+                       ;; :max-varying-floats
+                       :max-vertex-attribs
+                       :max-vertex-texture-image-units
+                       :max-vertex-uniform-components
+                       :max-viewport-dims
+                       :texture-binding-2d
+                       :stereo)
+        do
+        (format t "~a : ~a~%" field (gl:get-integer field))))
+
+(defgeneric show-info (object &key indent)
+  (:documentation "Show OpenGL information for an object."))
+
+(defmethod show-info ((viewer viewer) &key (indent 0))
+  (let ((this-ws (indent-whitespace indent)))
+  (dolist (slot '(objects view-xform aspect-ratio show-fps desired-fps
+                  wire-frame cull-face front-face background-color
+                  window previous-seconds frame-count))
+    (format t "~a~a: ~a~%" this-ws slot (slot-value viewer slot)))
+  (with-slots (objects) viewer
+    (dolist (object objects)
+      (show-info object :indent (1+ indent))))
+  ))

@@ -15,47 +15,6 @@
    (descriptor :initform nil :accessor descriptor))
   (:documentation "A shader layout."))
 
-(defclass instanced-layout (layout)
-  ()
-  (:documentation "A shader layout that supports instance data in the last entry."))
-
-(defgeneric compatible (first second)
-  (:documentation "Check if two layouts are compatible. (i.e. same types and number of entries)"))
-
-(defmethod compatible ((first layout-entry) (second layout-entry))
-  (and (= (layout-entry-count first) (layout-entry-count second))
-       (eq (layout-entry-type first) (layout-entry-type second))))
-
-(defmethod compatible ((first layout) (second layout))
-  (when (= (length (layout-entries first)) (length (layout-entries second)))
-    (loop for fe in (layout-entries first)
-          for se in (layout-entries second)
-          when (not (compatible fe se))
-          return nil)
-    t))
-
-
-
-(defmethod get-layout-descriptor ((layout layout))
-  (if (descriptor layout)
-      (progn
-        (descriptor layout))
-      (with-slots (descriptor entries) layout
-        (setf descriptor (make-instance 'layout-description))
-        (with-slots (emit-position emit-normal emit-uv emit-color) descriptor
-          (loop for entry in entries
-                do
-                   (let ((lower-name (string-downcase (layout-entry-name entry))))
-                     (cond ((search "position" lower-name :test #'string=)
-                            (setf emit-position t))
-                           ((search "normal" lower-name :test #'string=)
-                            (setf emit-normal t))
-                           ((or (search "uv" lower-name :test #'string=)
-                                (search "st" lower-name :test #'string=))
-                            (setf emit-uv t))
-                           ((search "color" lower-name :test #'string=)
-                            (setf emit-color t))))))
-        descriptor)))
 
 (defgeneric enable-layout (layout program)
   (:documentation "Bind a layout."))
@@ -71,9 +30,9 @@
                  :count count
                  :type type))
 
-(defmethod print-object ((obj layout-entry) stream)
-  (with-slots (name count type) obj
-    (format stream "(make-layout-entry ~a ~a ~a)" name count type)))
+;; (defmethod print-object ((obj layout-entry) stream)
+;;   (with-slots (name count type) obj
+;;     (format stream "(make-layout-entry ~a ~a ~a)" name count type)))
 
 (defun make-layout (entries)
   (make-instance 'layout :entries entries))

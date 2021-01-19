@@ -4,11 +4,12 @@
 
 (in-package #:newgl)
 
-(gl:define-gl-array-format position-color
-  (gl:vertex :type :float :components (x y z))
-  (gl:color :type :float :components (r g b a)))
 
-(defun set-vert (array idx &optional (vert) (color) (uv))
+(defun set-vert (array idx &key (vert) (color) (uv) (normal))
+  (when vert
+    (setf (gl:glaref array idx 'x) (vx vert))
+    (setf (gl:glaref array idx 'y) (vy vert))
+    (setf (gl:glaref array idx 'z) (vz vert)))
   (when vert
     (setf (gl:glaref array idx 'x) (vx vert))
     (setf (gl:glaref array idx 'y) (vy vert))
@@ -74,7 +75,7 @@
       (when idx-pointer
         (free-gl-array idx-pointer))
 
-      (setf vert-pointer (allocate-gl-array  '(:struct position-color) (length vertices)))
+      (setf vert-pointer (allocate-gl-array  :float (* 7 (length vertices))))
       (setf idx-pointer (allocate-gl-array :unsigned-int (length indices)))
 
       (loop for vert across vertices

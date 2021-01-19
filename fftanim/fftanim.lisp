@@ -22,7 +22,7 @@
   (:documentation "An animation that uses FFT data computed from an MP3 file."))
 
 
-(defmethod newgl:initialize ((object mp3-fft-animation))
+(defmethod newgl:initialize ((object mp3-fft-animation) &key)
   (call-next-method)
   ;; (gl:enable :line-smooth :polygon-smooth
   ;;            :depth-test :depth-clamp :alpha-test)

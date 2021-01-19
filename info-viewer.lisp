@@ -33,10 +33,10 @@
           do
              (update object elapsed-seconds))))
 
-(defmethod initialize ((viewer info-viewer))
+(defmethod initialize ((viewer info-viewer) &key)
   (dolist (object (objects viewer))
     (initialize object)
-    (set-uniform object "view_transform" view-xform)))
+    (set-uniform object "view_transform" view-xform :mat4)))
 
 (defun show-gl-state ()
   "Print debug information about the OpenGL state."

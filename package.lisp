@@ -17,45 +17,50 @@
 
 (setf *features* (remove :3D-VECTORS-DOUBLE-FLOATS *features*))
 (defpackage :newgl
+
+  (:nicknames #:ngl)
+
   (:use #:cl
         #:j-utils
         #:alexandria
         #:3d-vectors
         #:3d-matrices
         )
+
   (:export #:display
-           #:tri-mesh
-           #:sphere
-           #:torus
-           #:blend2d-texture
-           #:point-cloud
-           #:line-segments
+           #:rotating-display
+
            #:create-keyframe-sequence
            #:create-keyframe
-           #:add-line
-           #:create-axis
-           #:geometry
-           #:newgl-shader
+
            #:gl-shader
            #:gl-file-shader
            #:shader-from-file
+           #:newgl-shader
+
+           #:buffer
+           #:fill-textures
+           #:fill-uniforms
+           
+           #:opengl-object
+           #:show-info
            #:primitive-type
            #:initialize
-           #:update
-           #:update-buffers
            #:cleanup
+           #:update
            #:render
-           #:allocate-and-fill-buffers
            #:shaders
+
            #:gl-set
-           #:usage
            #:allocate-gl-array
+           #:free-gl-array
+
            #:viewer
            #:info-viewer
+
            #:plastic
            #:painted-plastic
            #:circled-plastic
-           #:sphere
-           #:show-info
-           #:rotating-display
+           #:point-shader
+
            ))

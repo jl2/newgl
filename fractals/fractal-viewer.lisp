@@ -41,12 +41,12 @@
                 ((and (eq key :equal) (or (eq action :press) (eq action :repeat)))
                  (with-slots ( max-iterations ) object
                    (setf max-iterations (max 1 (1+ (floor (* max-iterations iter-up-percent)))))
-                   (set-uniform object "maxIterations" max-iterations)))
+                   (set-uniform object "maxIterations" max-iterations :int)))
 
                 ((and (eq key :minus) (or (eq action :press) (eq action :repeat)))
                  (with-slots ( max-iterations ) object
                    (setf max-iterations (max 1 (floor (* max-iterations iter-down-percent))))
-                   (set-uniform object "maxIterations" max-iterations)))
+                   (set-uniform object "maxIterations" max-iterations :int)))
 
                 ((and (eq key :left) (or (eq action :press) (eq action :repeat)))
                  (pan-complex-fractal-window (complex (- pan-offset) 0.0) object))

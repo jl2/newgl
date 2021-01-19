@@ -14,7 +14,7 @@
   'vec4)
 
 
-(defgeneric initialize (object)
+(defgeneric initialize (object &key)
   (:documentation "Initialize an OpenGL object."))
 
 (defgeneric render (object)

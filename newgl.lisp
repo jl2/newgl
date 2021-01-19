@@ -39,7 +39,7 @@
              (normal-xform (3d-matrices:mtranspose
                             (3d-matrices:minv
                              (3d-matrices:mblock xform 0 0 3 3)))))
-        (newgl:set-uniform tm "transform" xform)
-        (newgl:set-uniform tm "normalTransform" normal-xform)
-        (newgl:set-uniform tm "mode" 1)
+        (newgl:set-uniform tm "transform" xform :mat4)
+        (newgl:set-uniform tm "normalTransform" normal-xform :mat4)
+        (newgl:set-uniform tm "mode" 1 :mat4)
         (newgl:display tm)))))
