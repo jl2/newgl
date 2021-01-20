@@ -27,9 +27,9 @@
    (textures :initform nil :type (or null list))
    (buffers :initform nil :type (or null list))
    (uniforms :initform nil :type (or null list))
-   (primitive-type :initform :points)
+   (primitive-type :initform :lines)
    (program :initform 0)
-   (idx-count :initform 2))
+   (idx-count :initform 4))
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
 (defun indent-whitespace (n)
@@ -44,6 +44,33 @@
       (format t "~a~a: ~a~%" plus-ws slot (slot-value object slot)))
 
     (with-slots (program) object
+      (dolist (attrib '(:delete-status
+                        :link-status
+                        :validate-status
+                        :info-log-length
+                        :attached-shaders
+                        :active-atomic-counter-buffers
+                        :active-attributes
+                        :active-attribute-max-length
+                        :active-uniforms
+                        :active-uniform-blocks
+                        :active-uniform-block-max-name-length
+                        :active-uniform-max-length
+                        ;; :compute-work-group-size
+                        :program-binary-length
+                        :transform-feedback-buffer-mode
+                        :transform-feedback-varyings
+                        :transform-feedback-varying-max-length
+                        ;; :geometry-vertices-out 
+                        ;; :geometry-input-type
+                        ;; :geometry-output-type
+                        ))
+        (format t "~a~a : ~a~%" plus-plus-ws attrib (gl:get-program program attrib)))
+      (dotimes (idx (gl:get-program program :active-attributes))
+        (multiple-value-bind (size type name) (gl:get-active-attrib program idx)
+          (format t "~aAttrib ~a ~a size ~a~%" plus-plus-ws name type size)))
+      
+
       (let ((gl-shaders (gl:get-attached-shaders program)))
         (format t "~aOpenGL Shaders: ~a~%" plus-ws gl-shaders)
         (dolist (shader gl-shaders)
@@ -195,7 +222,6 @@
     (bind object)
     (dolist (uniform uniforms)
       (use-uniform (cdr uniform) program))
-
     (gl:draw-elements primitive-type
                       (gl:make-null-gl-array :unsigned-int)
                       :count idx-count)))
@@ -204,31 +230,40 @@
   (with-slots (buffers idx-count program) object
     (when buffers
       (error "Initializing an object that's already initialized! Cleanup first! ~a" object))
-    (let ((vertices
+    (setf idx-count 6)
+    (let* ((vertex-count 3)
+           (vertices
             (make-instance
              'attribute-buffer
-             :count 2
-             :pointer (to-gl-array :float #(0.0 0.0 0.0 0.0 1.0 0.0 1.0
-                                            0.5 0.0 0.0 0.0 0.0 1.0 1.0))
-             :stride 7
+             :count vertex-count
+             :pointer (to-gl-array
+                       :float
+                       `#(-0.5f0 -0.5f0 0.0f0  0.0f0 1.0f0 0.0f0 1.0f0
+                         0.5f0 -0.5f0 0.0f0  0.0f0 1.0f0 0.0f0 1.0f0
+                         0.0f0 ,(- (sqrt (- 1 (* 0.5 0.5))) 0.5) 0.0f0  0.0f0 1.0f0 0.0f0 1.0f0))
+             :stride nil
              :attributes '(("in_position" . :vec3) ("in_color" . :vec4))
              :usage :static-draw
              :free nil))
-          (indices
-            (make-instance
-             'index-buffer
-             :count 2
-             :pointer (to-gl-array :unsigned-int #(0 1))
-             :stride 1
-             :target :element-array-buffer
-             :usage :static-draw
-             :free nil)))
+           (indices
+             (make-instance
+              'index-buffer
+              :count idx-count
+              :pointer (to-gl-array
+                        :unsigned-int
+                        #(0 1 1 2 2 0))
+              :stride nil
+              :target :element-array-buffer
+              :usage :static-draw
+              :free nil)))
       (push vertices buffers)
       (push indices buffers))
     (dolist (buffer buffers)
       (initialize buffer)
-      (associate-attributes buffer program))
-    (setf idx-count 2)))
+      (with-slots (pointer) buffer
+        (loop for i below (gl::gl-array-size pointer) do
+          (format t "~a[~a] = ~a~%" pointer i (gl:glaref pointer i))))
+      (associate-attributes buffer program))))
 
 (defmethod initialize-textures ((object opengl-object))
   nil)

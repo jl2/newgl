@@ -10,7 +10,7 @@
    (pointer :initarg :pointer)
    (target :initform :array-buffer :initarg :target)
    (usage :initform :static-draw :initarg :usage)
-   (stride :initform 1 :initarg :stride)
+   (stride :initform nil :initarg :stride)
    (free :initform nil :initarg :free)))
 
 (defmethod initialize ((buffer buffer) &key)
@@ -65,6 +65,7 @@
 
 (defmethod bind ((buffer buffer))
   (with-slots (bo target) buffer
+    (format t "(gl:bind-buffer ~a ~a)~%" target bo)
     (if bo
         (gl:bind-buffer target bo)
         (error "Binding an uninitialized buffer!"))))
@@ -76,13 +77,15 @@
 
 (defmethod compute-stride ((buffer buffer))
   (with-slots (stride) buffer
+    (when (null stride)
+        (setf stride 1))
     stride))
 
 (defmethod compute-stride ((buffer attribute-buffer))
   (with-slots (stride attributes) buffer
     (when (null stride)
       (setf stride
-            (loop for attrib in attributes summing (glsl-base-count (cdr attrib)))))
+            (loop for attrib in attributes summing (glsl-type-size (cdr attrib)))))
     stride))
 
 (defgeneric associate-attributes (buffer program))
@@ -141,7 +144,8 @@
 (defun to-gl-array (gl-type arr)
   "Create an OpenGL array of the specified type, initialized with the contents of arr."
   (declare (optimize (speed 3))
-           (type (vector (or real fixnum)) arr))
+           ;;(type (vector (or single-float double-float fixnum)) arr)
+           (type (simple-array (or single-float double-float fixnum)) arr))
   (let* ((count (length arr))
          (cl-type (assoc-value '((:float . single-float)
                                  (:unsigned-int . fixnum))
@@ -150,7 +154,7 @@
     (format t "to-gl-array count ~a gl-type ~a cl-type ~a pointer ~a~%"
             count gl-type cl-type gl-array)
     (dotimes (i count)
-      ;; (format t "Setting idx ~a to ~a~%" i (coerce (aref arr i) cl-type))
+      (format t "Setting idx ~a to ~a~%" i (coerce (aref arr i) cl-type))
       (setf (gl:glaref gl-array i) (coerce (aref arr i) cl-type)))
     gl-array))
 

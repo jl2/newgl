@@ -54,6 +54,6 @@
 
 (defmethod set-value (uniform new-value)
   "Set a uniform's value."
-  (with-slots (value type modified) uniform
+  (with-slots (value modified) uniform
     (setf modified t)
     (setf value new-value)))
