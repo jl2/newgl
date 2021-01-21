@@ -260,9 +260,6 @@
       (push indices buffers))
     (dolist (buffer buffers)
       (initialize buffer)
-      (with-slots (pointer) buffer
-        (loop for i below (gl::gl-array-size pointer) do
-          (format t "~a[~a] = ~a~%" pointer i (gl:glaref pointer i))))
       (associate-attributes buffer program))))
 
 (defmethod initialize-textures ((object opengl-object))

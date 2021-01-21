@@ -65,7 +65,6 @@
 
 (defmethod bind ((buffer buffer))
   (with-slots (bo target) buffer
-    (format t "(gl:bind-buffer ~a ~a)~%" target bo)
     (if bo
         (gl:bind-buffer target bo)
         (error "Binding an uninitialized buffer!"))))
@@ -99,19 +98,10 @@
         for (name . type) in attributes
         for idx from 0
         do
-           (format t "calling (gl:get-attrib-location ~a ~a)~%" program name)
            (let ((entry-attrib (gl:get-attrib-location program name)))
              (when (>= entry-attrib 0)
-               (format t "Calling (gl:enable-vertex-attrib-array ~a)~%" entry-attrib)
                (gl:enable-vertex-attrib-array entry-attrib)
                (multiple-value-bind (base-type count ) (glsl-type-info type)
-                 (format t "calling (gl:vertex-attrib-pointer ~a ~a ~a ~a ~a ~a )~%"
-                         idx
-                         count
-                         base-type
-                         :false
-                         stride
-                         offset)
                  (gl:vertex-attrib-pointer idx
                                            count
                                            base-type
@@ -151,10 +141,7 @@
                                  (:unsigned-int . fixnum))
                                gl-type))
          (gl-array (allocate-gl-array gl-type count)))
-    (format t "to-gl-array count ~a gl-type ~a cl-type ~a pointer ~a~%"
-            count gl-type cl-type gl-array)
     (dotimes (i count)
-      (format t "Setting idx ~a to ~a~%" i (coerce (aref arr i) cl-type))
       (setf (gl:glaref gl-array i) (coerce (aref arr i) cl-type)))
     gl-array))
 
