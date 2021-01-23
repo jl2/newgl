@@ -50,7 +50,7 @@
                :initarg :attributes)))
 
 (defclass index-buffer (buffer)
-  ((target :initform :element-array-bufer)
+  ((target :initform :element-array-buffer)
    (stride :initform 1)))
 
 (defclass uniform-buffer (buffer)
@@ -144,4 +144,3 @@
     (dotimes (i count)
       (setf (gl:glaref gl-array i) (coerce (aref arr i) cl-type)))
     gl-array))
-

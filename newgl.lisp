@@ -25,21 +25,3 @@
 
 (defgeneric display (object)
   (:documentation "Display an object."))
-
-#+stl-to-open-gl
-(defun view-stl (stl-file-name)
-  (let ((stl (stl:read-stl stl-file-name)))
-    (multiple-value-bind (verts idxs) (stl:to-opengl stl)
-      (let* ((tm (make-instance 'newgl:tri-mesh
-                                :vertices verts
-                                :indices idxs))
-             (xform (3d-matrices:m*
-                     (3d-matrices:mrotation (3d-vectors:vec3 1.0 0.0 0.0) (/ pi 8))
-                     (3d-matrices:mrotation (3d-vectors:vec3 0.0 1.0 0.0) (/ pi 8))))
-             (normal-xform (3d-matrices:mtranspose
-                            (3d-matrices:minv
-                             (3d-matrices:mblock xform 0 0 3 3)))))
-        (newgl:set-uniform tm "transform" xform :mat4)
-        (newgl:set-uniform tm "normalTransform" normal-xform :mat4)
-        (newgl:set-uniform tm "mode" 1 :mat4)
-        (newgl:display tm)))))

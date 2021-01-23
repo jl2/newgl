@@ -13,6 +13,11 @@
    (modified :initform t))
   (:documentation "A uniform variable parameter to a shader."))
 
+(defmethod show-info ((uniform uniform) &key (indent ""))
+  (let ((this-ws (indent-whitespace indent)))
+    (with-slots (name type value modified) uniform
+      (format t "~a~a ~a = ~a ~a~%" this-ws type name value modified))))
+
 (defgeneric use-uniform (uniform program)
   (:documentation "Pass the uniform's value into the OpenGL program."))
 
@@ -25,28 +30,44 @@
 
         ;; Only assign values to uniforms that are used by the program
         (when (and modified (>= location 0))
-          (cond ((eq :mat4 type)
-                 (gl:program-uniform-matrix
-                  program location
-                  4
-                  (vector (marr4 value))
-                  t))
+          (cond (
+                 (eq :mat4 type)
+                 (gl:program-uniform-matrix program location
+                                            4
+                                            (vector (marr4 value))
+                                            t))
+
                 ((eq :mat3 type)
-                 (gl:program-uniform-matrix
-                  program location
-                  3
-                  (vector (marr3 value))
-                  t))
+                 (gl:program-uniform-matrix program location
+                                            3
+                                            (vector (marr3 value))
+                                            t))
+
                 ((eq :int type)
-                 (gl:program-uniformi program location value))
+                 (gl:program-uniformi program location
+                                      value))
+
                 ((eq :float type)
-                 (gl:program-uniformf program location value))
+                 (gl:program-uniformf program location
+                                      value))
+
                 ((eq :vec2 type)
-                 (gl:program-uniformf program location (vx value) (vy value)))
+                 (gl:program-uniformf program location
+                                      (vx value)
+                                      (vy value)))
+
                 ((eq :vec3 type)
-                 (gl:program-uniformf program location (vx value) (vy value) (vz value)))
+                 (gl:program-uniformf program location
+                                      (vx value)
+                                      (vy value)
+                                      (vz value)))
+
                 ((eq :vec4 type)
-                 (gl:program-uniformf program location (vx value) (vy value) (vz value) (vw value)))
+                 (gl:program-uniformf program location
+                                      (vx value)
+                                      (vy value)
+                                      (vz value)
+                                      (vw value)))
                 (t
                  (error "Don't know how to set type ~a" type)))
           (setf modified nil))))))
@@ -57,3 +78,6 @@
   (with-slots (value modified) uniform
     (setf modified t)
     (setf value new-value)))
+
+(defmethod cleanup ((uniform uniform))
+  t)

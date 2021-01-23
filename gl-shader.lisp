@@ -64,10 +64,10 @@
     (:dvec3 :double 3)
     (:dvec4 :double 4)
     (:dvec2 :double 2)
-    
+
     (:dmat4 :double 16)
     (:dmat3 :double 9)
-    
+
     ))
 
 
@@ -85,7 +85,7 @@
   (when-let ((val (assoc tname
                          *glsl-type-db*)))
     (values  (cadr val) (caddr val))))
-                  
+
 (defun glsl-type-size (tname)
   (multiple-value-bind (type count) (glsl-type-info  tname)
     (* count (cffi:foreign-type-size type))))
