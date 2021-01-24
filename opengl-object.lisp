@@ -4,14 +4,6 @@
 
 (in-package #:newgl)
 
-(defgeneric bind (object))
-
-(defgeneric build-shader-program (object)
-  (:documentation "Build this object's shader programs.  Binding correct VAO is handled by before and after methods."))
-
-(defgeneric set-uniform (object name value type)
-  (:documentation "Set a uniform variable on object."))
-
 (defclass opengl-object ()
   ((vao :initform 0 :type fixnum)
    (name :initform "GL Object" :initarg :name)
@@ -22,10 +14,18 @@
    (buffers :initform nil :type (or null list) :accessor buffers)
    (uniforms :initform nil :type (or null list) :accessor uniforms)
 
-   (primitive-type :initform :lines)
+   (primitive-type :initform :triangles)
 
    (idx-count :initform 4))
   (:documentation "Base class for all objects that can be rendered in a scene."))
+
+(defgeneric bind (object))
+
+(defgeneric build-shader-program (object)
+  (:documentation "Build this object's shader programs.  Binding correct VAO is handled by before and after methods."))
+
+(defgeneric set-uniform (object name value type &key overwrite)
+  (:documentation "Set a uniform variable on object."))
 
 (defun indent-whitespace (n)
   (make-string (* 2 n) :initial-element #\space))
@@ -143,14 +143,15 @@
     program))
 
 
-(defmethod set-uniform ((obj opengl-object) name value type)
+(defmethod set-uniform ((obj opengl-object) name value type &key (overwrite t))
   (with-slots (uniforms) obj
     (if-let (previous (assoc name uniforms :test #'string=))
-      (set-value (cdr previous) value)
-          (push (cons name (make-instance 'uniform :name name
-                                                   :type type
-                                                   :value value))
-                uniforms))))
+      (when overwrite
+        (set-value (cdr previous) value))
+      (push (cons name (make-instance 'uniform :name name
+                                               :type type
+                                               :value value))
+            uniforms))))
 
 (defmethod initialize :before ((object opengl-object) &key)
   (cleanup object))
@@ -203,8 +204,6 @@
       (when buffers
         (dolist (buffer buffers)
           (cleanup (cdr buffer))))
-      (setf buffers nil)
-
 
       (gl:bind-vertex-array 0)
       (gl:delete-vertex-arrays (list vao))
@@ -258,10 +257,8 @@
   (add-buffer object
               (make-instance
                'index-buffer
-               :count 6
-               :pointer (to-gl-array
-                         :unsigned-int
-                         #(0 1 1 2 2 0))
+               :count 3
+               :pointer (to-gl-array :unsigned-int #(0 1 2))
                :stride nil
                :usage :static-draw
                :free nil)))
@@ -271,4 +268,4 @@
   nil)
 
 (defmethod initialize-uniforms ((object opengl-object))
-  (set-uniform object "obj_transform" (meye 4) :mat4))
+  (set-uniform object "obj_transform" (meye 4) :mat4 :overwrite nil))

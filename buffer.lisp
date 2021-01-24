@@ -84,30 +84,33 @@
   (with-slots (stride attributes) buffer
     (when (null stride)
       (setf stride
-            (loop for attrib in attributes summing (glsl-type-size (cdr attrib)))))
+            (loop for (nil . type) in attributes
+                  summing (glsl-byte-size type))))
     stride))
 
 (defgeneric associate-attributes (buffer program))
 (defmethod associate-attributes ((buffer buffer) program)
-  (declare (ignorable buffer program)))
+  (declare (ignorable buffer program))
+  t)
 
 (defmethod associate-attributes ((buffer attribute-buffer) program)
   (with-slots (attributes) buffer
-  (loop with stride = (compute-stride buffer)
-        for offset = 0 then (+ offset (glsl-type-size type))
-        for (name . type) in attributes
-        for idx from 0
-        do
-           (let ((entry-attrib (gl:get-attrib-location program name)))
-             (when (>= entry-attrib 0)
-               (gl:enable-vertex-attrib-array entry-attrib)
-               (multiple-value-bind (base-type count ) (glsl-type-info type)
-                 (gl:vertex-attrib-pointer idx
-                                           count
-                                           base-type
+    (loop
+          with stride = (compute-stride buffer)
+          for offset = 0 then (+ offset byte-size)
+          for (name . type) in attributes
+          for (comp-type comp-count byte-size) = (glsl-type-info type)
+          do
+             (let ((entry-attrib (gl:get-attrib-location program name)))
+               (when (>= entry-attrib 0)
+                 (gl:vertex-attrib-pointer entry-attrib
+                                           comp-count
+                                           comp-type
                                            :false
                                            stride
-                                           offset)))))))
+                                           offset)
+                 (gl:enable-vertex-attrib-array entry-attrib)))))
+  t)
 
 (defmethod refill ((buffer buffer))
   (bind buffer)

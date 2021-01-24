@@ -45,50 +45,42 @@
 ;; (defmethod print-object ((shader gl-shader) stream)
 ;;   (format stream "(make-instance 'newgl:gl-file-shader :source-file ~s )" (source-file shader)))
 
-(defun glsl-type-keyword (name)
-  (intern (string-upcase name) "KEYWORD"))
-
-
 (defparameter *glsl-type-db*
-  '((:vec3 :float 3)
-    (:vec4 :float 4)
-    (:vec2 :float 2)
+  ;; gl-type, component type,  component count, byte size
+  `(
+    (:float   :float   1  ,(cffi:foreign-type-size :float))
+    (:int     :int     1  ,(cffi:foreign-type-size :int))
+    (:double  :double  1  ,(cffi:foreign-type-size :double))
 
-    (:mat4 :float 16)
-    (:mat3 :float 9)
+    (:vec3    :float   3  ,(* 3 (cffi:foreign-type-size :float)))
+    (:vec4    :float   4  ,(* 4 (cffi:foreign-type-size :float)))
+    (:vec2    :float   2  ,(* 2 (cffi:foreign-type-size :float)))
 
-    (:float :float 1)
-    (:double :double 1)
-    (:int :int 1)
+    (:mat4    :float  16  ,(* 4 4 (cffi:foreign-type-size :float)))
+    (:mat3    :float   9  ,(* 3 3 (cffi:foreign-type-size :float)))
 
-    (:dvec3 :double 3)
-    (:dvec4 :double 4)
-    (:dvec2 :double 2)
+    (:dvec3   :double  3  ,(* 3 (cffi:foreign-type-size :double)))
+    (:dvec4   :double  4  ,(* 4 (cffi:foreign-type-size :double)))
+    (:dvec2   :double  2  ,(* 2 (cffi:foreign-type-size :double)))
 
-    (:dmat4 :double 16)
-    (:dmat3 :double 9)
+    (:dmat4   :double 16  ,(* 4 4 (cffi:foreign-type-size :double)))
+    (:dmat3   :double  9  ,(* 3 3 (cffi:foreign-type-size :double)))
 
     ))
 
-
-(defun glsl-base-type (tname)
+(defun glsl-byte-size (tname)
   (when-let ((val (assoc tname
                          *glsl-type-db*)))
-    (cadr val)))
+    (cadddr val)))
 
-(defun glsl-base-count (tname)
+(defun glsl- (tname)
   (when-let ((val (assoc tname
                          *glsl-type-db*)))
     (caddr val)))
 
 (defun glsl-type-info (tname)
-  (when-let ((val (assoc tname
-                         *glsl-type-db*)))
-    (values  (cadr val) (caddr val))))
+  (cdr (assoc tname *glsl-type-db*)))
 
-(defun glsl-type-size (tname)
-  (multiple-value-bind (type count) (glsl-type-info  tname)
-    (* count (cffi:foreign-type-size type))))
 
 (defun lookup-shader-type (file-name)
   (let ((pn (pathname-name file-name)))
@@ -105,7 +97,7 @@
           ((ends-with-subseq "-tess-control" pn)
            :tess-control-shader))))
 
-;; TODO: This is fragile, to say the least.  Improve as necessary.
+
 (defun shader-from-file (file-name &optional type)
   "Read a shader language file and parse out basic information, like type and layout"
   (let ((stype (if type type (lookup-shader-type file-name)))

@@ -41,7 +41,7 @@
            #:buffer
            #:fill-textures
            #:fill-uniforms
-           
+
            #:opengl-object
            #:show-info
            #:primitive-type

@@ -124,3 +124,11 @@
     (is (near (vec3 0.5 0.0 0.0) (value-at seq 1.5)))
     (is (near (vec3 0.5 0.0 0.0) (value-at seq 2.5)))
     (is (near (vec3 0.5 0.0 0.0) (value-at seq 3.5)))))
+
+
+(def-suite :newgl-type-db)
+(in-suite :newgl-type-db)
+
+(test byte-size
+  (is (= 128 (newgl::glsl-byte-size :dmat4))))
+
