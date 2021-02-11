@@ -11,9 +11,10 @@
    (target :initform :array-buffer :initarg :target)
    (usage :initform :static-draw :initarg :usage)
    (stride :initform nil :initarg :stride)
-   (free :initform nil :initarg :free)))
+   (free :initform nil :initarg :free)
+   (needs-refill :initform t)))
 
-(defmethod initialize ((buffer buffer) &key)
+(defmethod bind ((buffer buffer))
   (with-slots (bo target usage free pointer) buffer
     (when (null pointer)
       (error "Cannot fill buffer from nil."))
@@ -56,7 +57,6 @@
 (defclass uniform-buffer (buffer)
   ((block-index :initform 0 :initarg :block-index)
    (block-name :initarg :block-name)
-   (program :initarg :program)
    (bind-location :initform 0 :initarg :bind-location)))
 
 ;; Use (bound-idx (gl:get-uniform-block-index program block-name))
@@ -70,7 +70,6 @@
         (error "Binding an uninitialized buffer!"))))
 
 
-(defgeneric refill (buffer))
 
 (defgeneric compute-stride (buffer))
 
@@ -112,7 +111,7 @@
                  (gl:enable-vertex-attrib-array entry-attrib)))))
   t)
 
-(defmethod refill ((buffer buffer))
+(defmethod reload-gl ((buffer buffer))
   (bind buffer)
   (with-slots (pointer target) buffer
     (when (null pointer)

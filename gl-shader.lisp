@@ -27,7 +27,7 @@
     (format stream "OpenGL Compiler Error: ~a~%Info log:~%==========~%~a" status info-log)))
 
 (defclass gl-shader ()
-  ((shader :initform 0 :type fixnum)
+  ((shader :initform 0 :type fixnum :accessor shader)
    (shader-type :initarg :shader-type))
   (:documentation "An opengl shader class."))
 
@@ -158,3 +158,8 @@
   (list
    (shader-from-file "position-color-vertex.glsl")
    (shader-from-file "point-fragment.glsl")))
+
+(defun simple-texture ()
+  (list
+   (shader-from-file "position-uv-vertex.glsl")
+   (shader-from-file "simple-texture-fragment.glsl")))

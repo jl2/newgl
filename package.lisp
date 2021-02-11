@@ -25,6 +25,7 @@
         #:alexandria
         #:3d-vectors
         #:3d-matrices
+        #:spacenav
         )
 
   (:export #:display
@@ -62,5 +63,7 @@
            #:painted-plastic
            #:circled-plastic
            #:point-shader
-
+           #:blend2d-texture
+           #:make-st-quad
+           #:simple-texture
            ))

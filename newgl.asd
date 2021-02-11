@@ -35,6 +35,8 @@
 
                #:blend2d
 
+               #:spacenav
+
                #:bordeaux-threads
                #:trivial-main-thread)
 
@@ -45,8 +47,9 @@
                (:file "uniforms")
                (:file "gl-shader")
                (:file "buffer")
-               (:file "opengl-object")
                (:file "texture")
+               (:file "opengl-object")
+               (:file "quad")
                (:file "blend2d-texture")
                (:file "keyframe-sequence")
                (:file "keyframe-viewer")

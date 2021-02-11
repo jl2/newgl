@@ -5,7 +5,8 @@
 (in-package #:newgl)
 
 (defclass blend2d-texture (texture)
-  ((size :initarg :size :initform 2048)))
+  ((tex-type :initform :texture-2d)
+   (size :initarg :size :initform 2048)))
 
 (defgeneric draw-image (obj img ctx size))
 

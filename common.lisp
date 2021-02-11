@@ -20,6 +20,15 @@
 (defgeneric render (object)
   (:documentation "Render an OpenGL object."))
 
+(defgeneric bind (object)
+  (:documentation "Bind object."))
+
+(defgeneric load-gl (object)
+  (:documentation "Initialize buffers, textures, uniforms, etc."))
+
+(defgeneric reload-gl (object)
+  (:documentation "Update buffers, textures, uniforms after binding, but before rendering."))
+
 (defgeneric update (object elapsed-seconds)
   (:documentation "Called on an object *before* rendering to update for the next animation frame."))
 
@@ -38,3 +47,11 @@
 
 (defgeneric handle-resize (object window width height)
   (:documentation "Handle window resize."))
+
+(defgeneric handle-3d-mouse-event (object event)
+  (:documentation "Handle a spacenav 3D mouse event."))
+
+(declaim (inline handle-3d-mouse-event))
+(defmethod handle-3d-mouse-event ((object t) (event t))
+  (declare (ignorable object event))
+  nil)

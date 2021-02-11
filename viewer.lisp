@@ -59,6 +59,7 @@
 (glfw:def-scroll-callback scroll-handler (window x-scroll y-scroll)
   (when-let (viewer (find-viewer window))
     (let ((cpos (glfw:get-cursor-position window)))
+      (format t "scroll ~a ~a ~a ~a~%" window cpos x-scroll y-scroll)
       (handle-scroll viewer window cpos x-scroll y-scroll))))
 
 ;; GLFW error callback
@@ -81,10 +82,17 @@
                :initarg :xform
                :type mat4
                :accessor viewport)
+
+   (radius :initform 1.0 :initarg :radius)
+
+   (x-rot :initform 0.0 :initarg :x-rot)
+   (y-rot :initform 0.0 :initarg :y-rot)
+   (view-changed :initform t)
    (aspect-ratio :initform 1.0
                  :initarg :aspect-ratio
                  :type real
                  :accessor aspect-ratio)
+
    (show-fps :initform nil
              :initarg :show-fps
              :type t
@@ -129,16 +137,34 @@
   (:documentation "Upate view-xform uniform if it has changed.")
   )
 
+(defmethod handle-3d-mouse-event ((viewer viewer) (event sn:motion-event))
+  (with-slots (aspect-ratio view-xform x-rot y-rot radius view-changed) viewer
+    (with-slots (rx ry z) event
+      (let ((scale-factor (/ 1.0 500)))
+        (incf x-rot (* scale-factor rx))
+        (incf y-rot (* scale-factor ry))
+        (setf radius (min 1000.0 (max 1.0 (+ (* scale-factor z)radius))))))
+    (setf view-changed t)
+    (setf view-xform
+          (m* (mperspective 60.0 aspect-ratio 0.1 1000.0)
+              (mlookat (vec3 (* radius (sin x-rot) (cos y-rot))
+                             (* radius (sin x-rot) (sin y-rot))
+                             (* radius (cos x-rot)))
+                       (vec3 0 0 0)
+                       +vy+)))))
+
 (defmethod update-view-xform ((viewer viewer) elapsed-seconds)
   (declare (ignorable viewer elapsed-seconds))
   nil)
 
 (defmethod update ((viewer viewer) elapsed-seconds)
-  (let ((changed (update-view-xform viewer elapsed-seconds)))
-    (with-slots (objects view-xform) viewer
+
+  (with-slots (objects view-xform view-changed) viewer
+    (let ((changed (update-view-xform viewer elapsed-seconds)))
       (loop for object in objects
             do
-               (when changed
+               (when (or view-changed changed)
+                 (setf  view-changed nil)
                  (set-uniform object "view_transform" view-xform :mat4))
                (update object elapsed-seconds)))))
 
@@ -269,6 +295,7 @@
 
     (unwind-protect
          (progn
+           (sn:sn-open)
            ;; GLFW Initialization
            (setf %gl:*gl-get-proc-address* #'glfw:get-proc-address)
 
@@ -317,6 +344,8 @@
 
                     ;; This do is important...
                do
+                  (when-let (ev (sn:poll-event))
+                    (handle-3d-mouse-event viewer ev))
                   ;; Update for next frame
                   (update viewer elapsed-time)
 
@@ -351,6 +380,7 @@
              ;; Cleanup before exit
              (cleanup viewer)
              (rm-viewer window)))
+      (sn:sn-close)
       (glfw:destroy-window window))))
 
 (defun show-gl-state ()
@@ -395,5 +425,4 @@
     (format t "~a~a: ~a~%" this-ws slot (slot-value viewer slot)))
   (with-slots (objects) viewer
     (dolist (object objects)
-      (show-info object :indent (1+ indent))))
-  ))
+      (show-info object :indent (1+ indent))))))

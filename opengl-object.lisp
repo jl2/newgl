@@ -7,19 +7,30 @@
 (defclass opengl-object ()
   ((vao :initform 0 :type fixnum)
    (name :initform "GL Object" :initarg :name)
-   (program :initform 0)
+   (program :initform 0
+            :accessor program)
 
-   (shaders :initform (newgl:point-shader) :type (or null list) :accessor shaders)
-   (textures :initform nil :type (or null list) :accessor textures)
-   (buffers :initform nil :type (or null list) :accessor buffers)
-   (uniforms :initform nil :type (or null list) :accessor uniforms)
+   (shaders :initform nil
+            :type (or null list)
+            :accessor shaders
+            :initarg :shaders)
+   (textures :initform nil
+             :type (or null list)
+             :accessor textures
+             :initarg :textures)
+   (buffers :initform nil
+            :type (or null list)
+            :accessor buffers
+            :initarg :buffers)
+   (uniforms :initform nil
+             :type (or null list)
+             :accessor uniforms
+             :initarg :uniforms)
 
    (primitive-type :initform :triangles)
 
    (idx-count :initform 4))
   (:documentation "Base class for all objects that can be rendered in a scene."))
-
-(defgeneric bind (object))
 
 (defgeneric build-shader-program (object)
   (:documentation "Build this object's shader programs.  Binding correct VAO is handled by before and after methods."))
@@ -73,11 +84,10 @@
         (dolist (attrib '(:shader-type
                           :delete-status :compile-status :info-log-length :shader-source-length))
           (format t "~a~a : ~a~%" plus-plus-ws attrib (gl:get-shader shader attrib))))))
-  (with-slots (buffers uniforms) object
-    (dolist (buffer buffers)
+    (dolist (buffer (buffers object))
       (show-info (cdr buffer) :indent (1+ indent)))
-    (dolist (uniform uniforms)
-      (show-info (cdr uniform) :indent (1+ indent))))))
+    (dolist (uniform (uniforms object))
+      (show-info (cdr uniform) :indent (1+ indent)))))
 
 (defmethod handle-key ((object opengl-object) window key scancode action mod-keys)
   (declare (ignorable object window key scancode action mod-keys))
@@ -105,20 +115,16 @@
 (defmethod build-shader-program ((object opengl-object))
   "Compile and link a shader program, including validation."
 
-  (with-slots (shaders program) object
+  (with-slots (program) object
     ;; Compile all shaders
-    (dolist (gl-shader shaders)
-      (with-slots (shader) gl-shader
-        (when (and (not (zerop shader)) (not (zerop program)))
-          (gl:detach-shader program shader))
-        (initialize gl-shader)))
-
-    ;; Create program and attach shaders
     (when (zerop program)
       (setf program (gl:create-program)))
-    (dolist (shader shaders)
-      (with-slots (shader) shader
-        (gl:attach-shader program shader)))
+
+    (dolist (gl-shader (shaders object))
+      (when (and (not (zerop (shader gl-shader))) (not (zerop program)))
+        (gl:detach-shader program gl-shader))
+      (initialize gl-shader)
+      (gl:attach-shader program (shader gl-shader)))
 
     ;; Link
     (gl:link-program program)
@@ -157,25 +163,57 @@
   (cleanup object))
 
 (defmethod initialize ((object opengl-object) &key)
-
-  (build-shader-program object)
-
-  (with-slots (vao textures buffers) object
+  (with-slots (vao buffers) object
     (when (/= 0 vao)
-      (error "fill-buffers called on object where vao != 0"))
+      (error "initialize called on object where vao != 0 ~a" object))
 
     (setf vao (gl:gen-vertex-array))
     (gl:bind-vertex-array vao)
-    (initialize-buffers object)
-    (initialize-uniforms object)
-    (initialize-textures object)))
+    (load-gl object)))
 
+
+(defmethod load-gl ((object opengl-object))
+  ;; (when (or (buffers object) (shaders object) (textures object) (uniforms object))
+  ;;   (error "Initializing an object that's already initialized! Cleanup first! ~a" object))
+
+  (when (null (shaders object))
+    (setf (shaders object) (newgl:point-shader))
+    (build-shader-program object))
+
+  (map nil #'cleanup (buffers object))
+  (setf (buffers object) nil)
+  (set-uniform object "obj_transform" (meye 4) :mat4 :overwrite nil)
+  (add-buffer object
+              (make-instance
+               'attribute-buffer
+               :count (* 3 7)
+               :pointer (to-gl-array
+                         :float
+                         `#(-0.5f0 -0.5f0 0.0f0
+                            0.0f0 1.0f0 0.0f0 1.0f0
+
+                            0.5f0 -0.5f0 0.0f0
+                            0.0f0 1.0f0  0.0f0 1.0f0
+
+                            0.0f0 ,(- (sqrt (- 1 (* 0.5 0.5))) 0.5)  0.0f0
+                            0.0f0 1.0f0 0.0f0 1.0f0))
+               :stride nil
+               :attributes '(("in_position" . :vec3) ("in_color" . :vec4))
+               :usage :static-draw
+               :free nil))
+  (add-buffer object
+              (make-instance
+               'index-buffer
+               :count 3
+               :pointer (to-gl-array :unsigned-int #(0 1 2))
+               :stride nil
+               :usage :static-draw
+               :free nil)))
 
 (defmethod cleanup ((object opengl-object))
   (with-slots (vao program shaders buffers textures uniforms) object
 
     (when (/= 0 vao)
-
       (gl:bind-vertex-array vao)
 
       (when shaders
@@ -199,11 +237,11 @@
       (when uniforms
         (dolist (uniform uniforms)
           (cleanup (cdr uniform))))
-      (setf uniforms nil)
 
       (when buffers
         (dolist (buffer buffers)
           (cleanup (cdr buffer))))
+      (setf buffers nil)
 
       (gl:bind-vertex-array 0)
       (gl:delete-vertex-arrays (list vao))
@@ -214,6 +252,8 @@
     (if (= vao 0)
         (error "Trying to bind an uninitialized opengl-object!")
         (gl:bind-vertex-array vao))
+    (dolist (buffer buffers)
+      (bind buffer))
     (dolist (texture textures)
       (bind texture))))
 
@@ -235,37 +275,18 @@
       (push (cons target buffer) buffers)
       (when (eq target :element-array-buffer)
         (setf idx-count (slot-value buffer 'count)))
-      (initialize buffer)
+      (bind buffer)
       (associate-attributes buffer program))))
 
-(defmethod initialize-buffers ((object opengl-object))
-  (when (buffers object)
-    (error "Initializing an object that's already initialized! Cleanup first! ~a" object))
-  (add-buffer object
-              (make-instance
-               'attribute-buffer
-               :count (* 3 7)
-               :pointer (to-gl-array
-                         :float
-                         `#(-0.5f0 -0.5f0 0.0f0  0.0f0 1.0f0 0.0f0 1.0f0
-                            0.5f0 -0.5f0 0.0f0  0.0f0 1.0f0 0.0f0 1.0f0
-                            0.0f0 ,(- (sqrt (- 1 (* 0.5 0.5))) 0.5) 0.0f0  0.0f0 1.0f0 0.0f0 1.0f0))
-               :stride nil
-               :attributes '(("in_position" . :vec3) ("in_color" . :vec4))
-               :usage :static-draw
-               :free nil))
-  (add-buffer object
-              (make-instance
-               'index-buffer
-               :count 3
-               :pointer (to-gl-array :unsigned-int #(0 1 2))
-               :stride nil
-               :usage :static-draw
-               :free nil)))
+(defun add-texture (object texture)
+  (declare (type opengl-object object)
+           (type texture texture))
+  (push texture (textures object)))
+
+(defun add-shader (object shader)
+  (declare (type opengl-object object)
+           (type gl-shader shader))
+  (push shader (shaders object)))
 
 
-(defmethod initialize-textures ((object opengl-object))
-  nil)
 
-(defmethod initialize-uniforms ((object opengl-object))
-  (set-uniform object "obj_transform" (meye 4) :mat4 :overwrite nil))
