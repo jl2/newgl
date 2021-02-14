@@ -35,8 +35,6 @@
 
                #:blend2d
 
-               #:spacenav
-
                #:bordeaux-threads
                #:trivial-main-thread)
 

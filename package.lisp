@@ -25,7 +25,6 @@
         #:alexandria
         #:3d-vectors
         #:3d-matrices
-        #:spacenav
         )
 
   (:export #:display

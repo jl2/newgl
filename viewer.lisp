@@ -137,13 +137,14 @@
   (:documentation "Upate view-xform uniform if it has changed.")
   )
 
+#+spacenav
 (defmethod handle-3d-mouse-event ((viewer viewer) (event sn:motion-event))
   (with-slots (aspect-ratio view-xform x-rot y-rot radius view-changed) viewer
-    (with-slots (rx ry z) event
+    (with-slots (sn:rx sn:ry sn:z) event
       (let ((scale-factor (/ 1.0 500)))
-        (incf x-rot (* scale-factor rx))
-        (incf y-rot (* scale-factor ry))
-        (setf radius (min 1000.0 (max 1.0 (+ (* scale-factor z)radius))))))
+        (incf x-rot (* scale-factor sn:rx))
+        (incf y-rot (* scale-factor sn:ry))
+        (setf radius (min 1000.0 (max 1.0 (+ (* scale-factor sn:z) radius))))))
     (setf view-changed t)
     (setf view-xform
           (m* (mperspective 60.0 aspect-ratio 0.1 1000.0)
@@ -295,7 +296,7 @@
 
     (unwind-protect
          (progn
-           (sn:sn-open)
+           #+spacenav(sn:sn-open)
            ;; GLFW Initialization
            (setf %gl:*gl-get-proc-address* #'glfw:get-proc-address)
 
@@ -344,11 +345,13 @@
 
                     ;; This do is important...
                do
-                  (when-let (ev (sn:poll-event))
-                    (handle-3d-mouse-event viewer ev))
+                  (progn
+                    #+spacenav
+                    (when-let (ev (sn:poll-event))
+                      (handle-3d-mouse-event viewer ev)))
+
                   ;; Update for next frame
                   (update viewer elapsed-time)
-
                   ;; Apply viewer-wide drawing settings
                   (gl:clear :color-buffer :depth-buffer)
 
@@ -380,7 +383,7 @@
              ;; Cleanup before exit
              (cleanup viewer)
              (rm-viewer window)))
-      (sn:sn-close)
+      #+spacenav(sn:sn-close)
       (glfw:destroy-window window))))
 
 (defun show-gl-state ()

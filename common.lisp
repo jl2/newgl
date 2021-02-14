@@ -48,10 +48,13 @@
 (defgeneric handle-resize (object window width height)
   (:documentation "Handle window resize."))
 
+#+spacenav
 (defgeneric handle-3d-mouse-event (object event)
   (:documentation "Handle a spacenav 3D mouse event."))
 
+#+spacenav
 (declaim (inline handle-3d-mouse-event))
+#+spacenav
 (defmethod handle-3d-mouse-event ((object t) (event t))
   (declare (ignorable object event))
   nil)
