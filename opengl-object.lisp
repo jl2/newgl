@@ -253,7 +253,7 @@
         (error "Trying to bind an uninitialized opengl-object!")
         (gl:bind-vertex-array vao))
     (dolist (buffer buffers)
-      (bind buffer))
+      (bind (cdr buffer)))
     (dolist (texture textures)
       (bind texture))))
 

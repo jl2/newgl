@@ -86,7 +86,7 @@
    (radius :initform 1.0 :initarg :radius)
 
    (x-rot :initform 0.0 :initarg :x-rot)
-   (y-rot :initform 0.0 :initarg :y-rot)
+   (z-rot :initform 0.0 :initarg :z-rot)
    (view-changed :initform t)
    (aspect-ratio :initform 1.0
                  :initarg :aspect-ratio
@@ -139,17 +139,17 @@
 
 #+spacenav
 (defmethod handle-3d-mouse-event ((viewer viewer) (event sn:motion-event))
-  (with-slots (aspect-ratio view-xform x-rot y-rot radius view-changed) viewer
-    (with-slots (sn:rx sn:ry sn:z) event
+  (with-slots (aspect-ratio view-xform x-rot z-rot radius view-changed) viewer
+    (with-slots (sn:rx sn:rz sn:y) event
       (let ((scale-factor (/ 1.0 500)))
         (incf x-rot (* scale-factor sn:rx))
-        (incf y-rot (* scale-factor sn:ry))
-        (setf radius (min 1000.0 (max 1.0 (+ (* scale-factor sn:z) radius))))))
+        (incf z-rot (* scale-factor sn:rz))
+        (setf radius (min 1000.0 (max 1.0 (+ (* scale-factor sn:y) radius))))))
     (setf view-changed t)
     (setf view-xform
           (m* (mperspective 60.0 aspect-ratio 0.1 1000.0)
-              (mlookat (vec3 (* radius (sin x-rot) (cos y-rot))
-                             (* radius (sin x-rot) (sin y-rot))
+              (mlookat (vec3 (* radius (sin x-rot) (cos z-rot))
+                             (* radius (sin x-rot) (sin z-rot))
                              (* radius (cos x-rot)))
                        (vec3 0 0 0)
                        +vy+)))))

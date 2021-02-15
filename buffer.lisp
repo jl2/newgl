@@ -18,13 +18,13 @@
   (with-slots (bo target usage free pointer) buffer
     (when (null pointer)
       (error "Cannot fill buffer from nil."))
-    (setf bo (car (gl:gen-buffers 1)))
-
-    (gl:bind-buffer target bo)
-    (gl:buffer-data target usage pointer)
-    (when (and free pointer)
-      (free-gl-array pointer)
-      (setf pointer nil))))
+    (when (= bo 0)
+      (setf bo (car (gl:gen-buffers 1)))
+      (gl:bind-buffer target bo)
+      (gl:buffer-data target usage pointer)
+      (when (and free pointer)
+        (free-gl-array pointer)
+        (setf pointer nil)))))
 
 (defmethod show-info ((object buffer) &key (indent 0))
   (let ((this-ws (indent-whitespace indent))
@@ -58,18 +58,6 @@
   ((block-index :initform 0 :initarg :block-index)
    (block-name :initarg :block-name)
    (bind-location :initform 0 :initarg :bind-location)))
-
-;; Use (bound-idx (gl:get-uniform-block-index program block-name))
-;; (gl:uniform-block-binding program bound-idx bound-location)
-;; (gl:bind-buffer-base :uniform-buffer bound-location bo)
-
-(defmethod bind ((buffer buffer))
-  (with-slots (bo target) buffer
-    (if bo
-        (gl:bind-buffer target bo)
-        (error "Binding an uninitialized buffer!"))))
-
-
 
 (defgeneric compute-stride (buffer))
 
