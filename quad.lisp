@@ -13,7 +13,7 @@
    )
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
-(defmethod load-gl ((object st-quad))
+(defmethod initialize-buffers ((object st-quad) &key)
   (when (buffers object)
     (error "Initializing an object that's already initialized! Cleanup first! ~a" object))
   (with-slots (s-min s-max t-min t-max) object

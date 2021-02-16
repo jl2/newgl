@@ -99,7 +99,7 @@
                  (gl:enable-vertex-attrib-array entry-attrib)))))
   t)
 
-(defmethod reload-gl ((buffer buffer))
+(defmethod reload ((buffer buffer))
   (bind buffer)
   (with-slots (pointer target) buffer
     (when (null pointer)

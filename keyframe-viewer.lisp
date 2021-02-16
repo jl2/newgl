@@ -15,7 +15,7 @@
   (call-next-method)
   (with-slots (view-xform eye-pos aspect-ratio) viewer
     (setf view-xform
-          (m* (mperspective 60.0 aspect-ratio 1.0 10000.0)
+          (m* (mperspective 30.0 aspect-ratio 1.0 10000.0)
               (mlookat (value-at eye-pos elapsed-seconds) (vec3 0 0 0) +vy+))))
   t)
 

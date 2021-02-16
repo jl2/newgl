@@ -17,17 +17,25 @@
 (defgeneric initialize (object &key)
   (:documentation "Initialize an OpenGL object."))
 
+(defgeneric initialize-shaders (object &key)
+  (:documentation "Initialize an OpenGL object."))
+
+(defgeneric initialize-buffers (object &key)
+  (:documentation "Initialize an OpenGL object."))
+
+(defgeneric initialize-uniforms (object &key)
+  (:documentation "Initialize an OpenGL object."))
+
+(defgeneric initialize-textures (object &key)
+  (:documentation "Initialize an OpenGL object."))
+
 (defgeneric render (object)
   (:documentation "Render an OpenGL object."))
 
 (defgeneric bind (object)
   (:documentation "Bind object."))
-
-(defgeneric load-gl (object)
-  (:documentation "Initialize buffers, textures, uniforms, etc."))
-
-(defgeneric reload-gl (object)
-  (:documentation "Update buffers, textures, uniforms after binding, but before rendering."))
+(defgeneric reload (object)
+  (:documentation "Copy new data for object to OpenGL."))
 
 (defgeneric update (object elapsed-seconds)
   (:documentation "Called on an object *before* rendering to update for the next animation frame."))

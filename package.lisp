@@ -57,7 +57,7 @@
 
            #:viewer
            #:info-viewer
-
+           #:st-quad
            #:plastic
            #:painted-plastic
            #:circled-plastic

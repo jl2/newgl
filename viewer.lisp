@@ -31,11 +31,12 @@
     (remhash (cffi:pointer-address window) viewers))
 
   (defun rm-all-viewers ()
-    (loop for window being the hash-keys of viewers
-      using (hash-value viewer)
-          do
-             (cleanup viewer)
-             (glfw:destroy-window window))
+    (loop
+      for window being the hash-keys of viewers
+        using (hash-value viewer)
+      do
+         (cleanup viewer)
+         (glfw:destroy-window window))
     (setf viewers (make-hash-table :test 'equal))))
 
 ;; Keyboard callback.
@@ -87,7 +88,9 @@
 
    (x-rot :initform 0.0 :initarg :x-rot)
    (z-rot :initform 0.0 :initarg :z-rot)
+
    (view-changed :initform t)
+
    (aspect-ratio :initform 1.0
                  :initarg :aspect-ratio
                  :type real
@@ -122,16 +125,18 @@
 
 (defmethod initialize ((viewer viewer) &key)
   (with-slots (objects view-xform) viewer
-    (loop for object in objects
-          do
-             (initialize object)
-             (set-uniform object "view_transform" view-xform :mat4))))
+    (loop
+      for object in objects
+      do
+         (initialize object)
+         (set-uniform object "view_transform" view-xform :mat4))))
 
 
 (defmethod cleanup ((viewer viewer))
-  (loop for object in (objects viewer)
-        do
-           (cleanup object)))
+  (loop
+    for object in (objects viewer)
+    do
+       (cleanup object)))
 
 (defgeneric update-view-xform (object elapsed-seconds)
   (:documentation "Upate view-xform uniform if it has changed.")
@@ -162,18 +167,20 @@
 
   (with-slots (objects view-xform view-changed) viewer
     (let ((changed (update-view-xform viewer elapsed-seconds)))
-      (loop for object in objects
-            do
-               (when (or view-changed changed)
-                 (setf  view-changed nil)
-                 (set-uniform object "view_transform" view-xform :mat4))
-               (update object elapsed-seconds)))))
+      (loop
+        for object in objects
+        do
+           (when (or view-changed changed)
+             (setf view-changed nil)
+             (set-uniform object "view_transform" view-xform :mat4))
+           (update object elapsed-seconds)))))
 
 (defmethod render ((viewer viewer))
   (with-slots (objects view-xform) viewer
-    (loop for object in objects
-          do
-             (render object))))
+    (loop
+      for object in objects
+      do
+         (render object))))
 
 
 (defmethod handle-key ((viewer viewer) window key scancode action mod-keys)
@@ -250,21 +257,21 @@
               (/ height width 1.0)
               (/ width height 1.0))))
   (loop
-        for object in (objects viewer)
-        do
-        (handle-resize object window width height)))
+    for object in (objects viewer)
+    do
+       (handle-resize object window width height)))
 
 (defmethod handle-click ((viewer viewer) window click-info)
   (loop
-        for object in (objects viewer)
-        do
-        (handle-click object window click-info)))
+    for object in (objects viewer)
+    do
+       (handle-click object window click-info)))
 
 (defmethod handle-scroll ((viewer viewer) window cpos x-scroll y-scroll)
   (loop
-        for object in (objects viewer)
-        do
-        (handle-scroll object window cpos x-scroll y-scroll)))
+    for object in (objects viewer)
+    do
+       (handle-scroll object window cpos x-scroll y-scroll)))
 
 (defmethod display ((object t))
   "High level function to display an object or viewer."
@@ -281,15 +288,15 @@
 
 
   (let* ((window (glfw:create-window :title "OpenGL Viewer"
-                                :width 1000
-                                :height 1000
-                                :decorated nil
-                                :opengl-profile :opengl-core-profile
-                                :context-version-major 4
-                                :context-version-minor 0
-                                :opengl-forward-compat *want-forward-context*
-                                :samples 0
-                                :resizable t)))
+                                     :width 1000
+                                     :height 1000
+                                     :decorated nil
+                                     :opengl-profile :opengl-core-profile
+                                     :context-version-major 4
+                                     :context-version-minor 0
+                                     :opengl-forward-compat *want-forward-context*
+                                     :samples 0
+                                     :resizable t)))
     (when (null window)
       (format t "Could not create-window!")
       (error "Could not create-window!"))
@@ -376,8 +383,8 @@
                                       now)))
                     ;; (format t "Start: ~a now ~a sleep ~a~%" current-seconds Now rem-time)
                     (when (> rem-time 0)
-                           (sleep rem-time))
-                           ))
+                      (sleep rem-time))
+                    ))
 
 
              ;; Cleanup before exit
@@ -389,43 +396,43 @@
 (defun show-gl-state ()
   "Print debug information about the OpenGL state."
   (loop
-        for field in '(:active-texture
-                       :array-buffer-binding
-                       :blend
-                       :current-program
-                       :line-width
-                       :vertex-array-binding
-                       :viewport)
-        do
-        (format t "~a : ~a~%" field (gl:get-integer field))))
+    for field in '(:active-texture
+                   :array-buffer-binding
+                   :blend
+                   :current-program
+                   :line-width
+                   :vertex-array-binding
+                   :viewport)
+    do
+       (format t "~a : ~a~%" field (gl:get-integer field))))
 
 (defun show-open-gl-info ()
   "Print OpenGL limits"
   (loop
-        for field in '(:max-combined-texture-image-units
-                       :max-cube-map-texture-size
-                       :max-draw-buffers
-                       :max-fragment-uniform-components
-                       :max-texture-size
-                       ;; :max-varying-floats
-                       :max-vertex-attribs
-                       :max-vertex-texture-image-units
-                       :max-vertex-uniform-components
-                       :max-viewport-dims
-                       :texture-binding-2d
-                       :stereo)
-        do
-        (format t "~a : ~a~%" field (gl:get-integer field))))
+    for field in '(:max-combined-texture-image-units
+                   :max-cube-map-texture-size
+                   :max-draw-buffers
+                   :max-fragment-uniform-components
+                   :max-texture-size
+                   ;; :max-varying-floats
+                   :max-vertex-attribs
+                   :max-vertex-texture-image-units
+                   :max-vertex-uniform-components
+                   :max-viewport-dims
+                   :texture-binding-2d
+                   :stereo)
+    do
+       (format t "~a : ~a~%" field (gl:get-integer field))))
 
 (defgeneric show-info (object &key indent)
   (:documentation "Show OpenGL information for an object."))
 
 (defmethod show-info ((viewer viewer) &key (indent 0))
   (let ((this-ws (indent-whitespace indent)))
-  (dolist (slot '(objects view-xform aspect-ratio show-fps desired-fps
-                  wire-frame cull-face front-face background-color
-                  window previous-seconds frame-count))
-    (format t "~a~a: ~a~%" this-ws slot (slot-value viewer slot)))
-  (with-slots (objects) viewer
-    (dolist (object objects)
-      (show-info object :indent (1+ indent))))))
+    (dolist (slot '(objects view-xform aspect-ratio show-fps desired-fps
+                    wire-frame cull-face front-face background-color
+                    window previous-seconds frame-count))
+      (format t "~a~a: ~a~%" this-ws slot (slot-value viewer slot)))
+    (with-slots (objects) viewer
+      (dolist (object objects)
+        (show-info object :indent (1+ indent))))))

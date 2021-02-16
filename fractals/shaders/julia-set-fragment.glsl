@@ -4,8 +4,8 @@ in vec3 position;
 in vec2 complexCoordinate;
 
 uniform int maxIterations;
-uniform float cReal;
-uniform float cImag;
+uniform float cReal=0.34;
+uniform float cImag=-0.2345;
 
 out vec4 outColor;
 
@@ -45,7 +45,7 @@ vec4 juliaSetColor(int maxIter, vec2 pos) {
      green = clamp(pow(fi, abs(sin(fi+zy))), 0.0, 1.0);
      blue =  clamp(abs(tan(fi - sin(fi + zx))), 0.0, 1.0);
 
-     return vec4(red, green, blue, 1.0);
+     return vec4(0.5, green, blue, 1.0);
 }
 
 void main() {

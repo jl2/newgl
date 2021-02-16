@@ -122,7 +122,7 @@
 
     (dolist (gl-shader (shaders object))
       (when (and (not (zerop (shader gl-shader))) (not (zerop program)))
-        (gl:detach-shader program gl-shader))
+        (gl:detach-shader program (shader gl-shader)))
       (initialize gl-shader)
       (gl:attach-shader program (shader gl-shader)))
 
@@ -169,20 +169,24 @@
 
     (setf vao (gl:gen-vertex-array))
     (gl:bind-vertex-array vao)
-    (load-gl object)))
 
+    (initialize-shaders object)
 
-(defmethod load-gl ((object opengl-object))
-  ;; (when (or (buffers object) (shaders object) (textures object) (uniforms object))
-  ;;   (error "Initializing an object that's already initialized! Cleanup first! ~a" object))
+    (initialize-buffers object)
+    (initialize-uniforms object)
+    (initialize-textures object)))
 
+(defmethod initialize-shaders ((object opengl-object) &key)
   (when (null (shaders object))
-    (setf (shaders object) (newgl:point-shader))
-    (build-shader-program object))
+    (setf (shaders object) (newgl:point-shader)))
+  (build-shader-program object))
 
-  (map nil #'cleanup (buffers object))
-  (setf (buffers object) nil)
-  (set-uniform object "obj_transform" (meye 4) :mat4 :overwrite nil)
+(defmethod initialize-uniforms ((object opengl-object) &key)
+  (set-uniform object "obj_transform" (meye 4) :mat4 :overwrite nil))
+
+(defmethod initialize-buffers ((object opengl-object) &key)
+  (when (buffers object)
+    (error "Object buffers already setup!"))
   (add-buffer object
               (make-instance
                'attribute-buffer
@@ -210,20 +214,15 @@
                :usage :static-draw
                :free nil)))
 
+(defmethod initialize-textures ((object opengl-object) &key)
+  (declare (ignorable object))
+  nil)
+
 (defmethod cleanup ((object opengl-object))
   (with-slots (vao program shaders buffers textures uniforms) object
 
     (when (/= 0 vao)
       (gl:bind-vertex-array vao)
-
-      (when shaders
-
-        (dolist (shade shaders)
-          (with-slots (shader) shade
-            (when (and (not (zerop shader))
-                       (not (zerop program)))
-              (gl:detach-shader program shader)))
-          (cleanup shade)))
 
       (when (> 0 program)
         (gl:delete-program program)
@@ -242,6 +241,14 @@
         (dolist (buffer buffers)
           (cleanup (cdr buffer))))
       (setf buffers nil)
+
+      (when shaders
+        (dolist (shade shaders)
+          (with-slots (shader) shade
+            (when (and (not (zerop shader))
+                       (not (zerop program)))
+              (gl:detach-shader program shader)))
+          (cleanup shade)))
 
       (gl:bind-vertex-array 0)
       (gl:delete-vertex-arrays (list vao))
@@ -287,6 +294,4 @@
   (declare (type opengl-object object)
            (type gl-shader shader))
   (push shader (shaders object)))
-
-
 
