@@ -4,29 +4,57 @@
 
 (in-package #:newgl.fractals)
 
-(defclass complex-window (geometry)
+(defclass complex-window (opengl-object)
   ((center :initarg :center :initform #C(0.0 0.0))
    (radius :initarg :radius :initform #C(4.0 4.0))
    (max-iterations :initarg :max-iterations :initform 100))
   (:documentation "A rectangular region in the complex plain."))
 
-(defmethod allocate-and-fill-buffers ((object complex-window))
+(defun update-bounds (object)
+  (with-slots (newgl:buffers) object
+    (let ((gl-array (slot-value (assoc-value newgl:buffers :array-buffer) 'newgl:pointer)))
+      (multiple-value-bind (real-min real-max imag-min imag-max) (compute-min-max object)
+        (gl-set gl-array 3 real-min 'single-float)
+        (gl-set gl-array 4 imag-max 'single-float)
+        (gl-set gl-array 8 real-min 'single-float)
+        (gl-set gl-array 9 imag-min 'single-float)
+        (gl-set gl-array 13 real-max 'single-float)
+        (gl-set gl-array 14 imag-max 'single-float)
+        (gl-set gl-array 18 real-max 'single-float)
+        (gl-set gl-array 19 imag-min 'single-float)))
+    (reload (assoc-value newgl:buffers :array-buffer))))
+
+(defmethod newgl:initialize-buffers ((object complex-window) &key)
   (multiple-value-bind (real-min real-max imag-min imag-max) (compute-min-max object)
-    (values (to-gl-array :float
-                         (list
-                                -1.0f0  1.0f0  0.0f0
-                                (coerce real-min 'single-float) (coerce imag-max 'single-float)
+      (newgl:add-buffer object
+              (make-instance
+               'newgl:attribute-buffer
+               :count (* 4 5)
+               :pointer (newgl:to-gl-array
+                         :float
+                         `#(-1.0f0  1.0f0 0.0f0
+                            ,(coerce real-min 'single-float) ,(coerce imag-max 'single-float)
 
-                                -1.0f0 -1.0f0  0.0f0
-                                (coerce real-min 'single-float) (coerce imag-min 'single-float)
+                            -1.0f0 -1.0f0 0.0f0
+                            ,(coerce real-min 'single-float) ,(coerce imag-min 'single-float)
 
-                                1.0f0  1.0f0  0.0f0
-                                (coerce real-max 'single-float) (coerce imag-max 'single-float)
+                            1.0f0  1.0f0 0.0f0
+                            ,(coerce real-max 'single-float) ,(coerce imag-max 'single-float)
 
-                                1.0f0 -1.0f0  0.0f0
-                                (coerce real-max 'single-float) (coerce imag-min 'single-float)))
-                         
-            (to-gl-array :unsigned-int #(0 1 2 1 3 2)))))
+                            1.0f0 -1.0f0 0.0f0
+                            ,(coerce real-max 'single-float) ,(coerce imag-min 'single-float)))
+               :stride nil
+               :attributes '(("in_position" . :vec3) ("in_uv" . :vec2))
+               :usage :static-draw
+               :free nil)))
+  (newgl:add-buffer object
+              (make-instance
+               'newgl:index-buffer
+               :count 6
+               :pointer (newgl:to-gl-array :unsigned-int #(0 1 2 1 3 2))
+               :stride nil
+               :usage :static-draw
+               :free nil)))
 
 (defun window-from-center-radius (center radius)
   (make-instance 'complex-window
@@ -97,4 +125,3 @@
     (with-slots (radius center) fractal
       (incf center (complex (* (realpart radius) (realpart offset-percent))
                             (* (imagpart radius) (imagpart offset-percent))))))
-

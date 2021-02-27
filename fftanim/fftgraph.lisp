@@ -12,16 +12,14 @@
   ((newgl:primitive-type :initform :lines)
    (newgl:usage :initform :dynamic-draw)
    (newgl:shaders :initform (list
-                             (newgl:shader-from-file (newgl:newgl-shader "color-position-vertex.glsl"))
-                             (newgl:shader-from-file (newgl:newgl-shader "point-fragment.glsl"))))
-   (vertices :initform nil)
-   (indices :initform nil)
+                             (newgl:shader-from-file "color-position-vertex.glsl")
+                             (newgl:shader-from-file "point-fragment.glsl")))
    (color :initform (vec4 0.0 1.0 0.0 1.0) :initarg :color)
    (steps :initform 240 :initarg :steps))
   (:documentation "An animation that uses FFT data computed from an MP3 file."))
 
 
-(defmethod newgl:initialize ((object mp3-fft-viz) &key)
+(defmethod newgl:initialize-buffers ((object mp3-fft-viz) &key)
   (call-next-method)
   (with-slots (vertices indices steps) object
     (setf vertices (allocate-gl-array :float (* 2 7 steps)))
@@ -29,7 +27,8 @@
 
 (defmethod newgl:update ((object mp3-fft-viz) current-time)
   (call-next-method)
-  (newgl:update-buffers object))
+  (with-slots (buffers) object
+    (newgl:reload (assoc-value :array-buffer buffers))))
 
 
 (defmethod newgl:cleanup ((object mp3-fft-viz))
@@ -111,5 +110,3 @@
              (gl-set indices cur-idx-idx cur-idx-idx 'fixnum)
              (incf cur-idx-idx))))
       (values vertices indices)))
-    
-  

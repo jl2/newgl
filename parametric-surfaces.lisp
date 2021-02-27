@@ -4,7 +4,7 @@
 
 (in-package #:newgl)
 
-(defclass parametric-surface (geometry)
+(defclass parametric-surface (opengl-object)
   ((color :initform (vec4 0.0 0.9 0.0 1.0) :initarg :color)
    (u-steps :initform 16 :initarg :u-steps)
    (v-steps :initform 16 :initarg :v-steps)
@@ -51,15 +51,11 @@
        (if emit-uv 2 0)
        (if emit-color 4 0))))
 
-(defmethod allocate-and-fill-buffers ((obj parametric-surface))
+(defmethod initialize-buffers ((obj parametric-surface) &key)
   (with-slots (vertices indices
                color u-min v-min u-max v-max u-steps v-steps
                s-min s-max t-min t-max
                emit-position emit-normal emit-uv emit-color) obj
-    (when vertices
-      (gl:free-gl-array vertices))
-    (when indices
-      (gl:free-gl-array indices))
     (let* ((cur-vert-idx 0)
            (cur-idx-idx 0)
 
@@ -131,8 +127,28 @@
                             (next-point pt1 n1 (+ dst st) tt)
                             (next-point pt2 n2 st (+ tt dtt))
                             (next-point pt3 n3 (+ st dst) (+ tt dtt))
-                            )))))
-      (values vertices indices)))
+                            ))))
+      (add-buffer obj (make-instance 'attribute-buffer
+                                     :count (* 2 3 u-steps v-steps stride)
+                                     :pointer vertices
+                                     :stride nil
+                                     :attributes (concatenate 'list
+                                                              (when emit-position
+                                                              '(("in_position" . :vec3)))
+                                                              (when emit-normal
+                                                                '(("in_normal" . :vec3)))
+                                                              (when emit-color
+                                                                '(("in_color" . :vec4)))
+                                                              (when emit-uv
+                                                                '(("in_uv" . :vec2))))
+                                     :usage :static-draw
+                                     :free nil))
+      (add-buffer obj (make-instance 'index-buffer
+                                     :count (*  2 3 u-steps v-steps)
+                                     :pointer indices
+                                     :stride nil
+                                     :usage :static-draw
+                                     :free nil)))))
 
 (defclass sphere (parametric-surface)
   ((radius :initform 1.0f0 :initarg :radius)
@@ -173,6 +189,18 @@
             (* height (/ (sin (* 4 r)) r)))
           vv)))
 
+(defmethod df_u_v ((surface sombrero) uv vv &key (du 0.01) (dv 0.01))
+  (let ((s2 (v- (f_u_v surface (+ uv du) vv)
+                (f_u_v surface uv vv)))
+        (s1 (v-
+             (f_u_v surface uv (+ dv vv))
+             (f_u_v surface uv vv))))
+    (cond ((< (3d-vectors:vlength s1) 0.0001)
+           (vec3 0.0 1.0 0.0))
+          ((< (3d-vectors:vlength s2) 0.0001)
+           (vec3 0.0 1.0 0.0))
+          (t
+           (nvunit (vc s1 s2))))))
 
 (defclass torus (parametric-surface)
   ((inner-radius :initform 0.25 :initarg :inner)

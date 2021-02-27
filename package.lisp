@@ -37,8 +37,10 @@
            #:gl-file-shader
            #:shader-from-file
            #:newgl-shader
+           #:set-uniform
 
            #:buffer
+           #:usage
            #:fill-textures
            #:fill-uniforms
 
@@ -46,17 +48,32 @@
            #:show-info
            #:primitive-type
            #:initialize
+           #:initialize-buffers
+           #:initialize-shaders
+           #:initialize-textures
+           #:initialize-uniforms
+           #:pointer
+           #:add-buffer
+           #:to-gl-array
+           #:reload
            #:cleanup
            #:update
            #:render
            #:shaders
-
+           #:buffers
+           #:objects
+           #:handle-key
+           #:handle-3d-mouse-event
            #:gl-set
            #:allocate-gl-array
            #:free-gl-array
 
+           #:attribute-buffer
+           #:index-buffer
+
            #:viewer
            #:info-viewer
+
            #:st-quad
            #:plastic
            #:painted-plastic
@@ -65,4 +82,10 @@
            #:blend2d-texture
            #:make-st-quad
            #:simple-texture
+
+
+           #:sphere
+           #:torus
+           #:sombrero
+           #:parametric-surface
            ))

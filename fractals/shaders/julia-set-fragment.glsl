@@ -3,8 +3,8 @@
 in vec3 position;
 in vec2 complexCoordinate;
 
-uniform int maxIterations;
-uniform float cReal=0.34;
+uniform int maxIterations=1000;
+uniform float cReal=0.324;
 uniform float cImag=-0.2345;
 
 out vec4 outColor;

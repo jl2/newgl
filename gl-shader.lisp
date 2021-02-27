@@ -141,7 +141,7 @@
 
 (defun plastic ()
   (list
-   (shader-from-file "position-color-normal-vertex.glsl")
+   (shader-from-file "position-normal-color-vertex.glsl")
    (shader-from-file "plastic-fragment.glsl")))
 
 (defun painted-plastic ()

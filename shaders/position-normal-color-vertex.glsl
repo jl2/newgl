@@ -16,7 +16,7 @@ void main()
      // Modified from
      // https://www.mathematik.uni-marburg.de/~thormae/lectures/graphics1/code/WebGLShaderLightMat/ShaderLightMat.html
 
-     mat4 final_transform = view_transform * obj_transform;
+     mat4 final_transform = obj_transform * view_transform;
      mat3 norm_view_transform = transpose(inverse(mat3(final_transform)));
 
      vec4 pos4 = final_transform * vec4(in_position, 1.0);

@@ -6,8 +6,21 @@
 
 (defclass fractal-viewer (viewer)
   ())
+(defmethod newgl:handle-3d-mouse-event ((object fractal-viewer) (event sn:motion-event))
+  (loop for obj in (newgl:objects object) do
+    (newgl:handle-3d-mouse-event obj event)))
 
-(defmethod handle-key ((object complex-window) window key scancode action mod-keys)
+(defmethod newgl:handle-3d-mouse-event ((object complex-window) (event sn:motion-event))
+  (with-slots (sn:x sn:z sn:y) event
+    (let ((zoom-in-percent (+ 1.0f0 (/ sn:y 5000.0)))
+          (xm (/ sn:x 5000.0))
+          (ym (/ sn:z 5000.0))
+          (window-center (mapcar (rcurry #'/ 2.0) (glfw:get-window-size))))
+      (zoom-complex-fractal-window zoom-in-percent window-center object)
+      (pan-complex-fractal-window (complex xm ym) object)))
+  (update-bounds object))
+
+(defmethod newgl:handle-key ((object complex-window) window key scancode action mod-keys)
   (declare (ignorable window key scancode action mod-keys))
   (let* ((pan-offset 0.025)
          (zoom-in-percent 1.05)
@@ -17,8 +30,9 @@
          (window-center (mapcar (rcurry #'/ 2.0) (glfw:get-window-size)))
          (need-reload
           (cond ((and (eq key :f5) (eq action :press))
-                 (with-slots (zoom-window) object
-                   (setf zoom-window (make-instance 'complex-window))))
+                 (with-slots (center radius) object
+                   (setf center  #C(0.0 0.0))
+                   (setf radius  #C(4.0 4.0))))
 
                 ((and (eq key :page-down)  (or (eq action :press) (eq action :repeat)))
                  (zoom-complex-fractal-window zoom-in-percent window-center object))
@@ -58,9 +72,8 @@
                  (call-next-method)
                  nil))))
     (when need-reload
-      (initialize object)
+      (update-bounds object)
       t)))
-
 
 (defclass complex-fractal-click (mouse-click)
   ((window :initarg :window)))

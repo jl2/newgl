@@ -34,6 +34,7 @@
 
 (defgeneric bind (object)
   (:documentation "Bind object."))
+
 (defgeneric reload (object)
   (:documentation "Copy new data for object to OpenGL."))
 

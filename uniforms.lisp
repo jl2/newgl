@@ -42,6 +42,17 @@
                                             3
                                             (vector (marr3 value))
                                             t))
+                ((eq :dmat4 type)
+                 (gl:program-uniform-matrix program location
+                                            4
+                                            (map 'vector (lambda (v) (coerce v 'double-float)) (vector (marr4 value)))
+                                            t))
+
+                ((eq :dmat3 type)
+                 (gl:program-uniform-matrix program location
+                                            3
+                                            (map 'vector (lambda (v) (coerce v 'double-float)) (vector (marr3 value)))
+                                            t))
 
                 ((eq :int type)
                  (gl:program-uniformi program location

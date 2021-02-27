@@ -48,6 +48,7 @@
                (:file "texture")
                (:file "opengl-object")
                (:file "quad")
+               (:file "parametric-surfaces")
                (:file "blend2d-texture")
                (:file "keyframe-sequence")
                (:file "keyframe-viewer")

@@ -112,6 +112,7 @@
 (define-condition shader-link-error (shader-error) ())
 (define-condition shader-validate-error (shader-error) ())
 
+
 (defmethod build-shader-program ((object opengl-object))
   "Compile and link a shader program, including validation."
 

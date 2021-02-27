@@ -73,7 +73,6 @@
     (handle-resize viewer window width height)))
 
 
-
 (defclass viewer ()
   ((objects :initform nil
             :initarg :objects
@@ -318,10 +317,11 @@
            (gl:enable :line-smooth
                       :polygon-smooth
                       :depth-test
-                      :blend
+;;                      :blend
                       )
-           (gl:blend-func :src-alpha :one-minus-src-alpha)
-           (gl:depth-func :less)
+  ;;         (gl:blend-func :src-alpha :one-minus-src-alpha)
+           (gl:depth-func :less
+                          )
 
            ;; The event loop
            (with-slots (previous-seconds show-fps desired-fps
@@ -335,6 +335,7 @@
 
              ;; Load objects for the first time
              (initialize viewer)
+             (sn:sensitivity 0.75d0)
              (loop
                with start-time = (glfw:get-time)
                for frame-count from 0
@@ -352,11 +353,6 @@
 
                     ;; This do is important...
                do
-                  (progn
-                    #+spacenav
-                    (when-let (ev (sn:poll-event))
-                      (handle-3d-mouse-event viewer ev)))
-
                   ;; Update for next frame
                   (update viewer elapsed-time)
                   ;; Apply viewer-wide drawing settings
@@ -375,7 +371,12 @@
 
 
                   (render viewer)
-               do (glfw:swap-buffers window)
+               do (progn
+                    (glfw:swap-buffers window)
+                    #+spacenav
+                    (when-let (ev (sn:poll-event))
+                      (sn:remove-events :motion)
+                      (handle-3d-mouse-event viewer ev)))
 
                do (glfw:poll-events)
                do (let* ((now (glfw:get-time))

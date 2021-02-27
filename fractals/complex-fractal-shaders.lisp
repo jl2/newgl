@@ -16,29 +16,22 @@
 
 
 (defun mandelbrot-set-shaders (&key (max-iterations 100))
-  (let ((shaders (cfractal "mandel")))
-    (dolist (shader shaders)
-      (set-uniform shader "maxIterations" max-iterations :int))
-    shaders))
+  (cfractal "mandel"))
+
 
 (defun mandelbrot-viewer (&key (max-iterations 100))
   (make-instance 'fractal-viewer
                  :objects (list (make-instance 'complex-window
-                                         :shaders (mandelbrot-set-shaders
-                                                   :max-iterations max-iterations)))))
+                                               :shaders (mandelbrot-set-shaders)))))
 
 
 (defun burning-ship-shaders (&key (max-iterations 100))
-  (let ((shaders (cfractal "burning-ship")))
-    (dolist (shader shaders)
-      (set-uniform shader "maxIterations" max-iterations :int))
-    shaders))
+  (cfractal "burning-ship"))
 
 (defun burning-ship-viewer (&key (max-iterations 100))
   (make-instance 'fractal-viewer
                  :objects (list (make-instance 'complex-window
-                                         :shaders (burning-ship-shaders
-                                                   :max-iterations max-iterations)))))
+                                         :shaders (burning-ship-shaders)))))
 
 (defun julia-set-shaders (&key (max-iterations 100) (real 0.0f0) (imag 0.0f0))
   (let ((shaders (cfractal "julia-set")))

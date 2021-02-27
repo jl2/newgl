@@ -20,7 +20,7 @@
   (:use #:cl #:j-utils #:alexandria #:3d-vectors #:3d-matrices #:newgl)
   (:export #:fractal-viewer
            #:burning-ship-viewer
-           #:mandelbrot-set-viewer
+           #:mandelbrot-viewer
            #:complex-window
            #:mandelbrot-set-shaders
            #:julia-set-shaders
