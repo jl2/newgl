@@ -29,7 +29,8 @@
 
    (primitive-type :initform :triangles)
 
-   (idx-count :initform 4))
+   (idx-count :initform 4)
+   (instance-count :initform 1 :initarg :instance-count))
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
 (defgeneric build-shader-program (object)
@@ -41,15 +42,15 @@
 (defun indent-whitespace (n)
   (make-string (* 2 n) :initial-element #\space))
 
-(defmethod show-info ((object opengl-object) &key (indent ""))
+(defmethod show-info ((object opengl-object) &key (indent 0))
   (let ((this-ws (indent-whitespace indent))
         (plus-ws (indent-whitespace (+ 1 indent)))
         (plus-plus-ws (indent-whitespace (+ 2 indent))))
     (format t "~aObject:~%" this-ws)
-    (dolist (slot '(name vao shaders textures program))
-      (format t "~a~a: ~a~%" plus-ws slot (slot-value object slot)))
+    (show-slots plus-ws object '(name vao shaders textures program instance-count))
 
     (with-slots (program) object
+      (format t "~aProgram ~a:~%" plus-ws program)
       (dolist (attrib '(:delete-status
                         :link-status
                         :validate-status
@@ -183,7 +184,7 @@
   (build-shader-program object))
 
 (defmethod initialize-uniforms ((object opengl-object) &key)
-  (set-uniform object "obj_transform" (meye 4) :mat4 :overwrite nil))
+  t)
 
 (defmethod initialize-buffers ((object opengl-object) &key)
   (when (buffers object)
@@ -266,14 +267,16 @@
       (bind texture))))
 
 (defmethod render ((object opengl-object))
-  (with-slots (vao shaders program uniforms primitive-type idx-count) object
+  (with-slots (vao shaders program uniforms primitive-type idx-count instance-count) object
     (gl:use-program program)
     (bind object)
     (dolist (uniform uniforms)
       (use-uniform (cdr uniform) program))
-    (gl:draw-elements primitive-type
-                      (gl:make-null-gl-array :unsigned-int)
-                      :count idx-count)))
+    (when (> instance-count 0)
+      (gl:draw-elements-instanced  primitive-type
+                                   (gl:make-null-gl-array :unsigned-int)
+                                   instance-count
+                                   :count idx-count))))
 
 (defun add-buffer (object buffer)
   (declare (type opengl-object object)
@@ -295,4 +298,3 @@
   (declare (type opengl-object object)
            (type gl-shader shader))
   (push shader (shaders object)))
-

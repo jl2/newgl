@@ -158,30 +158,6 @@
                        (vec3 0 0 0)
                        +vy+)))))
 
-(defmethod update-view-xform ((viewer viewer) elapsed-seconds)
-  (declare (ignorable viewer elapsed-seconds))
-  nil)
-
-(defmethod update ((viewer viewer) elapsed-seconds)
-
-  (with-slots (objects view-xform view-changed) viewer
-    (let ((changed (update-view-xform viewer elapsed-seconds)))
-      (loop
-        for object in objects
-        do
-           (when (or view-changed changed)
-             (setf view-changed nil)
-             (set-uniform object "view_transform" view-xform :mat4))
-           (update object elapsed-seconds)))))
-
-(defmethod render ((viewer viewer))
-  (with-slots (objects view-xform) viewer
-    (loop
-      for object in objects
-      do
-         (render object))))
-
-
 (defmethod handle-key ((viewer viewer) window key scancode action mod-keys)
   (cond
     ;; ESC to exit
@@ -272,6 +248,31 @@
     do
        (handle-scroll object window cpos x-scroll y-scroll)))
 
+
+(defmethod update-view-xform ((viewer viewer) elapsed-seconds)
+  (declare (ignorable viewer elapsed-seconds))
+  nil)
+
+(defmethod update ((viewer viewer) elapsed-seconds)
+
+  (with-slots (objects view-xform view-changed) viewer
+    (let ((changed (update-view-xform viewer elapsed-seconds)))
+      (loop
+        for object in objects
+        do
+           (when (or view-changed changed)
+             (setf view-changed nil)
+             (set-uniform object "view_transform" view-xform :mat4))
+           (update object elapsed-seconds)))))
+
+(defmethod render ((viewer viewer))
+  (with-slots (objects view-xform) viewer
+    (loop
+      for object in objects
+      do
+         (render object))))
+
+
 (defmethod display ((object t))
   "High level function to display an object or viewer."
 
@@ -317,9 +318,7 @@
            (gl:enable :line-smooth
                       :polygon-smooth
                       :depth-test
-;;                      :blend
                       )
-  ;;         (gl:blend-func :src-alpha :one-minus-src-alpha)
            (gl:depth-func :less
                           )
 
@@ -335,7 +334,7 @@
 
              ;; Load objects for the first time
              (initialize viewer)
-             (sn:sensitivity 0.75d0)
+             #+spacenav(sn:sensitivity 0.75d0)
              (loop
                with start-time = (glfw:get-time)
                for frame-count from 0
@@ -375,7 +374,7 @@
                     (glfw:swap-buffers window)
                     #+spacenav
                     (when-let (ev (sn:poll-event))
-                      (sn:remove-events :motion)
+                      #+spacenav(sn:remove-events :motion)
                       (handle-3d-mouse-event viewer ev)))
 
                do (glfw:poll-events)
@@ -425,15 +424,11 @@
     do
        (format t "~a : ~a~%" field (gl:get-integer field))))
 
-(defgeneric show-info (object &key indent)
-  (:documentation "Show OpenGL information for an object."))
-
 (defmethod show-info ((viewer viewer) &key (indent 0))
   (let ((this-ws (indent-whitespace indent)))
-    (dolist (slot '(objects view-xform aspect-ratio show-fps desired-fps
-                    wire-frame cull-face front-face background-color
-                    window previous-seconds frame-count))
-      (format t "~a~a: ~a~%" this-ws slot (slot-value viewer slot)))
+    (show-slots this-ws viewer  '(objects view-xform aspect-ratio show-fps desired-fps
+                                  wire-frame cull-face front-face background-color
+                                  window previous-seconds frame-count))
     (with-slots (objects) viewer
       (dolist (object objects)
         (show-info object :indent (1+ indent))))))

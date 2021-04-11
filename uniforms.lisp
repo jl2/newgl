@@ -13,10 +13,10 @@
    (modified :initform t))
   (:documentation "A uniform variable parameter to a shader."))
 
-(defmethod show-info ((uniform uniform) &key (indent ""))
+(defmethod show-info ((uniform uniform) &key (indent 0))
   (let ((this-ws (indent-whitespace indent)))
     (with-slots (name type value modified) uniform
-      (format t "~a~a ~a = ~a ~a~%" this-ws type name value modified))))
+      (format t "~a~a ~a = ~a ~a~%" this-ws type name value (if modified "modified" "not modified")))))
 
 (defgeneric use-uniform (uniform program)
   (:documentation "Pass the uniform's value into the OpenGL program."))
@@ -87,8 +87,8 @@
 (defmethod set-value (uniform new-value)
   "Set a uniform's value."
   (with-slots (value modified) uniform
-    (setf modified t)
-    (setf value new-value)))
+    (setf value new-value)
+    (setf modified t)))
 
 (defmethod cleanup ((uniform uniform))
   t)

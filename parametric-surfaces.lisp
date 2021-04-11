@@ -22,10 +22,26 @@
    (emit-position :initform t :initarg :emit-position)
    (emit-normal :initform t :initarg :emit-normal)
    (emit-uv :initform nil :initarg :emit-uv)
-   (emit-color :initform t :initarg :emit-color)
-   (vertices :initform nil)
-   (indices :initform nil)
+   (emit-color :initform nil :initarg :emit-color)
+   (shaders :initform (newgl:plastic) :initarg :shaders)
   ))
+
+(defmethod show-info ((object parametric-surface) &key (indent 0))
+  (call-next-method)
+  (let ((this-ws (indent-whitespace (+ 1 indent))))
+    (show-slots this-ws object '(u-min u-max
+                                 v-min v-max
+                                 nil
+                                 u-steps
+                                 v-steps
+                                 nil
+                                 s-min s-max
+                                 t-min t-max
+                                 nil
+                                 emit-position
+                                 emit-normal
+                                 emit-uv
+                                 emit-color))))
 
 (defgeneric f_u_v (surface uv vv))
 
@@ -52,103 +68,148 @@
        (if emit-color 4 0))))
 
 (defmethod initialize-buffers ((obj parametric-surface) &key)
-  (with-slots (vertices indices
+  (with-slots (
                color u-min v-min u-max v-max u-steps v-steps
                s-min s-max t-min t-max
-               emit-position emit-normal emit-uv emit-color) obj
-    (let* ((cur-vert-idx 0)
-           (cur-idx-idx 0)
-
+               emit-position emit-normal emit-uv emit-color
+               instance-count) obj
+    (let* (
            (dst (/ (- s-max s-min) u-steps))
            (dtt (/ (- t-max t-min) v-steps))
 
            (du (/ (- u-max u-min) u-steps 1.0f0))
            (dv (/ (- v-max v-min) v-steps 1.0f0))
-           (stride (calculate-stride obj)))
+           (stride (calculate-stride obj))
 
-      (setf vertices (allocate-gl-array :float (* 2 3 u-steps v-steps stride)))
-      (setf indices (allocate-gl-array :unsigned-int (*  2 3 u-steps v-steps)))
+           (vertices (allocate-gl-array :float (* 2 3 u-steps v-steps stride)))
+           (indices (allocate-gl-array :unsigned-int (*  2 3 u-steps v-steps))))
 
-      (labels ((next-point ( pos normal st tt)
-                 (when emit-position
-                   (gl-set vertices cur-vert-idx (vx pos) 'single-float)
-                   (incf cur-vert-idx)
-                   (gl-set vertices cur-vert-idx (vy pos) 'single-float)
-                   (incf cur-vert-idx)
-                   (gl-set vertices cur-vert-idx (vz pos) 'single-float)
-                   (incf cur-vert-idx))
-                 (when emit-normal
-                   (gl-set vertices cur-vert-idx (vx normal) 'single-float)
-                   (incf cur-vert-idx)
-                   (gl-set vertices cur-vert-idx (vy normal) 'single-float)
-                   (incf cur-vert-idx)
-                   (gl-set vertices cur-vert-idx (vz normal) 'single-float)
-                   (incf cur-vert-idx))
-                 (when emit-uv
-                   (gl-set vertices cur-vert-idx st 'single-float)
-                   (incf cur-vert-idx)
-                   (gl-set vertices cur-vert-idx tt 'single-float)
-                   (incf cur-vert-idx))
-                 (when emit-color
-                   (gl-set vertices cur-vert-idx (vx color) 'single-float)
-                   (incf cur-vert-idx)
-                   (gl-set vertices cur-vert-idx (vy color) 'single-float)
-                   (incf cur-vert-idx)
-                   (gl-set vertices cur-vert-idx (vz color) 'single-float)
-                   (incf cur-vert-idx)
-                   (gl-set vertices cur-vert-idx (vw color) 'single-float)
-                   (incf cur-vert-idx))
-                 (when (or emit-color emit-uv emit-normal emit-position)
-                   (gl-set indices cur-idx-idx cur-idx-idx 'fixnum)
-                   (incf cur-idx-idx))))
-        (loop for ui below u-steps
-              for uv = (+ u-min (* ui du))
-              for st = (+ s-min (* ui dst))
-              do
-                 (loop for vi from 0 below v-steps
-                       for vv = (+ v-min (* vi dv))
-                       for tt = (+ t-min (* vi dtt))
-                       do
-                          (let* ((pt0 (f_u_v obj uv vv))
-                                 (n0 (df_u_v obj uv vv))
+      (loop with cur-offset = 0
+            with cur-idx-idx = 0
+            for ui below u-steps
+            for uv = (+ u-min (* ui du))
+            for st = (+ s-min (* ui dst))
+            do
+               (loop for vi from 0 below v-steps
+                     for vv = (+ v-min (* vi dv))
+                     for tt = (+ t-min (* vi dtt))
+                     do
+                        (let* ((pt0 (f_u_v obj uv vv))
+                               (n0 (df_u_v obj uv vv))
 
-                                 (pt1 (f_u_v obj (+ du uv) vv))
-                                 (n1 (df_u_v obj (+ du uv) vv))
+                               (pt1 (f_u_v obj (+ du uv) vv))
+                               (n1 (df_u_v obj (+ du uv) vv))
 
-                                 (pt2 (f_u_v obj uv (+ vv dv)))
-                                 (n2 (df_u_v obj uv (+ vv dv)))
+                               (pt2 (f_u_v obj uv (+ vv dv)))
+                               (n2 (df_u_v obj uv (+ vv dv)))
 
-                                 (pt3 (f_u_v obj (+ uv du) (+ vv dv)))
-                                 (n3 (df_u_v obj (+ uv du) (+ vv dv))))
-                            (next-point pt1 n1 (+ dst st) tt)
-                            (next-point pt0 n0 st tt)
-                            (next-point pt2 n2 st (+ tt dtt))
+                               (pt3 (f_u_v obj (+ uv du) (+ vv dv)))
+                               (n3 (df_u_v obj (+ uv du) (+ vv dv))))
 
-                            (next-point pt1 n1 (+ dst st) tt)
-                            (next-point pt2 n2 st (+ tt dtt))
-                            (next-point pt3 n3 (+ st dst) (+ tt dtt))
-                            ))))
-      (add-buffer obj (make-instance 'attribute-buffer
-                                     :count (* 2 3 u-steps v-steps stride)
-                                     :pointer vertices
-                                     :stride nil
-                                     :attributes (concatenate 'list
-                                                              (when emit-position
+                          (when emit-position
+                            (setf cur-offset (fill-buffer pt1 vertices cur-offset)))
+                          (when emit-normal
+                            (setf cur-offset (fill-buffer n1 vertices cur-offset)))
+                          (when emit-uv
+                            (setf cur-offset (fill-buffer (vec2 (+ dst st) tt) vertices cur-offset)))
+                          (when (or emit-color emit-uv emit-normal emit-position)
+                            (gl-set indices cur-idx-idx cur-idx-idx 'fixnum)
+                            (incf cur-idx-idx))
+
+                          (when emit-position
+                            (setf cur-offset (fill-buffer pt0 vertices cur-offset)))
+                          (when emit-normal
+                            (setf cur-offset (fill-buffer n0 vertices cur-offset)))
+                          (when emit-uv
+                            (setf cur-offset (fill-buffer (vec2  st tt) vertices cur-offset)))
+                          (when (or emit-color emit-uv emit-normal emit-position)
+                            (gl-set indices cur-idx-idx cur-idx-idx 'fixnum)
+                            (incf cur-idx-idx))
+
+
+                          (when emit-position
+                            (setf cur-offset (fill-buffer pt2 vertices cur-offset)))
+                          (when emit-normal
+                            (setf cur-offset (fill-buffer n2 vertices cur-offset)))
+                          (when emit-uv
+                            (setf cur-offset (fill-buffer (vec2  st (+ dtt tt)) vertices cur-offset)))
+                          (when (or emit-color emit-uv emit-normal emit-position)
+                            (gl-set indices cur-idx-idx cur-idx-idx 'fixnum)
+                            (incf cur-idx-idx))
+
+                          (when emit-position
+                            (setf cur-offset (fill-buffer pt1 vertices cur-offset)))
+                          (when emit-normal
+                            (setf cur-offset (fill-buffer n1 vertices cur-offset)))
+                          (when emit-uv
+                            (setf cur-offset (fill-buffer (vec2 (+ dst st) tt) vertices cur-offset)))
+                          (when (or emit-color emit-uv emit-normal emit-position)
+                            (gl-set indices cur-idx-idx cur-idx-idx 'fixnum)
+                            (incf cur-idx-idx))
+
+                          (when emit-position
+                            (setf cur-offset (fill-buffer pt2 vertices cur-offset)))
+                          (when emit-normal
+                            (setf cur-offset (fill-buffer n2 vertices cur-offset)))
+                          (when emit-uv
+                            (setf cur-offset (fill-buffer (vec2  st (+ dtt tt)) vertices cur-offset)))
+                          (when (or emit-color emit-uv emit-normal emit-position)
+                            (gl-set indices cur-idx-idx cur-idx-idx 'fixnum)
+                            (incf cur-idx-idx))
+
+                          (when emit-position
+                            (setf cur-offset (fill-buffer pt3 vertices cur-offset)))
+                          (when emit-normal
+                            (setf cur-offset (fill-buffer n3 vertices cur-offset)))
+                          (when emit-uv
+                            (setf cur-offset (fill-buffer (vec2 (+ dst st) (+ dtt tt)) vertices cur-offset)))
+
+                          (when (or emit-color emit-uv emit-normal emit-position)
+                            (gl-set indices cur-idx-idx cur-idx-idx 'fixnum)
+                            (incf cur-idx-idx))
+
+
+                          )))
+    (add-buffer obj (make-instance 'attribute-buffer
+                                   :count (* 2 3 u-steps v-steps stride)
+                                   :pointer vertices
+                                   :stride nil
+                                   :attributes (concatenate 'list
+                                                            (when emit-position
                                                               '(("in_position" . :vec3)))
-                                                              (when emit-normal
-                                                                '(("in_normal" . :vec3)))
-                                                              (when emit-color
-                                                                '(("in_color" . :vec4)))
-                                                              (when emit-uv
-                                                                '(("in_uv" . :vec2))))
-                                     :usage :static-draw
-                                     :free nil))
-      (add-buffer obj (make-instance 'index-buffer
-                                     :count (*  2 3 u-steps v-steps)
-                                     :pointer indices
+                                                            (when emit-normal
+                                                              '(("in_normal" . :vec3)))
+                                                            (when emit-color
+                                                              '(("in_color" . :vec4)))
+                                                            (when emit-uv
+                                                              '(("in_uv" . :vec2))))
+                                   :usage :static-draw
+                                   :free t))
+    (add-buffer obj (make-instance 'index-buffer
+                                   :count (*  2 3 u-steps v-steps)
+                                   :pointer indices
+                                   :stride nil
+                                   :usage :static-draw
+                                   :free t))
+
+    (let ((left (m* (3d-matrices:mrotation (vec3 0.0 1.0 0.0) (/ pi 3))
+                    (mscaling (vec3 0.5 0.5 0.5))))
+          (right (mscaling (vec3 1.2 1.2 1.2))))
+      (add-buffer obj (make-instance 'instance-buffer
+                                     :count 2
+                                     :pointer (to-gl-array :float 32 (list left right))
                                      :stride nil
                                      :usage :static-draw
-                                     :free nil)))))
+                                     :free t)))
+      (add-buffer obj (make-instance 'instance-buffer
+                                     :count 2
+                                     :pointer (to-gl-array :float 8 (list (vec4 1.0 0.0 0.0 1.0)
+                                                                          (vec4 0.0 1.0 0.0 1.0)))
+                                     :stride nil
+                                     :attributes '(("in_color" . :vec4))
+                                     :usage :static-draw
+                                     :free t))
+    )))
 
 (defclass sphere (parametric-surface)
   ((radius :initform 1.0f0 :initarg :radius)
@@ -157,7 +218,13 @@
    (u-min :initform 0.0f0 :initarg :u-min)
    (u-max :initform (* 2 pi) :initarg :u-max)
    (v-min :initform 0.0f0 :initarg :v-min)
-   (v-max :initform pi :initarg :v-max)))
+   (v-max :initform pi :initarg :v-max)
+   (name :initform "sphere" :initarg :name)))
+
+(defmethod show-info ((object sphere) &key (indent 0))
+  (call-next-method)
+  (let ((this-ws (indent-whitespace (+ 1 indent))))
+    (show-slots this-ws object '(radius))))
 
 (defmethod f_u_v ((sphere sphere) uv vv)
   (with-slots (radius) sphere
@@ -178,6 +245,11 @@
 
    (v-min :initform -10.0 :initarg :v-min)
    (v-max :initform 10.0 :initarg :v-max)))
+
+(defmethod show-info ((object sombrero) &key (indent 0))
+  (call-next-method)
+  (let ((this-ws (indent-whitespace (+ 1 indent))))
+    (show-slots this-ws object '(height))))
 
 (defmethod f_u_v ((surf sombrero) uv vv)
   (with-slots (height) surf
@@ -203,16 +275,21 @@
            (nvunit (vc s1 s2))))))
 
 (defclass torus (parametric-surface)
-  ((inner-radius :initform 0.25 :initarg :inner)
-   (outer-radius :initform 1.0 :initarg :outer)
-   (u-steps :initform 16 :initarg :u-steps)
-   (v-steps :initform 16 :initarg :v-steps)
+  ((inner-radius :initform 0.125 :initarg :inner)
+   (outer-radius :initform 0.5 :initarg :outer)
+   (u-steps :initform 32 :initarg :u-steps)
+   (v-steps :initform 64 :initarg :v-steps)
 
    (u-min :initform 0.0 :initarg :u-min)
    (u-max :initform (* 2 pi) :initarg :u-max)
 
    (v-min :initform 0 :initarg :v-min)
    (v-max :initform (* 2 pi) :initarg :v-max)))
+
+(defmethod show-info ((object torus) &key (indent 0))
+  (call-next-method)
+  (let ((this-ws (indent-whitespace (+ 1 indent))))
+    (show-slots this-ws object '(inner-radius outer-radius))))
 
 (defmethod f_u_v ((surf torus) θ φ)
   (with-slots (inner-radius outer-radius) surf

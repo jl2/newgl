@@ -6,11 +6,12 @@
 
 (defclass fractal-viewer (viewer)
   ())
-(defmethod newgl:handle-3d-mouse-event ((object fractal-viewer) (event sn:motion-event))
+
+#+spacenav(defmethod newgl:handle-3d-mouse-event ((object fractal-viewer) (event sn:motion-event))
   (loop for obj in (newgl:objects object) do
     (newgl:handle-3d-mouse-event obj event)))
 
-(defmethod newgl:handle-3d-mouse-event ((object complex-window) (event sn:motion-event))
+#+spacenav(defmethod newgl:handle-3d-mouse-event ((object complex-window) (event sn:motion-event))
   (with-slots (sn:x sn:z sn:y) event
     (let ((zoom-in-percent (+ 1.0f0 (/ sn:y 5000.0)))
           (xm (/ sn:x 5000.0))

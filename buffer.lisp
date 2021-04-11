@@ -14,38 +14,8 @@
    (free :initform nil :initarg :free)
    (needs-refill :initform t)))
 
-(defmethod bind ((buffer buffer))
-  (with-slots (bo target usage free pointer) buffer
-    (when (null pointer)
-      (error "Cannot fill buffer from nil."))
-    (when (= bo 0)
-      (setf bo (car (gl:gen-buffers 1)))
-      (gl:bind-buffer target bo)
-      (gl:buffer-data target usage pointer)
-      (when (and free pointer)
-        (free-gl-array pointer)
-        (setf pointer nil)))))
-
-(defmethod show-info ((object buffer) &key (indent 0))
-  (let ((this-ws (indent-whitespace indent))
-        (next-ws (indent-whitespace (1+ indent))))
-    (format t "~a~a~%" this-ws object)
-    (dolist (slot '(bo count pointer target usage stride free))
-      (format t "~a~a : ~a~%" next-ws slot (slot-value object slot)))
-    ))
-
-(defmethod cleanup ((buffer buffer))
-  (with-slots (bo target free pointer) buffer
-    (gl:bind-buffer target 0)
-    (gl:delete-buffers (list bo))
-    (setf bo nil)
-    (when (and free pointer)
-      (free-gl-array pointer))
-    (setf pointer nil)))
-
 (defclass attribute-buffer (buffer)
-  (
-   (stride :initform nil)
+  ((stride :initform nil)
    (target :initform :array-buffer :initarg :target)
    (attributes :initform '(("in_position" . :vec3) ("in_color" . :vec4))
                :initarg :attributes)))
@@ -59,7 +29,58 @@
    (block-name :initarg :block-name)
    (bind-location :initform 0 :initarg :bind-location)))
 
+
+(defclass instance-buffer (attribute-buffer)
+  ((attributes :initform '(("obj_transform" . :mat4))
+               :initarg :attributes)))
+
 (defgeneric compute-stride (buffer))
+
+(defgeneric associate-attributes (buffer program))
+
+;; (defgeneric bset (buffer index &rest values)
+;;   (:documentation "Set buffer value  at index to values."))
+
+
+
+(defmethod bind ((buffer buffer))
+  (with-slots (bo target usage free pointer) buffer
+    (when (= bo 0)
+      (when (null pointer)
+        (error "Cannot fill buffer from nil."))
+      (setf bo (car (gl:gen-buffers 1)))
+      (gl:bind-buffer target bo)
+      (gl:buffer-data target usage pointer)
+      (when (and free pointer)
+        (free-gl-array pointer)
+        (setf pointer nil)))))
+
+(defmethod show-info ((object buffer) &key (indent 0))
+  (let ((this-ws (indent-whitespace indent))
+        (next-ws (indent-whitespace (1+ indent))))
+    (format t "~a~a~%" this-ws object)
+    (show-slots next-ws object '(bo count pointer target usage stride free))))
+
+(defmethod show-info ((object attribute-buffer) &key (indent 0))
+  (call-next-method)
+  (let ((next-ws (indent-whitespace (1+ indent))))
+    (show-slots next-ws object '(attributes))))
+
+(defmethod show-info ((object attribute-buffer) &key (indent 0))
+  (call-next-method)
+  (let ((next-ws (indent-whitespace (1+ indent))))
+    (show-slots next-ws object '(attributes))))
+
+(defmethod cleanup ((buffer buffer))
+  (with-slots (bo target free pointer) buffer
+    (gl:bind-buffer target 0)
+    (gl:delete-buffers (list bo))
+    (setf bo nil)
+    (when (and free pointer)
+      (free-gl-array pointer))
+    (setf pointer nil)))
+
+
 
 (defmethod compute-stride ((buffer buffer))
   (with-slots (stride) buffer
@@ -75,10 +96,11 @@
                   summing (glsl-byte-size type))))
     stride))
 
-(defgeneric associate-attributes (buffer program))
+
 (defmethod associate-attributes ((buffer buffer) program)
   (declare (ignorable buffer program))
   t)
+
 
 (defmethod associate-attributes ((buffer attribute-buffer) program)
   (with-slots (attributes) buffer
@@ -86,17 +108,45 @@
           with stride = (compute-stride buffer)
           for offset = 0 then (+ offset byte-size)
           for (name . type) in attributes
-          for (comp-type comp-count byte-size) = (glsl-type-info type)
+          for (comp-type comp-count byte-size vec4-size) = (glsl-type-info type)
           do
              (let ((entry-attrib (gl:get-attrib-location program name)))
                (when (>= entry-attrib 0)
-                 (gl:vertex-attrib-pointer entry-attrib
-                                           comp-count
-                                           comp-type
-                                           :false
-                                           stride
-                                           offset)
-                 (gl:enable-vertex-attrib-array entry-attrib)))))
+                 (loop for i below vec4-size
+                       for attrib-idx = (+ entry-attrib i)
+                       do
+                          (gl:vertex-attrib-pointer attrib-idx
+                                                    4
+                                                    comp-type
+                                                    :false
+                                                    stride
+                                                    (+ offset (* 4 4 i)))
+                          (gl:enable-vertex-attrib-array attrib-idx)
+                       )))))
+  t)
+
+(defmethod associate-attributes ((buffer instance-buffer) program)
+  (with-slots (attributes) buffer
+    (loop
+          with stride = (compute-stride buffer)
+          for offset = 0 then (+ offset byte-size)
+          for (name . type) in attributes
+          for (comp-type comp-count byte-size vec4-size) = (glsl-type-info type)
+          do
+             (let ((entry-attrib (gl:get-attrib-location program name)))
+               (when (>= entry-attrib 0)
+                 (loop for i below vec4-size
+                       for attrib-idx = (+ entry-attrib i)
+                       do
+                          (gl:vertex-attrib-pointer attrib-idx
+                                                    (min comp-count 4)
+                                                    comp-type
+                                                    :false
+                                                    stride
+                                                    (+ offset (* 4 4 i)))
+                          (gl:enable-vertex-attrib-array attrib-idx)
+                          (gl:vertex-attrib-divisor attrib-idx 1)
+                       )))))
   t)
 
 (defmethod reload ((buffer buffer))
@@ -121,17 +171,65 @@
 (defun gl-get (array idx)
   (gl:glaref array idx))
 
-(defun to-gl-array (gl-type arr)
+(defun to-gl-array (gl-type size arr)
   "Create an OpenGL array of the specified type, initialized with the contents of arr."
-  (declare (optimize (speed 3))
-           ;;(type (vector (or single-float double-float fixnum)) arr)
-           (type (simple-array (or single-float double-float fixnum)) arr))
-  (let* ((count (length arr))
-         (cl-type (assoc-value '((:float . single-float)
-                                 (:unsigned-int . fixnum)
-                                 (:double . double-float))
-                               gl-type))
-         (gl-array (allocate-gl-array gl-type count)))
-    (dotimes (i count)
-      (setf (gl:glaref gl-array i) (coerce (aref arr i) cl-type)))
+  (declare (optimize (speed 3)))
+  (let* ((gl-array (allocate-gl-array gl-type size)))
+    (fill-buffer arr gl-array 0)
     gl-array))
+
+(defgeneric fill-buffer (data ptr offset))
+(defmethod fill-buffer ((data vec3) ptr offset)
+  (gl-set ptr (+ 0 offset) (vx data) 'single-float)
+  (gl-set ptr (+ 1 offset) (vy data) 'single-float)
+  (+ 2 offset))
+
+(defmethod fill-buffer ((data vector) ptr offset)
+  (loop for obj across data
+        for off = offset then next-off
+        for next-off = (fill-buffer obj ptr off)
+        finally (return next-off)))
+
+(defmethod fill-buffer ((data vec3) ptr offset)
+  (gl-set ptr (+ 0 offset) (vx data) 'single-float)
+  (gl-set ptr (+ 1 offset) (vy data) 'single-float)
+  (gl-set ptr (+ 2 offset) (vz data) 'single-float)
+  (+ 3 offset))
+
+(defmethod fill-buffer ((data vec4) ptr offset)
+  (gl-set ptr (+ 0 offset) (vx data) 'single-float)
+  (gl-set ptr (+ 1 offset) (vy data) 'single-float)
+  (gl-set ptr (+ 2 offset) (vz data) 'single-float)
+  (gl-set ptr (+ 3 offset) (vw data) 'single-float)
+  (+ 4 offset))
+
+(defmethod fill-buffer ((data mat3) ptr offset)
+  (loop for off from 0
+        for d across (marr data)
+        do
+           (gl-set ptr (+ off offset) d 'single-float)
+        finally (return (+ off offset))))
+
+(defmethod fill-buffer ((data mat4) ptr offset)
+  (loop for off from 0
+        for d across (marr data)
+        do
+           (gl-set ptr (+ off offset) d 'single-float)
+        finally (return (+ off offset))))
+
+(defmethod fill-buffer ((data list) ptr offset)
+  (loop for obj in data
+        for off = offset then next-off
+        for next-off = (fill-buffer obj ptr off)
+        finally (return next-off)))
+
+(defmethod fill-buffer ((data integer) ptr offset)
+  (gl-set ptr offset data 'fixnum)
+  (1+ offset))
+
+(defmethod fill-buffer ((data real) ptr offset)
+  (gl-set ptr offset data 'single-float)
+  (1+ offset))
+
+
+

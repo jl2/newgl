@@ -11,41 +11,44 @@
   (list (shader-from-file (merge-pathnames *fractal-shader-dir* (format nil "~a-fragment.glsl" name)))
         (shader-from-file (merge-pathnames *fractal-shader-dir* "complex-vertex.glsl"))))
 
-(defun set-iterations (fractal iterations)
-  (newgl:set-uniform fractal "maxIterations" iterations :int))
+(defclass mandelbrot (complex-window)
+  ((newgl:shaders :initform (cfractal "mandel"))))
 
-
-(defun mandelbrot-set-shaders (&key (max-iterations 100))
-  (cfractal "mandel"))
+(defclass mandelbrot-boundary (complex-window)
+  ((newgl:shaders :initform (cfractal "mandel-boundary"))))
 
 
 (defun mandelbrot-viewer (&key (max-iterations 100))
   (make-instance 'fractal-viewer
-                 :objects (list (make-instance 'complex-window
-                                               :shaders (mandelbrot-set-shaders)))))
+                 :objects (list (make-instance 'mandelbrot))))
+
+;; (defun mandelbrot-viewer (&key (max-iterations 100))
+;;   (make-instance 'fractal-viewer
+;;                  :objects (list (make-instance 'complex-window
+;;                                                :shaders ))))
 
 
-(defun burning-ship-shaders (&key (max-iterations 100))
-  (cfractal "burning-ship"))
+;; (defun burning-ship-shaders (&key (max-iterations 100))
+;;   (cfractal "burning-ship"))
 
-(defun burning-ship-viewer (&key (max-iterations 100))
-  (make-instance 'fractal-viewer
-                 :objects (list (make-instance 'complex-window
-                                         :shaders (burning-ship-shaders)))))
+;; (defun burning-ship-viewer (&key (max-iterations 100))
+;;   (make-instance 'fractal-viewer
+;;                  :objects (list (make-instance 'complex-window
+;;                                          :shaders (burning-ship-shaders)))))
 
-(defun julia-set-shaders (&key (max-iterations 100) (real 0.0f0) (imag 0.0f0))
-  (let ((shaders (cfractal "julia-set")))
-    (dolist (shader shaders)
-      (set-uniform shader "maxIterations" max-iterations :int)
-      (set-uniform shader "cReal" real :float)
-      (set-uniform shader "cImag" imag :float))
-    shaders))
+;; (defun julia-set-shaders (&key (max-iterations 100) (real 0.0f0) (imag 0.0f0))
+;;   (let ((shaders (cfractal "julia-set")))
+;;     (dolist (shader shaders)
+;;       (set-uniform shader "maxIterations" max-iterations :int)
+;;       (set-uniform shader "cReal" real :float)
+;;       (set-uniform shader "cImag" imag :float))
+;;     shaders))
 
 
-(defun bs-js-shaders (&key (max-iterations 100) (real 0.0f0) (imag 0.0f0))
-  (let ((shaders (cfractal "bs-js")))
-    (dolist (shader shaders)
-      (set-uniform shader "maxIterations" max-iterations :int)
-      (set-uniform shader "cReal" real :float)
-      (set-uniform shader "cImag" imag :float))
-    shaders))
+;; (defun bs-js-shaders (&key (max-iterations 100) (real 0.0f0) (imag 0.0f0))
+;;   (let ((shaders (cfractal "bs-js")))
+;;     (dolist (shader shaders)
+;;       (set-uniform shader "maxIterations" max-iterations :int)
+;;       (set-uniform shader "cReal" real :float)
+;;       (set-uniform shader "cImag" imag :float))
+;;     shaders))

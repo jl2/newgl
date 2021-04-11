@@ -56,6 +56,10 @@
                :usage :static-draw
                :free nil)))
 
+(defmethod newgl:initialize-uniforms ((object complex-window) &key)
+  (with-slots (max-iterations) object
+    (set-uniform object "maxIterations" max-iterations :int)))
+
 (defun window-from-center-radius (center radius)
   (make-instance 'complex-window
                  :center center
@@ -125,3 +129,4 @@
     (with-slots (radius center) fractal
       (incf center (complex (* (realpart radius) (realpart offset-percent))
                             (* (imagpart radius) (imagpart offset-percent))))))
+

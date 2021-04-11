@@ -22,8 +22,8 @@
   (when uv
     (setf (gl:glaref array idx 'u) (vx uv))
     (setf (gl:glaref array idx 'v) (vy uv))))
-  
-(defclass line-segments (geometry)
+
+(defclass line-segments (opengl-object)
   ((vertices :initform (make-array 0
                                    :element-type 'vec3
                                    :initial-contents '()
@@ -39,13 +39,9 @@
                                    :initial-contents '()
                                    :adjustable t
                                    :fill-pointer 0))
-   (needs-update :initform t)
    (vert-pointer :initform nil)
    (idx-pointer :initform nil)
-   (primitive-type :initform :lines)
-   (shaders :initform (list 
-                       (shader-from-file (newgl-shader "color-position-vertex.glsl"))
-                       (shader-from-file (newgl-shader "point-fragment.glsl")))))
+   (primitive-type :initform :lines))
   (:documentation "A collection of lines segment using the same shader program."))
 
 (defun to-vertex-buffer (verts colors)
@@ -63,7 +59,7 @@
                     collect (vw c)))))
 
 
-(defmethod allocate-and-fill-buffers ((object line-segments))
+(defmethod initialize-buffers ((obj line-segments) &key)
   (with-slots (needs-update vert-pointer idx-pointer colors vertices indices) object
     (when (and needs-update
                (> (length vertices) 0)

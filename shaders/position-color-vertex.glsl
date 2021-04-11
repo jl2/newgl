@@ -2,9 +2,9 @@
 
 layout(location = 0) in vec3 in_position;
 layout(location = 1) in vec4 in_color;
+layout(location = 2) in mat4 obj_transform;
 
 uniform mat4 view_transform;
-uniform mat4 obj_transform;
 
 out vec4 diffuse_color;
 out vec4 gl_Position;

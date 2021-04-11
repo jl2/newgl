@@ -48,23 +48,23 @@
 (defparameter *glsl-type-db*
   ;; gl-type, component type,  component count, byte size
   `(
-    (:float   :float   1  ,(cffi:foreign-type-size :float))
-    (:int     :int     1  ,(cffi:foreign-type-size :int))
-    (:double  :double  1  ,(cffi:foreign-type-size :double))
+    (:float   :float   1  ,(cffi:foreign-type-size :float) 1)
+    (:int     :int     1  ,(cffi:foreign-type-size :int) 1)
+    (:double  :double  1  ,(cffi:foreign-type-size :double) 1)
 
-    (:vec3    :float   3  ,(* 3 (cffi:foreign-type-size :float)))
-    (:vec4    :float   4  ,(* 4 (cffi:foreign-type-size :float)))
-    (:vec2    :float   2  ,(* 2 (cffi:foreign-type-size :float)))
+    (:vec3    :float   3  ,(* 3 (cffi:foreign-type-size :float)) 1)
+    (:vec4    :float   4  ,(* 4 (cffi:foreign-type-size :float)) 1)
+    (:vec2    :float   2  ,(* 2 (cffi:foreign-type-size :float)) 1)
 
-    (:mat4    :float  16  ,(* 4 4 (cffi:foreign-type-size :float)))
-    (:mat3    :float   9  ,(* 3 3 (cffi:foreign-type-size :float)))
+    (:mat4    :float   16  ,(* 4 4 (cffi:foreign-type-size :float)) 4)
+    (:mat3    :float   9  ,(* 3 3 (cffi:foreign-type-size :float)) 4)
 
-    (:dvec3   :double  3  ,(* 3 (cffi:foreign-type-size :double)))
-    (:dvec4   :double  4  ,(* 4 (cffi:foreign-type-size :double)))
-    (:dvec2   :double  2  ,(* 2 (cffi:foreign-type-size :double)))
+    (:dvec3   :double  3  ,(* 3 (cffi:foreign-type-size :double)) 2)
+    (:dvec4   :double  4  ,(* 4 (cffi:foreign-type-size :double)) 2)
+    (:dvec2   :double  2  ,(* 2 (cffi:foreign-type-size :double)) 2)
 
-    (:dmat4   :double 16  ,(* 4 4 (cffi:foreign-type-size :double)))
-    (:dmat3   :double  9  ,(* 3 3 (cffi:foreign-type-size :double)))
+    (:dmat4   :double 4  ,(* 4 4 (cffi:foreign-type-size :double)) 8)
+    (:dmat3   :double  9  ,(* 3 3 (cffi:foreign-type-size :double)) 8)
 
     ))
 

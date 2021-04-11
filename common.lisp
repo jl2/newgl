@@ -57,6 +57,18 @@
 (defgeneric handle-resize (object window width height)
   (:documentation "Handle window resize."))
 
+(defun show-slots (white-space object slots)
+  (dolist (slot slots)
+    (cond ((null slot)
+           (format t "~%"))
+          (t
+           (format t "~a~a: ~a~%" white-space slot (slot-value object slot))))))
+
+(defgeneric show-info (object &key indent)
+  (:documentation "Show OpenGL information for an object."))
+
+
+
 #+spacenav
 (defgeneric handle-3d-mouse-event (object event)
   (:documentation "Handle a spacenav 3D mouse event."))

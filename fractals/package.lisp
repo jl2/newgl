@@ -19,11 +19,7 @@
 (defpackage :newgl.fractals
   (:use #:cl #:j-utils #:alexandria #:3d-vectors #:3d-matrices #:newgl)
   (:export #:fractal-viewer
+           #:mandelbrot
+           #:mandelbrot-boundary
            #:burning-ship-viewer
-           #:mandelbrot-viewer
-           #:complex-window
-           #:mandelbrot-set-shaders
-           #:julia-set-shaders
-           #:burning-ship-shaders
-           #:bs-js-shaders
            ))
