@@ -107,7 +107,7 @@
                :initarg :wire-frame
                :type t
                :accessor wire-frame-p)
-   (cull-face :initform nil
+   (cull-face :initform t
               :initarg :cull-face
               :accessor cull-face)
    (front-face :initform :ccw

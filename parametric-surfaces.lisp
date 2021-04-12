@@ -91,7 +91,7 @@
                  (when emit-uv
                    (setf cur-offset (fill-buffer uv vertices cur-offset)))
                  (when (or emit-uv emit-normal emit-position)
-                   (gl-set indices cur-idx-idx cur-idx-idx 'fixnum)
+                   (gl-iset indices cur-idx-idx cur-idx-idx)
                    (incf cur-idx-idx))))
         (loop
             for ui below u-steps
@@ -146,7 +146,7 @@
                                    :usage :static-draw
                                    :free t))
 
-      (let* ((inst-count 20000)
+      (let* ((inst-count 2000)
              (colors (loop for i below inst-count collecting (vec4-random 0.25 1.0)))
              (mats (loop for i below inst-count collecting
                                                 (m* (mtranslation (vec3-random -2.0 2.0))
@@ -233,7 +233,7 @@
           ((< (3d-vectors:vlength s2) 0.0001)
            (vec3 0.0 1.0 0.0))
           (t
-           (nvunit (vc s1 s2))))))
+           (nvunit (vc s2 s1))))))
 
 (defclass torus (parametric-surface)
   ((inner-radius :initform 0.125 :initarg :inner)

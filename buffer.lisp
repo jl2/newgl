@@ -157,18 +157,34 @@
     (gl:buffer-sub-data target pointer)))
 
 
-(declaim (inline allocate-gl-array free-gl-array gl-set gl-get to-gl-float-array to-gl-array fill-buffer))
+(declaim (inline allocate-gl-array free-gl-array gl-fset gl-iset gl-get to-gl-float-array to-gl-array fill-buffer))
 (defun allocate-gl-array (type count)
+  (declare (optimize (speed 3))
+           (type fixnum count))
   (gl:alloc-gl-array type count))
 
 (defun free-gl-array (array)
+  (declare (optimize (speed 3))
+           (type gl:gl-array array))
   (gl:free-gl-array array))
 
-(defun gl-set (array idx value type)
-  (setf (gl:glaref array idx)
-        (coerce value type)))
+(defun gl-iset (array idx value)
+  (declare (optimize (speed 3))
+           (type fixnum idx)
+           (type gl:gl-array array))
+  (setf (gl:glaref array idx) value))
+
+(defun gl-fset (array idx value)
+  (declare (optimize (speed 3))
+           (type fixnum idx)
+           (type single-float value)
+           (type gl:gl-array array))
+  (setf (gl:glaref array idx) value))
 
 (defun gl-get (array idx)
+  (declare (optimize (speed 3))
+           (type fixnum idx)
+           (type gl:gl-array array))
   (gl:glaref array idx))
 
 (defun to-gl-array (gl-type size arr)
@@ -180,8 +196,8 @@
 
 (defgeneric fill-buffer (data ptr offset))
 (defmethod fill-buffer ((data vec3) ptr offset)
-  (gl-set ptr (+ 0 offset) (vx data) 'single-float)
-  (gl-set ptr (+ 1 offset) (vy data) 'single-float)
+  (gl-fset ptr (+ 0 offset) (vx data))
+  (gl-fset ptr (+ 1 offset) (vy data))
   (+ 2 offset))
 
 (defmethod fill-buffer ((data vector) ptr offset)
@@ -191,30 +207,30 @@
         finally (return next-off)))
 
 (defmethod fill-buffer ((data vec3) ptr offset)
-  (gl-set ptr (+ 0 offset) (vx data) 'single-float)
-  (gl-set ptr (+ 1 offset) (vy data) 'single-float)
-  (gl-set ptr (+ 2 offset) (vz data) 'single-float)
+  (gl-fset ptr (+ 0 offset) (vx data))
+  (gl-fset ptr (+ 1 offset) (vy data))
+  (gl-fset ptr (+ 2 offset) (vz data))
   (+ 3 offset))
 
 (defmethod fill-buffer ((data vec4) ptr offset)
-  (gl-set ptr (+ 0 offset) (vx data) 'single-float)
-  (gl-set ptr (+ 1 offset) (vy data) 'single-float)
-  (gl-set ptr (+ 2 offset) (vz data) 'single-float)
-  (gl-set ptr (+ 3 offset) (vw data) 'single-float)
+  (gl-fset ptr (+ 0 offset) (vx data))
+  (gl-fset ptr (+ 1 offset) (vy data))
+  (gl-fset ptr (+ 2 offset) (vz data))
+  (gl-fset ptr (+ 3 offset) (vw data))
   (+ 4 offset))
 
 (defmethod fill-buffer ((data mat3) ptr offset)
   (loop for off from 0
         for d across (marr (mtranspose data))
         do
-           (gl-set ptr (+ off offset) d 'single-float)
+           (gl-fset ptr (+ off offset) d)
         finally (return (+ off offset))))
 
 (defmethod fill-buffer ((data mat4) ptr offset)
   (loop for off from 0
         for d across (marr (mtranspose data))
         do
-           (gl-set ptr (+ off offset) d 'single-float)
+           (gl-fset ptr (+ off offset) d)
         finally (return (+ off offset))))
 
 (defmethod fill-buffer ((data list) ptr offset)
@@ -224,11 +240,11 @@
         finally (return next-off)))
 
 (defmethod fill-buffer ((data integer) ptr offset)
-  (gl-set ptr offset data 'fixnum)
+  (gl-iset ptr offset data)
   (1+ offset))
 
 (defmethod fill-buffer ((data real) ptr offset)
-  (gl-set ptr offset data 'single-float)
+  (gl-fset ptr offset data)
   (1+ offset))
 
 

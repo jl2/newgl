@@ -14,14 +14,14 @@
   (with-slots (newgl:buffers) object
     (let ((gl-array (slot-value (assoc-value newgl:buffers :array-buffer) 'newgl:pointer)))
       (multiple-value-bind (real-min real-max imag-min imag-max) (compute-min-max object)
-        (gl-set gl-array 3 real-min 'single-float)
-        (gl-set gl-array 4 imag-max 'single-float)
-        (gl-set gl-array 8 real-min 'single-float)
-        (gl-set gl-array 9 imag-min 'single-float)
-        (gl-set gl-array 13 real-max 'single-float)
-        (gl-set gl-array 14 imag-max 'single-float)
-        (gl-set gl-array 18 real-max 'single-float)
-        (gl-set gl-array 19 imag-min 'single-float)))
+        (gl-fset gl-array 3 real-min)
+        (gl-fset gl-array 4 imag-max)
+        (gl-fset gl-array 8 real-min)
+        (gl-fset gl-array 9 imag-min)
+        (gl-fset gl-array 13 real-max)
+        (gl-fset gl-array 14 imag-max)
+        (gl-fet gl-array 18 real-max)
+        (gl-fset gl-array 19 imag-min)))
     (reload (assoc-value newgl:buffers :array-buffer))))
 
 (defmethod newgl:initialize-buffers ((object complex-window) &key)
@@ -32,7 +32,9 @@
                :count (* 4 5)
                :pointer (newgl:to-gl-array
                          :float
-                         `#(-1.0f0  1.0f0 0.0f0
+                         20 
+                         (list -1.0f0  1.0f0 0.0f0
+                               real-min imag-max
                             ,(coerce real-min 'single-float) ,(coerce imag-max 'single-float)
 
                             -1.0f0 -1.0f0 0.0f0
