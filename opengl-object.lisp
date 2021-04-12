@@ -29,7 +29,7 @@
 
    (primitive-type :initform :triangles)
 
-   (idx-count :initform 4)
+   (idx-count :initform 0)
    (instance-count :initform 1 :initarg :instance-count))
   (:documentation "Base class for all objects that can be rendered in a scene."))
 

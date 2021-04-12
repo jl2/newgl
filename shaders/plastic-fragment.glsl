@@ -1,7 +1,6 @@
 #version 410 core
 
 uniform mat4 view_transform;
-layout(location = 3) in mat4 obj_transform;
 
 in vec3 normal;
 in vec3 position;

@@ -1,7 +1,6 @@
-#version 400 core
+#version 410 core
 
 uniform mat4 view_transform;
-uniform mat4 obj_transform;
 
 uniform sampler2D image;
 
