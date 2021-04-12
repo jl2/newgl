@@ -22,7 +22,6 @@
    (emit-position :initform t :initarg :emit-position)
    (emit-normal :initform t :initarg :emit-normal)
    (emit-uv :initform nil :initarg :emit-uv)
-   (emit-color :initform nil :initarg :emit-color)
    (shaders :initform (newgl:plastic) :initarg :shaders)
   ))
 
@@ -40,8 +39,7 @@
                                  nil
                                  emit-position
                                  emit-normal
-                                 emit-uv
-                                 emit-color))))
+                                 emit-uv))))
 
 (defgeneric f_u_v (surface uv vv))
 
@@ -61,18 +59,18 @@
            (nvunit (vc s1 s2))))))
 
 (defun calculate-stride (obj)
-  (with-slots (emit-position emit-normal emit-uv emit-color) obj
+  (with-slots (emit-position emit-normal emit-uv) obj
     (+ (if emit-position 3 0)
        (if emit-normal 3 0)
-       (if emit-uv 2 0)
-       (if emit-color 4 0))))
+       (if emit-uv 2 0))))
 
 (defmethod initialize-buffers ((obj parametric-surface) &key)
   (with-slots (
-               color u-min v-min u-max v-max u-steps v-steps
+               u-min v-min u-max v-max u-steps v-steps
                s-min s-max t-min t-max
-               emit-position emit-normal emit-uv emit-color
+               emit-position emit-normal emit-uv
                instance-count) obj
+
     (let* (
            (dst (/ (- s-max s-min) u-steps))
            (dtt (/ (- t-max t-min) v-steps))
@@ -82,10 +80,20 @@
            (stride (calculate-stride obj))
 
            (vertices (allocate-gl-array :float (* 2 3 u-steps v-steps stride)))
-           (indices (allocate-gl-array :unsigned-int (*  2 3 u-steps v-steps))))
-
-      (loop with cur-offset = 0
-            with cur-idx-idx = 0
+           (indices (allocate-gl-array :unsigned-int (*  2 3 u-steps v-steps)))
+           (cur-offset 0)
+           (cur-idx-idx 0))
+      (labels ((emit (pt norm uv)
+                 (when emit-position
+                   (setf cur-offset (fill-buffer pt vertices cur-offset)))
+                 (when emit-normal
+                   (setf cur-offset (fill-buffer norm vertices cur-offset)))
+                 (when emit-uv
+                   (setf cur-offset (fill-buffer uv vertices cur-offset)))
+                 (when (or emit-uv emit-normal emit-position)
+                   (gl-set indices cur-idx-idx cur-idx-idx 'fixnum)
+                   (incf cur-idx-idx))))
+        (loop
             for ui below u-steps
             for uv = (+ u-min (* ui du))
             for st = (+ s-min (* ui dst))
@@ -96,80 +104,28 @@
                      do
                         (let* ((pt0 (f_u_v obj uv vv))
                                (n0 (df_u_v obj uv vv))
+                               (st0 (vec2 st tt))
 
                                (pt1 (f_u_v obj (+ du uv) vv))
                                (n1 (df_u_v obj (+ du uv) vv))
+                               (st1 (vec2 (+ dst st) tt))
 
                                (pt2 (f_u_v obj uv (+ vv dv)))
                                (n2 (df_u_v obj uv (+ vv dv)))
+                               (st2 (vec2  st (+ dtt tt)))
 
                                (pt3 (f_u_v obj (+ uv du) (+ vv dv)))
-                               (n3 (df_u_v obj (+ uv du) (+ vv dv))))
+                               (n3 (df_u_v obj (+ uv du) (+ vv dv)))
+                               (st3 (vec2 (+ dst st) (+ dtt tt))))
 
-                          (when emit-position
-                            (setf cur-offset (fill-buffer pt1 vertices cur-offset)))
-                          (when emit-normal
-                            (setf cur-offset (fill-buffer n1 vertices cur-offset)))
-                          (when emit-uv
-                            (setf cur-offset (fill-buffer (vec2 (+ dst st) tt) vertices cur-offset)))
-                          (when (or emit-color emit-uv emit-normal emit-position)
-                            (gl-set indices cur-idx-idx cur-idx-idx 'fixnum)
-                            (incf cur-idx-idx))
+                          (emit pt0 n0 st0)
+                          (emit pt2 n2 st2)
+                          (emit pt1 n1 st1)
 
-                          (when emit-position
-                            (setf cur-offset (fill-buffer pt0 vertices cur-offset)))
-                          (when emit-normal
-                            (setf cur-offset (fill-buffer n0 vertices cur-offset)))
-                          (when emit-uv
-                            (setf cur-offset (fill-buffer (vec2  st tt) vertices cur-offset)))
-                          (when (or emit-color emit-uv emit-normal emit-position)
-                            (gl-set indices cur-idx-idx cur-idx-idx 'fixnum)
-                            (incf cur-idx-idx))
-
-
-                          (when emit-position
-                            (setf cur-offset (fill-buffer pt2 vertices cur-offset)))
-                          (when emit-normal
-                            (setf cur-offset (fill-buffer n2 vertices cur-offset)))
-                          (when emit-uv
-                            (setf cur-offset (fill-buffer (vec2  st (+ dtt tt)) vertices cur-offset)))
-                          (when (or emit-color emit-uv emit-normal emit-position)
-                            (gl-set indices cur-idx-idx cur-idx-idx 'fixnum)
-                            (incf cur-idx-idx))
-
-                          (when emit-position
-                            (setf cur-offset (fill-buffer pt1 vertices cur-offset)))
-                          (when emit-normal
-                            (setf cur-offset (fill-buffer n1 vertices cur-offset)))
-                          (when emit-uv
-                            (setf cur-offset (fill-buffer (vec2 (+ dst st) tt) vertices cur-offset)))
-                          (when (or emit-color emit-uv emit-normal emit-position)
-                            (gl-set indices cur-idx-idx cur-idx-idx 'fixnum)
-                            (incf cur-idx-idx))
-
-                          (when emit-position
-                            (setf cur-offset (fill-buffer pt2 vertices cur-offset)))
-                          (when emit-normal
-                            (setf cur-offset (fill-buffer n2 vertices cur-offset)))
-                          (when emit-uv
-                            (setf cur-offset (fill-buffer (vec2  st (+ dtt tt)) vertices cur-offset)))
-                          (when (or emit-color emit-uv emit-normal emit-position)
-                            (gl-set indices cur-idx-idx cur-idx-idx 'fixnum)
-                            (incf cur-idx-idx))
-
-                          (when emit-position
-                            (setf cur-offset (fill-buffer pt3 vertices cur-offset)))
-                          (when emit-normal
-                            (setf cur-offset (fill-buffer n3 vertices cur-offset)))
-                          (when emit-uv
-                            (setf cur-offset (fill-buffer (vec2 (+ dst st) (+ dtt tt)) vertices cur-offset)))
-
-                          (when (or emit-color emit-uv emit-normal emit-position)
-                            (gl-set indices cur-idx-idx cur-idx-idx 'fixnum)
-                            (incf cur-idx-idx))
-
-
-                          )))
+                          (emit pt1 n1 st1)
+                          (emit pt2 n2 st2)
+                          (emit pt3 n3 st3)
+                          ))))
     (add-buffer obj (make-instance 'attribute-buffer
                                    :count (* 2 3 u-steps v-steps stride)
                                    :pointer vertices
@@ -179,8 +135,6 @@
                                                               '(("in_position" . :vec3)))
                                                             (when emit-normal
                                                               '(("in_normal" . :vec3)))
-                                                            (when emit-color
-                                                              '(("in_color" . :vec4)))
                                                             (when emit-uv
                                                               '(("in_uv" . :vec2))))
                                    :usage :static-draw
@@ -192,23 +146,30 @@
                                    :usage :static-draw
                                    :free t))
 
-    (let ((left (m* (3d-matrices:mrotation (vec3 0.0 1.0 0.0) (/ pi 3))
-                    (mscaling (vec3 0.5 0.5 0.5))))
-          (right (mscaling (vec3 1.2 1.2 1.2))))
-      (add-buffer obj (make-instance 'instance-buffer
-                                     :count 2
-                                     :pointer (to-gl-array :float 32 (list left right))
-                                     :stride nil
-                                     :usage :static-draw
-                                     :free t)))
-      (add-buffer obj (make-instance 'instance-buffer
-                                     :count 2
-                                     :pointer (to-gl-array :float 8 (list (vec4 1.0 0.0 0.0 1.0)
-                                                                          (vec4 0.0 1.0 0.0 1.0)))
-                                     :stride nil
-                                     :attributes '(("in_color" . :vec4))
-                                     :usage :static-draw
-                                     :free t))
+      (let* ((inst-count 20000)
+             (colors (loop for i below inst-count collecting (vec4-random 0.25 1.0)))
+             (mats (loop for i below inst-count collecting
+                                                (m* (mtranslation (vec3-random -2.0 2.0))
+                                                    (mscaling (vec3 0.025 0.025 0.025))
+                                                    (mrotation (vec3 1.0 0.0 0.0) (random (/ pi 2)))
+                                                    (mrotation (vec3 0.0 1.0 0.0) (random (/ pi 2)))
+                                                    (mrotation (vec3 0.0 0.0 1.0) (random (/ pi 2)))
+                                                    ))))
+
+        (add-buffer obj (make-instance 'instance-buffer
+                                       :count inst-count
+                                       :pointer (to-gl-array :float (* 16 inst-count) mats)
+                                       :stride nil
+                                       :usage :static-draw
+                                       :free t))
+        (add-buffer obj (make-instance 'instance-buffer
+                                       :count inst-count
+                                       :pointer (to-gl-array :float (* 4 inst-count) colors)
+                                       :stride nil
+                                       :attributes '(("in_color" . :vec4))
+                                       :usage :static-draw
+                                       :free t))
+        (setf instance-count inst-count))
     )))
 
 (defclass sphere (parametric-surface)

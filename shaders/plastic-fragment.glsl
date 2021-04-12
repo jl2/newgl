@@ -1,7 +1,7 @@
-#version 400 core
+#version 410 core
 
 uniform mat4 view_transform;
-uniform mat4 obj_transform;
+layout(location = 3) in mat4 obj_transform;
 
 in vec3 normal;
 in vec3 position;
@@ -9,7 +9,7 @@ in vec4 diffuse_color;
 
 out vec4 out_color;
 
-const vec3 light_pos = vec3(vec4(0.0, 8.0, 0.0, 1.0));
+const vec4 light_pos = vec4(0.0, 12.0, 12.0, 1.0);
 const vec3 light_color = vec3(1.0, 1.0, 1.0);
 const float light_power = 40.0;
 const vec3 ambient_color = vec3(0.00, 0.01, 0.000);
@@ -19,7 +19,7 @@ const float screen_gamma = 1.3; // ssume the monitor is calibrated to the sRGB c
 
 void main() {
 
-     vec3 light_dir = light_pos - position;
+     vec3 light_dir = light_pos.xyz - position;
      float distance = length(light_dir);
      distance = distance * distance;
      light_dir = normalize(light_dir);

@@ -157,7 +157,7 @@
     (gl:buffer-sub-data target pointer)))
 
 
-(declaim (inline allocate-gl-array free-gl-array gl-set gl-get to-gl-float-array to-gl-array))
+(declaim (inline allocate-gl-array free-gl-array gl-set gl-get to-gl-float-array to-gl-array fill-buffer))
 (defun allocate-gl-array (type count)
   (gl:alloc-gl-array type count))
 
@@ -205,14 +205,14 @@
 
 (defmethod fill-buffer ((data mat3) ptr offset)
   (loop for off from 0
-        for d across (marr data)
+        for d across (marr (mtranspose data))
         do
            (gl-set ptr (+ off offset) d 'single-float)
         finally (return (+ off offset))))
 
 (defmethod fill-buffer ((data mat4) ptr offset)
   (loop for off from 0
-        for d across (marr data)
+        for d across (marr (mtranspose data))
         do
            (gl-set ptr (+ off offset) d 'single-float)
         finally (return (+ off offset))))
