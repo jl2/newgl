@@ -32,6 +32,7 @@
 
            #:create-keyframe-sequence
            #:create-keyframe
+           #:create-rotating-viewer
 
            #:gl-shader
            #:gl-file-shader

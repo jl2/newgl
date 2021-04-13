@@ -38,3 +38,22 @@
                            :before :repeat
                            :after :repeat)
                  :look-at (vec3 0 0 0))))
+(defun create-rotating-viewer (objects &key
+                                       (radius 4.0)
+                                       (cam-height (/ radius 2))
+                                       (segments 180)
+                                       (dt (/ 0.125 16)))
+  (make-instance 'keyframe-viewer
+                 :objects (ensure-list objects)
+                 :eye-pos (create-keyframe-sequence
+                           (loop
+                                 with theta-diff = (/ (* 2 pi) segments)
+                                 for i below (1+ segments)
+                                 for theta0 = (* theta-diff i)
+                                 for pt = (vec3 (* radius (cos (- theta0)))
+                                                cam-height
+                                                (* radius (sin (- theta0))))
+                                 collect (create-keyframe pt (* dt i)))
+                           :before :repeat
+                           :after :repeat)
+                 :look-at (vec3 0 0 0)))

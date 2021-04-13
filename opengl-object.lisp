@@ -226,7 +226,7 @@
     (when (/= 0 vao)
       (gl:bind-vertex-array vao)
 
-      (when (> 0 program)
+      (when (not (zerop program))
         (gl:delete-program program)
         (setf program 0))
 
