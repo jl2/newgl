@@ -20,9 +20,9 @@
     (add-buffer object
               (make-instance
                'attribute-buffer
-               :count (* 4 5)
                :pointer (to-gl-array
                          :float
+                         20
                          `#(-1.0f0  1.0f0 0.0f0
                             ,s-min ,t-max
 
@@ -41,8 +41,8 @@
   (add-buffer object
               (make-instance
                'index-buffer
-               :count 6
-               :pointer (to-gl-array :unsigned-int #(0 1 2 1 3 2))
+               :idx-count 6
+               :pointer (to-gl-array :unsigned-int 6 #(0 1 2 1 3 2))
                :stride nil
                :usage :static-draw
                :free nil)))

@@ -17,10 +17,10 @@
 
   (bl:with-objects
       ((circle bl:circle))
-    (dotimes (i 800)
+    (dotimes (i 80)
       (let* ((sx (random size))
              (sy (random size))
-             (radius (random 700.0)))
+             (radius (random 70.0)))
 
         (setf (bl:circle.cx circle) (coerce sx 'double-float))
         (setf (bl:circle.cy circle) (coerce sy 'double-float))

@@ -39,7 +39,7 @@
            #:shader-from-file
            #:newgl-shader
            #:set-uniform
-
+           #:draw-image
            #:buffer
            #:usage
            #:fill-textures

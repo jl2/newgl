@@ -8,7 +8,8 @@
   ((vao :initform 0 :type fixnum)
    (name :initform "GL Object" :initarg :name)
    (program :initform 0
-            :accessor program)
+            :accessor program
+            :type fixnum)
 
    (shaders :initform nil
             :type (or null list)
@@ -26,11 +27,12 @@
              :type (or null list)
              :accessor uniforms
              :initarg :uniforms)
-
    (primitive-type :initform :triangles)
-   (instance-data :initform nil :initarg :instance-data)
-   (idx-count :initform 0)
-   (instance-count :initform 1 :initarg :instance-count))
+   (idx-count :initform 0
+              :type fixnum
+              :accessor idx-count)
+   (instance-count :initform 1
+                   :initarg :instance-count))
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
 (defgeneric build-shader-program (object)
@@ -193,7 +195,6 @@
   (add-buffer object
               (make-instance
                'attribute-buffer
-               :count (* 3 7)
                :pointer (to-gl-array
                          :float
                          21
@@ -203,7 +204,7 @@
                                0.5f0 -0.5f0 0.0f0
                                0.0f0 1.0f0  0.0f0 1.0f0
 
-                               0.0f0 (- (sqrt (- 1 (* 0.5 0.5))) 0.5)  0.0f0
+                               0.0f0 (- (sqrt (- 1.0f0 (* 0.5f0 0.5f0))) 0.5f0)  0.0f0
                                0.0f0 1.0f0 0.0f0 1.0f0))
                :stride nil
                :attributes '(("in_position" . :vec3) ("in_color" . :vec4))
@@ -212,11 +213,12 @@
   (add-buffer object
               (make-instance
                'index-buffer
-               :count 3
+               :idx-count 3
                :pointer (to-gl-array :unsigned-int 3 #(0 1 2))
                :stride nil
                :usage :static-draw
                :free nil)))
+
 
 (defmethod initialize-textures ((object opengl-object) &key)
   (declare (ignorable object))
@@ -283,11 +285,11 @@
 (defun add-buffer (object buffer)
   (declare (type opengl-object object)
            (type buffer buffer))
-  (with-slots (target count) buffer
+  (with-slots (target) buffer
     (with-slots (buffers idx-count program) object
       (push buffer buffers)
       (when (eq target :element-array-buffer)
-        (setf idx-count (slot-value buffer 'count)))
+        (setf idx-count (idx-count buffer)))
       (bind buffer)
       (associate-attributes buffer program))))
 

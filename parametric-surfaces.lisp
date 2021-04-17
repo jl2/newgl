@@ -89,6 +89,7 @@
                  (when emit-normal
                    (setf cur-offset (fill-buffer norm vertices cur-offset)))
                  (when emit-uv
+                   (format t "Emitting: ~a~%" uv)
                    (setf cur-offset (fill-buffer uv vertices cur-offset)))
                  (when (or emit-uv emit-normal emit-position)
                    (gl-iset indices cur-idx-idx cur-idx-idx)
@@ -126,8 +127,7 @@
                           (emit pt2 n2 st2)
                           (emit pt3 n3 st3)))))
     (add-buffer obj (make-instance 'attribute-buffer
-                                   :count (* 2 3 u-steps v-steps stride)
-                                   :pointer vertices
+                                    :pointer vertices
                                    :stride nil
                                    :attributes (concatenate 'list
                                                             (when emit-position
@@ -139,28 +139,26 @@
                                    :usage :static-draw
                                    :free t))
     (add-buffer obj (make-instance 'index-buffer
-                                   :count (*  2 3 u-steps v-steps)
+                                   :idx-count (*  2 3 u-steps v-steps)
                                    :pointer indices
                                    :stride nil
                                    :usage :static-draw
                                    :free t))
 
-      (let* ((inst-count 2000)
+      (let* ((inst-count 20)
              (colors (loop for i below inst-count collecting (vec4-random 0.25 1.0)))
              (mats (loop for i below inst-count collecting
                                                 (m* (mtranslation (vec3-random -2.0 2.0))
-                                                    (mscaling (vec3 0.025 0.025 0.025))
+                                                    (mscaling (vec3 0.25 0.25 0.25))
                                                     (mrotation (vec3 1.0 0.0 0.0) (random (/ pi 2)))
                                                     (mrotation (vec3 0.0 1.0 0.0) (random (/ pi 2)))
                                                     (mrotation (vec3 0.0 0.0 1.0) (random (/ pi 2)))
                                                     ))))
 
           (add-buffer obj (make-instance 'instance-buffer
-                                         :count inst-count
                                          :pointer (to-gl-array :float (* 16 inst-count) mats)
                                          :free t))
           (add-buffer obj (make-instance 'instance-buffer
-                                         :count inst-count
                                          :pointer (to-gl-array :float (* 4 inst-count) colors)
                                          :attributes '(("in_color" . :vec4))
                                          :free t))

@@ -6,7 +6,6 @@
 
 (defclass buffer ()
   ((bo :initform 0 :initarg :bo)
-   (count :initarg :count)
    (pointer :initarg :pointer :accessor pointer)
    (target :initform :array-buffer :initarg :target :accessor target)
    (usage :initform :static-draw :initarg :usage :accessor usage)
@@ -23,6 +22,7 @@
 
 (defclass index-buffer (buffer)
   ((target :initform :element-array-buffer)
+   (idx-count :initform 0 :initarg :idx-count :accessor idx-count)
    (stride :initform 1)))
 
 (defclass uniform-buffer (buffer)

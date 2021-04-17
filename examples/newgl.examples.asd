@@ -28,12 +28,9 @@
   :serial t
   :depends-on ( :newgl )
   :components
-  ((:module "examples"
-            :components
-            ((:file "package")
-             (:file "fractals")
-             (:file "keyframe-axis-rotation")
-             (:file "blend2d-sombrero")
-             (:file "keyframe-axis-border")
-             (:file "regular-polygons"))
-            )))
+  ((:file "package")
+    (:file "keyframe-axis-rotation")
+    (:file "blend2d-sombrero")
+    (:file "keyframe-axis-border")
+    (:file "regular-polygons"))
+   )
