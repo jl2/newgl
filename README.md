@@ -9,6 +9,6 @@ For more information, see [project.org](https://github.com/jl2/newgl/project.org
 
 ISC
 
-Copyright (c) 2020 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
+Copyright (c) 2021 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 
