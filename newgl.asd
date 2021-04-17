@@ -1,6 +1,6 @@
 ;; newgl.asd
 ;;
-;; Copyright (c) 2020 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
+;; Copyright (c) 2021 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 
 ;; Permission to use, copy, modify, and/or distribute this software for any
@@ -49,6 +49,8 @@
                (:file "opengl-object")
                (:file "quad")
                (:file "parametric-surfaces")
+               (:file "psurf")
+               (:file "tess-test")
                (:file "blend2d-texture")
                (:file "keyframe-sequence")
                (:file "keyframe-viewer")

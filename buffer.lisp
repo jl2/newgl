@@ -1,18 +1,19 @@
 ;; buffer.lisp
 ;;
-;; Copyright (c) 2020 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
+;; Copyright (c) 2021 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 (in-package #:newgl)
 
 (defclass buffer ()
   ((bo :initform 0 :initarg :bo)
    (count :initarg :count)
-   (pointer :initarg :pointer)
-   (target :initform :array-buffer :initarg :target)
-   (usage :initform :static-draw :initarg :usage)
+   (pointer :initarg :pointer :accessor pointer)
+   (target :initform :array-buffer :initarg :target :accessor target)
+   (usage :initform :static-draw :initarg :usage :accessor usage)
    (stride :initform nil :initarg :stride)
-   (free :initform nil :initarg :free)
-   (needs-refill :initform t)))
+   (free :initform t :initarg :free)
+   (needs-rebind :initform t :initarg :needs-rebind :accessor needs-rebind)
+   (needs-realloc :initform t :initarg :needs-realloc :accessor needs-realloc)))
 
 (defclass attribute-buffer (buffer)
   ((stride :initform nil)
@@ -171,6 +172,7 @@
 (defun gl-iset (array idx value)
   (declare (optimize (speed 3))
            (type fixnum idx)
+           (type fixnum value)
            (type gl:gl-array array))
   (setf (gl:glaref array idx) value))
 
@@ -178,6 +180,13 @@
   (declare (optimize (speed 3))
            (type fixnum idx)
            (type single-float value)
+           (type gl:gl-array array))
+  (setf (gl:glaref array idx) value))
+
+(defun gl-dset (array idx value)
+  (declare (optimize (speed 3))
+           (type fixnum idx)
+           (type double-float value)
            (type gl:gl-array array))
   (setf (gl:glaref array idx) value))
 
@@ -195,7 +204,7 @@
     gl-array))
 
 (defgeneric fill-buffer (data ptr offset))
-(defmethod fill-buffer ((data vec3) ptr offset)
+(defmethod fill-buffer ((data vec2) ptr offset)
   (gl-fset ptr (+ 0 offset) (vx data))
   (gl-fset ptr (+ 1 offset) (vy data))
   (+ 2 offset))

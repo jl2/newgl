@@ -1,6 +1,6 @@
 ;; opengl-object.lisp
 ;;
-;; Copyright (c) 2020 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
+;; Copyright (c) 2021 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 (in-package #:newgl)
 
@@ -28,7 +28,7 @@
              :initarg :uniforms)
 
    (primitive-type :initform :triangles)
-
+   (instance-data :initform nil :initarg :instance-data)
    (idx-count :initform 0)
    (instance-count :initform 1 :initarg :instance-count))
   (:documentation "Base class for all objects that can be rendered in a scene."))
@@ -86,7 +86,8 @@
                           :delete-status :compile-status :info-log-length :shader-source-length))
           (format t "~a~a : ~a~%" plus-plus-ws attrib (gl:get-shader shader attrib))))))
     (dolist (buffer (buffers object))
-      (show-info (cdr buffer) :indent (1+ indent)))
+      (format t "~a~a~%" this-ws (usage buffer))
+      (show-info buffer :indent (1+ indent)))
     (dolist (uniform (uniforms object))
       (show-info (cdr uniform) :indent (1+ indent)))))
 
@@ -195,14 +196,15 @@
                :count (* 3 7)
                :pointer (to-gl-array
                          :float
-                         `#(-0.5f0 -0.5f0 0.0f0
-                            0.0f0 1.0f0 0.0f0 1.0f0
+                         21
+                         (list -0.5f0 -0.5f0 0.0f0
+                               0.0f0 1.0f0 0.0f0 1.0f0
 
-                            0.5f0 -0.5f0 0.0f0
-                            0.0f0 1.0f0  0.0f0 1.0f0
+                               0.5f0 -0.5f0 0.0f0
+                               0.0f0 1.0f0  0.0f0 1.0f0
 
-                            0.0f0 ,(- (sqrt (- 1 (* 0.5 0.5))) 0.5)  0.0f0
-                            0.0f0 1.0f0 0.0f0 1.0f0))
+                               0.0f0 (- (sqrt (- 1 (* 0.5 0.5))) 0.5)  0.0f0
+                               0.0f0 1.0f0 0.0f0 1.0f0))
                :stride nil
                :attributes '(("in_position" . :vec3) ("in_color" . :vec4))
                :usage :static-draw
@@ -211,7 +213,7 @@
               (make-instance
                'index-buffer
                :count 3
-               :pointer (to-gl-array :unsigned-int #(0 1 2))
+               :pointer (to-gl-array :unsigned-int 3 #(0 1 2))
                :stride nil
                :usage :static-draw
                :free nil)))
@@ -241,7 +243,7 @@
 
       (when buffers
         (dolist (buffer buffers)
-          (cleanup (cdr buffer))))
+          (cleanup buffer)))
       (setf buffers nil)
 
       (when shaders
@@ -262,7 +264,7 @@
         (error "Trying to bind an uninitialized opengl-object!")
         (gl:bind-vertex-array vao))
     (dolist (buffer buffers)
-      (bind (cdr buffer)))
+      (bind buffer))
     (dolist (texture textures)
       (bind texture))))
 
@@ -283,7 +285,7 @@
            (type buffer buffer))
   (with-slots (target count) buffer
     (with-slots (buffers idx-count program) object
-      (push (cons target buffer) buffers)
+      (push buffer buffers)
       (when (eq target :element-array-buffer)
         (setf idx-count (slot-value buffer 'count)))
       (bind buffer)

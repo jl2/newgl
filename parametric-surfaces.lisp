@@ -1,6 +1,6 @@
 ;; parametric-surfaces.lisp
 ;;
-;; Copyright (c) 2020 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
+;; Copyright (c) 2021 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 (in-package #:newgl)
 
@@ -124,8 +124,7 @@
 
                           (emit pt1 n1 st1)
                           (emit pt2 n2 st2)
-                          (emit pt3 n3 st3)
-                          ))))
+                          (emit pt3 n3 st3)))))
     (add-buffer obj (make-instance 'attribute-buffer
                                    :count (* 2 3 u-steps v-steps stride)
                                    :pointer vertices
@@ -156,21 +155,17 @@
                                                     (mrotation (vec3 0.0 0.0 1.0) (random (/ pi 2)))
                                                     ))))
 
-        (add-buffer obj (make-instance 'instance-buffer
-                                       :count inst-count
-                                       :pointer (to-gl-array :float (* 16 inst-count) mats)
-                                       :stride nil
-                                       :usage :static-draw
-                                       :free t))
-        (add-buffer obj (make-instance 'instance-buffer
-                                       :count inst-count
-                                       :pointer (to-gl-array :float (* 4 inst-count) colors)
-                                       :stride nil
-                                       :attributes '(("in_color" . :vec4))
-                                       :usage :static-draw
-                                       :free t))
-        (setf instance-count inst-count))
-    )))
+          (add-buffer obj (make-instance 'instance-buffer
+                                         :count inst-count
+                                         :pointer (to-gl-array :float (* 16 inst-count) mats)
+                                         :free t))
+          (add-buffer obj (make-instance 'instance-buffer
+                                         :count inst-count
+                                         :pointer (to-gl-array :float (* 4 inst-count) colors)
+                                         :attributes '(("in_color" . :vec4))
+                                         :free t))
+          (setf instance-count inst-count))
+        )))
 
 (defclass sphere (parametric-surface)
   ((radius :initform 1.0f0 :initarg :radius)
@@ -258,3 +253,16 @@
       (vec3 (* R+rcosθ (cos φ))
             (* R+rcosθ (sin φ))
             (* inner-radius (sin θ))))))
+
+
+(defun make-parametric-with-instance-data (type instance-count colors matrices &rest params
+                                           &key
+                                             u-min
+                                             u-max
+                                             v-min
+                                             v-max
+                                             u-steps
+                                             v-steps
+                                           &allow-other-keys)
+  (declare (ignorable u-min u-max v-min v-max u-steps v-steps))
+  (apply #'make-instance type :instance-count instance-count :params))
