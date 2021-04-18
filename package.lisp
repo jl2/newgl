@@ -1,4 +1,4 @@
-;; package.lisp
+3;; package.lisp
 ;;
 ;; Copyright (c) 2021 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
@@ -54,7 +54,9 @@
            #:initialize-textures
            #:initialize-uniforms
            #:pointer
-           #:add-buffer
+           #:use-buffer
+           #:use-uniform
+           #:use-texture
            #:to-gl-array
            #:reload
            #:cleanup
@@ -92,4 +94,13 @@
            #:sombrero
            #:parametric-surface
            #:make-parametric-with-instance-data
+
+           #:cartesian-2-spherical
+           #:spherical-2-cartesian
+           #:cartesian-2-polar
+           #:polar-2-cartesian
+           #:cartesian-2-cylindrical
+           #:cylindrical-2-cartesian
+           #:spherical-2-cylindrical
+           #:cylindrical-2-spherical
            ))

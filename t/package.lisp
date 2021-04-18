@@ -132,3 +132,57 @@
 (test byte-size
   (is (= 128 (newgl::glsl-byte-size :dmat4))))
 
+(def-suite :newgl-coord-conv)
+(in-suite :newgl-coord-conv)
+
+(test 2d-coord-conversions
+  (let  ((v2s (list (vec2 0.0 0.0)
+                    (vec2 1.0 1.0)
+                    (vec2 2.0 2.0)
+                    (vec2 1.0 0.0)
+                    (vec2 0.0 1.0)
+                    (vec2 10.0 2.0))))
+    (loop for vect in v2s do
+      (is (near vect
+                (polar-2-cartesian
+                 (cartesian-2-polar vect)))))))
+
+(test 3d-spherical-conversions
+  (let ((v3s (list (vec3 0.0 0.0 0.0)
+                   (vec3 1.0 1.0 1.0)
+                   (vec3 2.0 2.0 2.0)
+                   (vec3 1.0 0.0 0.0)
+                   (vec3 0.0 1.0 0.0)
+                   (vec3 0.0 0.0 1.0)
+                   (vec3 10.0 2.0 1.0))))
+    (loop for vect in v3s do
+      (is (near vect
+                (spherical-2-cartesian
+                 (cartesian-2-spherical vect)))))))
+
+(test 3d-cylindrical-conversions
+  (let ((v3s (list (vec3 0.0 0.0 0.0)
+                   (vec3 1.0 1.0 1.0)
+                   (vec3 2.0 2.0 2.0)
+                   (vec3 1.0 0.0 0.0)
+                   (vec3 0.0 1.0 0.0)
+                   (vec3 0.0 0.0 1.0)
+                   (vec3 10.0 2.0 1.0))))
+    (loop for vect in v3s do
+      (is (near vect
+                (cylindrical-2-cartesian
+                 (cartesian-2-cylindrical vect)))))))
+
+(test 3d-coord-conversions
+  (let ((v3s (list (vec3 0.0 0.0 0.0)
+                   (vec3 1.0 1.0 1.0)
+                   (vec3 2.0 2.0 2.0)
+                   (vec3 1.0 0.0 0.0)
+                   (vec3 0.0 1.0 0.0)
+                   (vec3 0.0 0.0 1.0)
+                   (vec3 10.0 2.0 1.0))))
+    (loop for vect in v3s do
+      (is (near vect
+                (cylindrical-2-cartesian
+                 (spherical-2-cylindrical
+                  (cartesian-2-spherical vect))))))))

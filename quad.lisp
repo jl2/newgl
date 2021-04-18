@@ -17,7 +17,7 @@
   (when (buffers object)
     (error "Initializing an object that's already initialized! Cleanup first! ~a" object))
   (with-slots (s-min s-max t-min t-max) object
-    (add-buffer object
+    (use-buffer object
               (make-instance
                'attribute-buffer
                :pointer (to-gl-array
@@ -38,7 +38,7 @@
                :attributes '(("in_position" . :vec3) ("in_uv" . :vec2))
                :usage :static-draw
                :free nil)))
-  (add-buffer object
+  (use-buffer object
               (make-instance
                'index-buffer
                :idx-count 6

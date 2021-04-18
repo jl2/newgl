@@ -55,5 +55,6 @@
                (:file "keyframe-sequence")
                (:file "keyframe-viewer")
                (:file "info-viewer")
+               (:file "coord-conv")
                )
   :in-order-to ((test-op (test-op newgl.test))))

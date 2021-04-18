@@ -126,7 +126,7 @@
                           (emit pt1 n1 st1)
                           (emit pt2 n2 st2)
                           (emit pt3 n3 st3)))))
-    (add-buffer obj (make-instance 'attribute-buffer
+    (use-buffer obj :vertices (make-instance 'attribute-buffer
                                     :pointer vertices
                                    :stride nil
                                    :attributes (concatenate 'list
@@ -138,27 +138,29 @@
                                                               '(("in_uv" . :vec2))))
                                    :usage :static-draw
                                    :free t))
-    (add-buffer obj (make-instance 'index-buffer
+    (use-buffer obj :indices (make-instance 'index-buffer
                                    :idx-count (*  2 3 u-steps v-steps)
                                    :pointer indices
                                    :stride nil
                                    :usage :static-draw
                                    :free t))
 
-      (let* ((inst-count 20)
+      (let* ((inst-count 2000)
              (colors (loop for i below inst-count collecting (vec4-random 0.25 1.0)))
              (mats (loop for i below inst-count collecting
-                                                (m* (mtranslation (vec3-random -2.0 2.0))
-                                                    (mscaling (vec3 0.25 0.25 0.25))
+                                                (m* 
+                                                    (mtranslation (spherical-2-cartesian (vec3 (- (random 4.0f0) 2 )
+                                                                                               (random (* 2 pi)) (random pi))))
                                                     (mrotation (vec3 1.0 0.0 0.0) (random (/ pi 2)))
                                                     (mrotation (vec3 0.0 1.0 0.0) (random (/ pi 2)))
                                                     (mrotation (vec3 0.0 0.0 1.0) (random (/ pi 2)))
+                                                    (mscaling (vec3 0.0125 0.0125 0.0125))
                                                     ))))
 
-          (add-buffer obj (make-instance 'instance-buffer
+          (use-buffer obj :transforms (make-instance 'instance-buffer
                                          :pointer (to-gl-array :float (* 16 inst-count) mats)
                                          :free t))
-          (add-buffer obj (make-instance 'instance-buffer
+          (use-buffer obj :colors (make-instance 'instance-buffer
                                          :pointer (to-gl-array :float (* 4 inst-count) colors)
                                          :attributes '(("in_color" . :vec4))
                                          :free t))
@@ -253,14 +255,14 @@
             (* inner-radius (sin θ))))))
 
 
-(defun make-parametric-with-instance-data (type instance-count colors matrices &rest params
-                                           &key
-                                             u-min
-                                             u-max
-                                             v-min
-                                             v-max
-                                             u-steps
-                                             v-steps
-                                           &allow-other-keys)
-  (declare (ignorable u-min u-max v-min v-max u-steps v-steps))
-  (apply #'make-instance type :instance-count instance-count :params))
+;; (defun make-parametric-with-instance-data (type instance-count colors matrices &rest params
+;;                                            &key
+;;                                              u-min
+;;                                              u-max
+;;                                              v-min
+;;                                              v-max
+;;                                              u-steps
+;;                                              v-steps
+;;                                            &allow-other-keys)
+;;   (declare (ignorable u-min u-max v-min v-max u-steps v-steps))
+;;   (apply #'make-instance type :instance-count instance-count :params))

@@ -78,15 +78,15 @@
             :initarg :objects
             :type (or null cons)
             :accessor objects)
-   (view-xform :initform (meye 4)
+   (view-xform :initform (m* (mperspective 60.0 1.0 0.1 1000.0)
+                             (mlookat (spherical-2-cartesian (vec3 1.0 0.0 0.0))
+                                      (vec3 0 0 0)
+                                      +vy+))
                :initarg :xform
                :type mat4
                :accessor viewport)
 
-   (radius :initform 1.0 :initarg :radius)
-
-   (x-rot :initform 0.0 :initarg :x-rot)
-   (z-rot :initform 0.0 :initarg :z-rot)
+   (view-position :initform (vec3 1.0 0.0 0.0))
 
    (view-changed :initform t)
 
@@ -143,18 +143,20 @@
 
 #+spacenav
 (defmethod handle-3d-mouse-event ((viewer viewer) (event sn:motion-event))
-  (with-slots (aspect-ratio view-xform x-rot z-rot radius view-changed) viewer
-    (with-slots (sn:rx sn:rz sn:y) event
-      (let ((scale-factor (/ 1.0 500)))
-        (incf x-rot (* scale-factor sn:rx))
-        (incf z-rot (* scale-factor sn:rz))
-        (setf radius (min 1000.0 (max 1.0 (+ (* scale-factor sn:y) radius))))))
+  (with-slots (aspect-ratio view-xform view-position view-changed) viewer
+    (with-slots (sn:rz sn:ry sn:y) event
+      (let ((scale-factor (/ pi 5000))
+            (radius (vx view-position))
+            (theta (vy view-position))
+            (phi (vz view-position)))
+        (incf theta (* scale-factor sn:ry))
+        (incf phi (* scale-factor sn:rz))
+        (setf radius (min 1000.0 (max 1.0 (+ (* scale-factor sn:y) radius))))
+        (setf view-position (vec3 radius theta phi))))
     (setf view-changed t)
     (setf view-xform
           (m* (mperspective 60.0 aspect-ratio 0.1 1000.0)
-              (mlookat (vec3 (* radius (sin x-rot) (cos z-rot))
-                             (* radius (sin x-rot) (sin z-rot))
-                             (* radius (cos x-rot)))
+              (mlookat (spherical-2-cartesian view-position)
                        (vec3 0 0 0)
                        +vy+)))))
 
@@ -218,6 +220,20 @@
                             :cw))
        (format t "Front face: ~a~%" front-face)
        t))
+    ((and (eq key :f5) (eq action :press))
+     (with-slots (aspect-ratio view-xform view-position objects) viewer
+       (setf view-position (vec3 1.0 0.0 0.0))
+       (setf view-xform
+             (m* (mperspective 60.0 aspect-ratio 0.1 1000.0)
+                 (mlookat (spherical-2-cartesian view-position)
+                          (vec3 0 0 0)
+                          +vy+)))
+           (loop
+             for object in objects
+             do
+                (set-uniform object "view_transform" view-xform :mat4)))
+       t)
+
     (t
      (funcall #'some #'identity
               (loop for object in (objects viewer)
@@ -272,20 +288,19 @@
       do
          (render object))))
 
+(defgeneric display-in (object viewer)
+  (:documentation "Display object in a viewer."))
 
-(defmethod display ((object t))
+(defmethod display-in ((object t) (viewer viewer))
   "High level function to display an object or viewer."
 
-  (let ((viewer (make-instance 'viewer
-                               :objects (ensure-list object))))
-    (display viewer)))
-
-(defmethod display ((viewer viewer))
-  "GLFW Event Loop function that initializes GLFW and OpenGL, creates a window,
-   and runs an event loop."
+  ;; "GLFW Event Loop function that initializes GLFW and OpenGL, creates a window,
+  ;;  and runs an event loop."
   ;; (glfw:set-error-callback 'error-callback)
   (Init)
 
+  (with-slots (objects) viewer
+    (setf objects (ensure-list object)))
 
   (let* ((window (glfw:create-window :title "OpenGL Viewer"
                                      :width 1000
@@ -334,7 +349,7 @@
 
              ;; Load objects for the first time
              (initialize viewer)
-             #+spacenav(sn:sensitivity 0.75d0)
+             #+spacenav(sn:sensitivity 0.25d0)
              (loop
                with start-time = (glfw:get-time)
                for frame-count from 0

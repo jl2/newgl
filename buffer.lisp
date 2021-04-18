@@ -60,7 +60,7 @@
   (let ((this-ws (indent-whitespace indent))
         (next-ws (indent-whitespace (1+ indent))))
     (format t "~a~a~%" this-ws object)
-    (show-slots next-ws object '(bo count pointer target usage stride free))))
+    (show-slots next-ws object '(bo pointer target usage stride free))))
 
 (defmethod show-info ((object attribute-buffer) &key (indent 0))
   (call-next-method)

@@ -24,5 +24,5 @@ void main()
      gl_Position = pos4;
      position = vec3(pos4);
      diffuse_color = in_color;
-     normal = normalize(norm_view_transform * in_normal);
+     normal = normalize(norm_view_transform * position);
 }

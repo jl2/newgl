@@ -28,9 +28,6 @@
              :accessor uniforms
              :initarg :uniforms)
    (primitive-type :initform :triangles)
-   (idx-count :initform 0
-              :type fixnum
-              :accessor idx-count)
    (instance-count :initform 1
                    :initarg :instance-count))
   (:documentation "Base class for all objects that can be rendered in a scene."))
@@ -88,8 +85,8 @@
                           :delete-status :compile-status :info-log-length :shader-source-length))
           (format t "~a~a : ~a~%" plus-plus-ws attrib (gl:get-shader shader attrib))))))
     (dolist (buffer (buffers object))
-      (format t "~a~a~%" this-ws (usage buffer))
-      (show-info buffer :indent (1+ indent)))
+      (format t "~a~a~%" this-ws (car buffer))
+      (show-info (cdr buffer) :indent (1+ indent)))
     (dolist (uniform (uniforms object))
       (show-info (cdr uniform) :indent (1+ indent)))))
 
@@ -168,7 +165,7 @@
   (cleanup object))
 
 (defmethod initialize ((object opengl-object) &key)
-  (with-slots (vao buffers) object
+  (with-slots (vao) object
     (when (/= 0 vao)
       (error "initialize called on object where vao != 0 ~a" object))
 
@@ -183,7 +180,7 @@
 
 (defmethod initialize-shaders ((object opengl-object) &key)
   (when (null (shaders object))
-    (setf (shaders object) (newgl:point-shader)))
+    (setf (shaders object) (point-shader)))
   (build-shader-program object))
 
 (defmethod initialize-uniforms ((object opengl-object) &key)
@@ -192,7 +189,8 @@
 (defmethod initialize-buffers ((object opengl-object) &key)
   (when (buffers object)
     (error "Object buffers already setup!"))
-  (add-buffer object
+  (use-buffer object
+              :vertices
               (make-instance
                'attribute-buffer
                :pointer (to-gl-array
@@ -210,14 +208,30 @@
                :attributes '(("in_position" . :vec3) ("in_color" . :vec4))
                :usage :static-draw
                :free nil))
-  (add-buffer object
+  (use-buffer object
+              :indices
               (make-instance
                'index-buffer
                :idx-count 3
                :pointer (to-gl-array :unsigned-int 3 #(0 1 2))
                :stride nil
                :usage :static-draw
-               :free nil)))
+               :free nil))
+  (use-buffer object
+              :transform (make-instance
+                          'instance-buffer
+                          :pointer (to-gl-array :float 16 (meye 4))
+                          :stride nil
+                          :usage :static-draw
+                          :free t))
+  (use-buffer object
+              :transform (make-instance
+                          'instance-buffer
+                          :pointer (to-gl-array :float 4 (vec4 0.0 1.0 0.0 1.0))
+                          :stride nil
+                          :attributes '(("in_color" . :vec4))
+                          :usage :static-draw
+                          :free t)))
 
 
 (defmethod initialize-textures ((object opengl-object) &key)
@@ -245,7 +259,7 @@
 
       (when buffers
         (dolist (buffer buffers)
-          (cleanup buffer)))
+          (cleanup (cdr buffer))))
       (setf buffers nil)
 
       (when shaders
@@ -266,12 +280,12 @@
         (error "Trying to bind an uninitialized opengl-object!")
         (gl:bind-vertex-array vao))
     (dolist (buffer buffers)
-      (bind buffer))
+      (bind (cdr buffer)))
     (dolist (texture textures)
       (bind texture))))
 
 (defmethod render ((object opengl-object))
-  (with-slots (vao shaders program uniforms primitive-type idx-count instance-count) object
+  (with-slots (program buffers uniforms primitive-type instance-count) object
     (gl:use-program program)
     (bind object)
     (dolist (uniform uniforms)
@@ -280,25 +294,30 @@
       (gl:draw-elements-instanced  primitive-type
                                    (gl:make-null-gl-array :unsigned-int)
                                    instance-count
-                                   :count idx-count))))
+                                   :count (idx-count (assoc-value buffers :indices))))))
 
-(defun add-buffer (object buffer)
+(defun use-buffer (object buffer-name buffer)
   (declare (type opengl-object object)
            (type buffer buffer))
   (with-slots (target) buffer
     (with-slots (buffers idx-count program) object
-      (push buffer buffers)
-      (when (eq target :element-array-buffer)
-        (setf idx-count (idx-count buffer)))
+      (if-let  ((location (assoc buffer-name buffers)))
+        (progn
+          (cleanup (cdr location))
+          (rplacd location buffer))
+        (push (cons buffer-name buffer) buffers))
       (bind buffer)
       (associate-attributes buffer program))))
 
-(defun add-texture (object texture)
+(defun get-buffer (object buffer-name)
+  (assoc (buffers object) buffer-name))
+
+(defun use-texture (object texture)
   (declare (type opengl-object object)
            (type texture texture))
   (push texture (textures object)))
 
-(defun add-shader (object shader)
+(defun use-shader (object shader)
   (declare (type opengl-object object)
            (type gl-shader shader))
   (push shader (shaders object)))

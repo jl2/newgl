@@ -82,7 +82,7 @@
 (defmethod handle-scroll ((viewer info-viewer) window cpos x-scroll y-scroll)
   nil)
 
-(defmethod display ((viewer info-viewer))
+(defmethod display-in  ((object opengl-object) (viewer info-viewer))
   "GLFW Event Loop function that initializes GLFW and OpenGL, creates a window,
    and runs an event loop."
   (glfw:set-error-callback 'error-callback)

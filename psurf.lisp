@@ -64,14 +64,14 @@
                           (emit st1)
                           (emit st2)
                           (emit st3)))))
-    (add-buffer obj (make-instance 'attribute-buffer
+    (use-buffer obj (make-instance 'attribute-buffer
                                    :count (* 2 3 s-steps t-steps stride)
                                    :pointer vertices
                                    :stride nil
                                    :attributes '(("in_uv" . :vec2))
                                    :usage :static-draw
                                    :free t))
-    (add-buffer obj (make-instance 'index-buffer
+    (use-buffer obj (make-instance 'index-buffer
                                    :count (*  2 3 s-steps t-steps)
                                    :pointer indices
                                    :stride nil
@@ -85,17 +85,17 @@
              )
 
 
-        ;; (add-buffer obj (make-instance 'instance-buffer
+        ;; (use-buffer obj (make-instance 'instance-buffer
         ;;                                :count inst-count
         ;;                                :pointer (to-gl-array :float (* 2 inst-count) in-radi)
         ;;                                :attributes '(("in_radi" . :vec2))
         ;;                                :free t))
-        (add-buffer obj (make-instance 'instance-buffer
+        (use-buffer obj (make-instance 'instance-buffer
                                        :count inst-count
                                        :pointer (to-gl-array :float (* 16 inst-count) mats)
                                        :free t
                                        :attributes '(("obj_transform" . :mat4))))
-        (add-buffer obj (make-instance 'instance-buffer
+        (use-buffer obj (make-instance 'instance-buffer
                                        :count inst-count
                                        :pointer (to-gl-array :float (* 4 inst-count) colors)
                                        :attributes '(("in_color" . :vec4))

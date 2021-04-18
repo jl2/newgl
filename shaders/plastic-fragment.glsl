@@ -8,9 +8,9 @@ in vec4 diffuse_color;
 
 out vec4 out_color;
 
-const vec4 light_pos = vec4(0.0, 12.0, 12.0, 1.0);
+const vec4 light_pos = vec4(12.0, 12.0, 12.0, 1.0);
 const vec3 light_color = vec3(1.0, 1.0, 1.0);
-const float light_power = 40.0;
+const float light_power = 90.0;
 const vec3 ambient_color = vec3(0.00, 0.01, 0.000);
 const vec3 spec_color = vec3(1.0, 1.0, 1.0);
 const float shininess = 128.0;
@@ -30,7 +30,7 @@ void main() {
 
      if (lambertian > 0.0) {
 
-          vec3 view_dir = normalize(-position);
+          vec3 view_dir = normalize(position);
 
           // Blinn-Phong
           vec3 half_dir = normalize(light_dir - view_dir);

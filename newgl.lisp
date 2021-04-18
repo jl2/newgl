@@ -23,5 +23,5 @@
 (defun terminate ()
   (glfw:terminate))
 
-(defgeneric display (object)
-  (:documentation "Display an object."))
+(defun display (object &optional (viewer (make-instance 'viewer)))
+  (display-in object viewer))
