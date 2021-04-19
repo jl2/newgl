@@ -86,8 +86,9 @@
                :type mat4
                :accessor viewport)
 
-   (view-position :initform (vec3 1.0 0.0 0.0))
-
+   (camera-position :initform (vec4 0.0 0.0 1.0 1.0))
+   (camera-direction :initform (vec4 0.0 0.0 -1.0 0.0))
+   (camera-up :initform (vec4 0.0 1.0 0.0 0.0))
    (view-changed :initform t)
 
    (aspect-ratio :initform 1.0
@@ -143,22 +144,37 @@
 
 #+spacenav
 (defmethod handle-3d-mouse-event ((viewer viewer) (event sn:motion-event))
-  (with-slots (aspect-ratio view-xform view-position view-changed) viewer
-    (with-slots (sn:rz sn:ry sn:y) event
-      (let ((scale-factor (/ pi 5000))
-            (radius (vx view-position))
-            (theta (vy view-position))
-            (phi (vz view-position)))
-        (incf theta (* scale-factor sn:ry))
-        (incf phi (* scale-factor sn:rz))
-        (setf radius (min 1000.0 (max 1.0 (+ (* scale-factor sn:y) radius))))
-        (setf view-position (vec3 radius theta phi))))
-    (setf view-changed t)
-    (setf view-xform
-          (m* (mperspective 60.0 aspect-ratio 0.1 1000.0)
-              (mlookat (spherical-2-cartesian view-position)
-                       (vec3 0 0 0)
-                       +vy+)))))
+  (with-slots (aspect-ratio view-xform camera-position camera-up camera-direction view-changed) viewer
+    (with-slots (sn:x sn:y sn:z  sn:rx sn:ry sn:rz) event
+      (let* ((linear-scale (/ 1.0 500))
+             (radial-scale (/ pi 5000)))
+        ;; up/down -> translate along 'up'
+        ;; forward/back -> translate along 'direction'
+        ;; left/right -> translate orthogonal to camera-direction and +up+
+        ;; vcross
+        (setf camera-position (v+ camera-position
+                                  (vxyz_ (v* (* linear-scale sn:x) camera-direction))
+                                  (vxyz_ (v* (* linear-scale sn:y) camera-up))
+                                  (vxyz_ (v* (* linear-scale sn:z) (vunit (vc (vxyz camera-up) (vxyz camera-direction)))))))
+
+        ;; (let ((mrot (if (not (zerop sn:rz))
+        ;;                 (mrotation (vxyz camera-direction) (* radial-scale sn:rz))
+        ;;                 (meye 4))))
+
+        ;;   (when (not (zerop sn:rx))
+        ;;     (nm* mrot (mrotation (vc (vxyz camera-direction) (vxyz camera-up)) (* radial-scale sn:rx))))
+        ;;   (when (not (zerop sn:rz))
+        ;;     (nm* (mrotation (vxyz camera-up) (* radial-scale sn:rz))))
+        ;;   (setf camera-direction (m* mrot camera-direction))
+        ;;   (setf camera-up (m* mrot camera-up))
+        ;;   (format t "mrot ~a~% pos ~a~%dir ~a~%up ~a~%"
+        ;;         mrot camera-position camera-direction camera-up))
+        (setf view-changed t)
+        (setf view-xform
+              (m* (mperspective 60.0 aspect-ratio 0.1 1000.0)
+                  (mlookat (vxyz camera-position)
+                           (vxyz (v+ camera-position camera-direction))
+                           (vxyz camera-up))))))))
 
 (defmethod handle-key ((viewer viewer) window key scancode action mod-keys)
   (cond
