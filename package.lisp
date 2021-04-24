@@ -75,8 +75,11 @@
            #:index-buffer
 
            #:viewer
+           #:3d-mouse-nav-viewer
+           #:reset-view
            #:info-viewer
 
+           #:line-axis
            #:st-quad
            #:plastic
            #:painted-plastic
@@ -89,6 +92,9 @@
 
            #:sphere
            #:psurf
+           #:psurf-torus
+           #:psurf-sphere
+           #:psurf-quad
            #:torus
            #:quad
            #:sombrero

@@ -72,31 +72,19 @@
   (when-let (viewer (find-viewer window))
     (handle-resize viewer window width height)))
 
-(defun reset-view (viewer)
-  (with-slots (aspect-ratio camera-position camera-direction camera-up view-xform) viewer
-    (setf camera-position (vec4 0.0 0.0 1.0 1.0))
-    (setf camera-direction (vec4 0.0 0.0 -1.0 0.0))
-    (setf camera-up (vec4 0.0 1.0 0.0 0.0))
-    (setf view-xform (m* (mperspective 60.0 aspect-ratio 0.1 1000.0)
-                         (mlookat (vxyz camera-position)
-                                  (vxyz (v+ camera-position camera-direction))
-                                  (vxyz camera-up))))))
 (defclass viewer ()
   ((objects :initform nil
             :initarg :objects
             :type (or null cons)
             :accessor objects)
    (view-xform :initform (m* (mperspective 60.0 1.0 0.1 1000.0)
-                             (mlookat (spherical-2-cartesian (vec3 1.0 0.0 0.0))
+                             (mlookat (vec3 0.0 0.0 1.0)
                                       (vec3 0 0 0)
                                       +vy+))
                :initarg :xform
                :type mat4
                :accessor viewport)
 
-   (camera-position :initform (vec4 0.0 0.0 -1.0 1.0))
-   (camera-direction :initform (vec4 0.0 0.0 1.0 0.0))
-   (camera-up :initform (vec4 0.0 1.0 0.0 0.0))
    (view-changed :initform t)
 
    (aspect-ratio :initform 1.0
@@ -147,76 +135,14 @@
        (cleanup object)))
 
 (defgeneric update-view-xform (object elapsed-seconds)
-  (:documentation "Upate view-xform uniform if it has changed.")
-  )
-;; (defparameter *ronce* nil)
+  (:documentation "Upate view-xform uniform if it has changed."))
+
 #+spacenav
 (defmethod handle-3d-mouse-event ((viewer viewer) (event sn:motion-event))
-  (with-slots (aspect-ratio view-xform camera-position camera-up camera-direction view-changed) viewer
-    (with-slots (sn:x sn:y sn:z  sn:rx sn:ry sn:rz) event
-      (format t "~a ~a ~a    ~a ~a ~a~%" sn:x sn:y sn:z  sn:rx sn:ry sn:rz)
-      (let* ((linear-scale (/ 1.0 5000))
-             (radial-scale (/  1.0 1000.0))
-             (up-mat (meye 4))
-             (dir-mat (meye 4)))
+  (with-slots (objects) viewer
+    (dolist (object objects)
+      (handle-3d-mouse-event object event))))
 
-        (when (not (zerop sn:ry))
-          (format t "~a~%" (mrotation (vunit (vxyz camera-up))
-                                  (* 1.0 radial-scale sn:ry)))
-          (nm* dir-mat
-               (mtranslation (vxyz camera-position))
-               (mrotation (vunit (vxyz camera-up))
-                          (* 1.0 radial-scale sn:ry))
-               (mtranslation (v- (vxyz camera-position)))))
-        
-        ;; (when (and (null *ronce*) (not (zerop sn:rx)))
-        ;;   (setf *ronce* t)
-        ;;   (format t "rotating around direction: ~a~%" (mrotation (vxyz camera-direction)
-        ;;                          (* radial-scale sn:rx)))
-        ;;   (nm* up-mat (mrotation (vxyz camera-direction)
-        ;;                          (* radial-scale sn:rx))))
-        ;; (when (not (zerop sn:rz))
-        ;;   (let ((orth (vunit (vc (vxyz camera-direction)
-        ;;                          (vxyz camera-up)))))
-        ;;     (format t "Rotating ~a around ~a~%"
-        ;;             (* radial-scale sn:rz)
-        ;;             orth)
-
-        ;;     (nm* up-mat
-        ;;          (mrotation orth (* radial-scale sn:rz)))
-        ;;     (nm* dir-mat
-        ;;          (mrotation orth (* radial-scale sn:rz)))))
-
-        (setf camera-direction
-               (m*
-                dir-mat
-                camera-direction))
-        (setf camera-up
-               (m*
-                up-mat
-                camera-up))
-
-        (setf camera-position
-              (v+ camera-position
-                  (vxyz_ (v* (* linear-scale sn:z)
-                             camera-direction))
-                  (vxyz_ (v* (* linear-scale sn:y)
-                              camera-up))
-                  (vxyz_ (v* (* linear-scale sn:x)
-                             (vunit (vc (vxyz camera-direction)
-                                        (vxyz camera-up)))))))
-        (format t "~a ~a ~a~%" camera-position camera-direction camera-up)
-        ;; up/down -> translate along 'up'
-        ;; forward/back -> translate along 'direction'
-        ;; left/right -> translate orthogonal to camera-direction and +up+
-        ;; vcross
-        (setf view-changed t)
-        (setf view-xform
-              (m* (mperspective 60.0 aspect-ratio 0.1 1000.0)
-                  (mlookat (vxyz camera-position)
-                           (vxyz (v+ camera-position camera-direction))
-                           (vxyz camera-up)
-                           )))))))
 
 (defmethod handle-key ((viewer viewer) window key scancode action mod-keys)
   (cond
@@ -278,15 +204,6 @@
                             :cw))
        (format t "Front face: ~a~%" front-face)
        t))
-    ((and (eq key :f5) (eq action :press))
-     (reset-view viewer)
-     (with-slots (view-xform objects) viewer
-       (loop
-         for object in objects
-         do
-            (set-uniform object "view_transform" view-xform :mat4)))
-     t)
-
     (t
      (funcall #'some #'identity
               (loop for object in (objects viewer)
@@ -325,7 +242,7 @@
 (defmethod update ((viewer viewer) elapsed-seconds)
 
   (with-slots (objects view-xform view-changed) viewer
-    (let ((changed (if view-changed t
+    (let ((changed (or view-changed
                        (update-view-xform viewer elapsed-seconds))))
 
         (loop
@@ -337,7 +254,7 @@
       (setf view-changed nil)))
 
 (defmethod render ((viewer viewer))
-  (with-slots (objects view-xform) viewer
+  (with-slots (objects) viewer
     (loop
       for object in objects
       do
@@ -394,7 +311,7 @@
 
            ;; The event loop
            (with-slots (previous-seconds show-fps desired-fps
-                        cull-face front-face wire-frame view-xform background-color)
+                        cull-face front-face wire-frame background-color)
                viewer
 
              (gl:clear-color (vx background-color)
@@ -404,7 +321,7 @@
 
              ;; Load objects for the first time
              (initialize viewer)
-             #+spacenav(sn:sensitivity 0.5d0)
+             #+spacenav(sn:sensitivity 0.25d0)
              (loop
                with start-time = (glfw:get-time)
                for frame-count from 0
@@ -425,7 +342,7 @@
                     (glfw:swap-buffers window)
                     #+spacenav
                     (when-let (ev (sn:poll-event))
-                      #+spacenav(sn:remove-events :motion)
+                      (sn:remove-events :motion)
                       (handle-3d-mouse-event viewer ev)))
                do
                   ;; Update for next frame
@@ -453,13 +370,12 @@
                                       now)))
                     ;; (format t "Start: ~a now ~a sleep ~a~%" current-seconds Now rem-time)
                     (when (> rem-time 0)
-                      (sleep rem-time))
-                    ))
+                      (sleep rem-time))))))
 
-
-             ;; Cleanup before exit
-             (cleanup viewer)
-             (rm-viewer window)))
+      (progn
+        ;; Cleanup before exit
+        (cleanup viewer)
+        (rm-viewer window))
       #+spacenav(sn:sn-close)
       (glfw:destroy-window window))))
 

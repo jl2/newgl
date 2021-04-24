@@ -117,11 +117,11 @@
                        for attrib-idx = (+ entry-attrib i)
                        do
                           (gl:vertex-attrib-pointer attrib-idx
-                                                    4
+                                                    comp-count
                                                     comp-type
                                                     :false
                                                     stride
-                                                    (+ offset (* 4 4 i)))
+                                                    (+ offset (* comp-count 4 i)))
                           (gl:enable-vertex-attrib-array attrib-idx)
                        )))))
   t)

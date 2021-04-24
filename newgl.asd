@@ -42,6 +42,8 @@
                (:file "common")
                (:file "newgl")
                (:file "viewer")
+               (:file "3d-mouse-nav-viewer")
+               (:file "axis")
                (:file "uniforms")
                (:file "gl-shader")
                (:file "buffer")

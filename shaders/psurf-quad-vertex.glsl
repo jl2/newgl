@@ -21,6 +21,7 @@ void main()
      vec4 pos = final_transform * vec4(sv, tv, 0.0, 1.0);
      diffuse_color = in_color;
      position = pos.xyz;
+     gl_Position = pos;
      normal = pos.xyz; // normalize(norm_view_transform * -pos.xyz);
      uv = in_uv;
 }

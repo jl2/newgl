@@ -106,6 +106,10 @@
   (declare (ignorable object window cpos x-scroll y-scroll))
   nil)
 
+(defmethod handle-3d-mouse-event ((object opengl-object) (event sn:motion-event))
+  (declare (ignorable object event))
+  nil)
+
 (defmethod update ((object opengl-object) elapsed-seconds )
   (declare (ignorable object elapsed-seconds))
   nil)
@@ -288,8 +292,10 @@
   (with-slots (program buffers uniforms primitive-type instance-count) object
     (gl:use-program program)
     (bind object)
+
     (dolist (uniform uniforms)
       (use-uniform (cdr uniform) program))
+
     (when (> instance-count 0)
       (gl:draw-elements-instanced  primitive-type
                                    (gl:make-null-gl-array :unsigned-int)
@@ -301,11 +307,14 @@
            (type buffer buffer))
   (with-slots (target) buffer
     (with-slots (buffers idx-count program) object
+
       (if-let  ((location (assoc buffer-name buffers)))
         (progn
           (cleanup (cdr location))
           (rplacd location buffer))
+
         (push (cons buffer-name buffer) buffers))
+
       (bind buffer)
       (associate-attributes buffer program))))
 
