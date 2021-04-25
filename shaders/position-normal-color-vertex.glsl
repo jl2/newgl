@@ -17,12 +17,12 @@ void main()
      // https://www.mathematik.uni-marburg.de/~thormae/lectures/graphics1/code/WebGLShaderLightMat/ShaderLightMat.html
 
      mat4 final_transform = view_transform * obj_transform;
-     mat3 norm_view_transform = transpose(inverse(mat3(final_transform)));
+     mat3 norm_view_transform = mat3(transpose(inverse(final_transform)));
 
      vec4 pos4 = final_transform * vec4(in_position, 1.0);
 
      gl_Position = pos4;
      position = vec3(pos4);
      diffuse_color = in_color;
-     normal = normalize(norm_view_transform * position);
+     normal = normalize(norm_view_transform * in_normal);
 }

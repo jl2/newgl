@@ -190,7 +190,7 @@
 
 (defmethod df_u_v ((surface sphere) uv vv &key (du 0.1) (dv 0.1))
   (declare (ignorable du dv))
-  (nvunit (f_u_v surface uv vv)))
+  (vunit (v- (f_u_v surface uv vv))))
 
 (defclass sombrero (parametric-surface)
   ((height :initform 1.0 :initarg :height)

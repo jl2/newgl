@@ -51,6 +51,7 @@
                (:file "opengl-object")
                (:file "quad")
                (:file "parametric-surfaces")
+               (:file "stl")
                (:file "psurf")
                (:file "tess-test")
                (:file "blend2d-texture")

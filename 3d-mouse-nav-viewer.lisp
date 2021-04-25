@@ -49,11 +49,13 @@
 (defmethod handle-3d-mouse-event ((viewer 3d-mouse-nav-viewer) (event sn:motion-event))
   (with-slots (aspect-ratio view-xform camera-position camera-up camera-forward camera-right view-changed) viewer
     (with-slots (sn:x sn:y sn:z  sn:rx sn:ry sn:rz) event
-      (format t "~a ~a ~a    ~a ~a ~a~%" sn:x sn:y sn:z  sn:rx sn:ry sn:rz)
-      (setf ;; sn:rx 0
-            sn:rz 0)
-      (let* ((linear-scale (/ 1.0 5000))
-             (radial-scale (/  1.0 1000.0))
+      ;;(format t "~a ~a ~a    ~a ~a ~a~%" sn:x sn:y sn:z  sn:rx sn:ry sn:rz)
+      (setf
+       sn:rx 0
+       sn:rz 0
+       )
+      (let* ((linear-scale (/ 1.0 500))
+             (radial-scale (/  1.0 (* (min 10.0 (vlength camera-position)) 250.0)))
              (xang (* 1.0 radial-scale sn:rx))
              (yang (* 1.0 radial-scale sn:ry))
              (zang (* 1.0 radial-scale sn:rz))
@@ -97,7 +99,7 @@
                   (v* (* linear-scale sn:z) camera-forward)
                   (v* (* 1.0 linear-scale sn:y) camera-up)
                   (v* (* -1.0 linear-scale sn:x) camera-right)))
-        (format t "pos ~a~%for ~a~%up ~a~%right ~a~%" camera-position camera-forward camera-up camera-right)
+        ;;(format t "pos ~a~%for ~a~%up ~a~%right ~a~%" camera-position camera-forward camera-up camera-right)
         ;; up/down -> translate along 'up'
         ;; forward/back -> translate along 'direction'
         ;; left/right -> translate orthogonal to camera-forward and +up+

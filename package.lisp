@@ -109,4 +109,7 @@
            #:cylindrical-2-cartesian
            #:spherical-2-cylindrical
            #:cylindrical-2-spherical
+           #:stl
+           #:rotating-stl-viewer
+           #:get-stl-info
            ))

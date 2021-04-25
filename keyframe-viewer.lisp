@@ -7,16 +7,16 @@
 (defparameter *radius* 8.0)
 
 (defclass keyframe-viewer (viewer)
-  ((eye-pos :initarg :eye-pos)
+  (
    (look-at :initarg :look-at :initform (vec3 0.0 0.0 0.0))
    (up-vector :initarg :up-vector :initform +vy+)))
 
 (defmethod update-view-xform ((viewer keyframe-viewer) elapsed-seconds)
   (call-next-method)
-  (with-slots (view-xform eye-pos aspect-ratio) viewer
+  (with-slots (view-xform camera-position aspect-ratio) viewer
     (setf view-xform
           (m* (mperspective 30.0 aspect-ratio 1.0 10000.0)
-              (mlookat (value-at eye-pos elapsed-seconds) (vec3 0 0 0) +vy+))))
+              (mlookat (value-at camera-position elapsed-seconds) (vec3 0 0 0) +vy+))))
   t)
 
 (defun rotating-display (objects &key
@@ -27,7 +27,7 @@
   (display-in
    objects
    (make-instance 'keyframe-viewer
-                  :eye-pos (create-keyframe-sequence
+                  :camera-position (create-keyframe-sequence
                             (loop
                               with theta-diff = (/ (* 2 pi) segments)
                               for i below (1+ segments)
@@ -46,7 +46,7 @@
                                  (segments 180)
                                  (dt (/ 0.125 16)))
   (make-instance 'keyframe-viewer
-                 :eye-pos (create-keyframe-sequence
+                 :camera-position (create-keyframe-sequence
                            (loop
                              with theta-diff = (/ (* 2 pi) segments)
                              for i below (1+ segments)

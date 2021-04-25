@@ -84,6 +84,8 @@
                :initarg :xform
                :type mat4
                :accessor viewport)
+   (camera-position :initarg :camera-position
+                    :accessor camera-position)
 
    (view-changed :initform t)
 
@@ -241,16 +243,16 @@
 
 (defmethod update ((viewer viewer) elapsed-seconds)
 
-  (with-slots (objects view-xform view-changed) viewer
+  (with-slots (objects view-xform view-changed camera-position) viewer
     (let ((changed (or view-changed
                        (update-view-xform viewer elapsed-seconds))))
-
+      (when changed
         (loop
           for object in objects
           do
-             (when changed
-               (set-uniform object "view_transform" view-xform :mat4))
-             (update object elapsed-seconds)))
+               (set-uniform object "camera_position" (value-at camera-position elapsed-seconds) :vec3)
+               (set-uniform object "view_transform" (value-at view-xform elapsed-seconds) :mat4)
+               (update object elapsed-seconds))))
       (setf view-changed nil)))
 
 (defmethod render ((viewer viewer))
