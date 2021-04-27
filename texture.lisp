@@ -45,4 +45,3 @@
       (gl:bind-texture tex-type 0)
       (gl:delete-textures textures)
       (setf textures nil))))
-

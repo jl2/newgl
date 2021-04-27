@@ -67,11 +67,6 @@
   (let ((next-ws (indent-whitespace (1+ indent))))
     (show-slots next-ws object '(attributes))))
 
-(defmethod show-info ((object attribute-buffer) &key (indent 0))
-  (call-next-method)
-  (let ((next-ws (indent-whitespace (1+ indent))))
-    (show-slots next-ws object '(attributes))))
-
 (defmethod cleanup ((buffer buffer))
   (with-slots (bo target free pointer) buffer
     (gl:bind-buffer target 0)

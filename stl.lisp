@@ -111,12 +111,11 @@
           (setf vertices (allocate-gl-array :float (* tri-count (* 3 6))))
           (setf indices (allocate-gl-array :unsigned-int (* tri-count 2 3)))
           (loop for idx below tri-count
-                for offset = 0 then (* idx *triangle-byte-size*)
                 for last-idx = (read-sequence buffer inf)
                 while (= last-idx  *triangle-byte-size*)
                 do
                    (multiple-value-bind
-                         (norm p1 p2 p3 attrib) (read-triangle buffer 0)
+                         (norm p1 p2 p3) (read-triangle buffer 0)
 
                      (when (v- (vec3 0 0 0) norm)
                        (setf norm (vunit (vc (v- p1 p2) (v- p1 p3) ))))

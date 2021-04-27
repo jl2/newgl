@@ -36,7 +36,8 @@
 (defmethod initialize ((viewer info-viewer) &key)
   (dolist (object (objects viewer))
     (initialize object)
-    (set-uniform object "view_transform" view-xform :mat4)))
+    (with-slots (view-xform) object
+      (set-uniform object "view_transform" view-xform :mat4))))
 
 (defun show-gl-state ()
   "Print debug information about the OpenGL state."
@@ -70,16 +71,20 @@
         (format t "~a : ~a~%" field (gl:get-integer field))))
 
 (defmethod handle-key ((viewer info-viewer) window key scancode action mod-keys)
+  (declare (ignorable viewer window key scancode action mod-keys))
   nil)
 
 
 (defmethod handle-resize ((viewer info-viewer) window width height)
+  (declare (ignorable viewer window width height))
   nil)
 
 (defmethod handle-click ((viewer info-viewer) window click-info)
+  (declare (ignorable viewer window click-info))
   nil)
 
 (defmethod handle-scroll ((viewer info-viewer) window cpos x-scroll y-scroll)
+  (declare (ignorable viewer window cpos x-scroll y-scroll))
   nil)
 
 (defmethod display-in  ((object opengl-object) (viewer info-viewer))

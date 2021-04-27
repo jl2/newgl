@@ -18,6 +18,7 @@
     (error "Initializing an object that's already initialized! Cleanup first! ~a" object))
   (with-slots (s-min s-max t-min t-max) object
     (use-buffer object
+                :vertices
               (make-instance
                'attribute-buffer
                :pointer (to-gl-array
@@ -39,13 +40,21 @@
                :usage :static-draw
                :free nil)))
   (use-buffer object
+              :indices
               (make-instance
                'index-buffer
                :idx-count 6
                :pointer (to-gl-array :unsigned-int 6 #(0 1 2 1 3 2))
                :stride nil
                :usage :static-draw
-               :free nil)))
+               :free nil))
+  (use-buffer object :transforms (make-instance 'instance-buffer
+                                                   :pointer (to-gl-array :float 16 (list (meye 4)))
+                                                   :free t))
+  (use-buffer object :color (make-instance 'instance-buffer
+                                                   :pointer (to-gl-array :float 4 (vec4 0.1 1.0 0.1 1.0))
+                                                   :free t
+                                                   :attributes '(("in_color" . :vec4)))))
 
 (defun make-st-quad (&key
                        (s-min -1.0)

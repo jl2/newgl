@@ -34,6 +34,7 @@
   (:documentation "A viewer with 3d mouse camera navigation."))
 
 (defmethod handle-key ((viewer 3d-mouse-nav-viewer) window key scancode action mod-keys)
+  (declare (ignorable window scancode mod-keys))
   (cond
     ((and (eq key :f5) (eq action :press))
      (reset-view viewer)
@@ -42,7 +43,9 @@
      t))
     (t
      (call-next-method))))
+
 (defun big-enough (val &optional (tol 0.0001))
+
   (> (abs val) tol))
 
 #+spacenav

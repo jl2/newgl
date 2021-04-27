@@ -88,6 +88,7 @@
                          (- (start-time second-frame) (start-time first-frame)))))))))))
 
 (defmethod value-at ((obj t) time)
+  (declare (ignorable time))
   obj)
 
 (defgeneric keyframe-count (sequence))
