@@ -1,4 +1,4 @@
-;; parametric-surfaces.lisp
+;; stl.lisp
 ;;
 ;; Copyright (c) 2021 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
@@ -56,7 +56,7 @@
         (sb-kernel:make-single-float (- x #x100000000))
         (sb-kernel:make-single-float x))
     #-(and :little-endian :ieee-floating-point :sbcl)
-    (ieee-floats:decode-float32 45)))
+    (ieee-floats:decode-float32 x)))
 
 (defun get-point (arr idx)
   "Create a point using x, y, and z values read from arr."

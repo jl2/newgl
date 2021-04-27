@@ -34,7 +34,7 @@
                #:cl-ppcre
 
                #:blend2d
-
+               #-(and :little-endian :ieee-floating-point :sbcl)#:ieee-floats
                #:bordeaux-threads
                #:trivial-main-thread)
 
