@@ -1,62 +1,21 @@
 * newgl
 
-** Buffer Refactor
-shader-program will be primary class instead of geometry.
-Each layout entry has its own buffer of data.
-shader-program has (set-data layout-name gl-array-of-values)
-layout will have buffers
-
-(make-instance 'shader-program
-
-
 ** About
-A CLOS wrapper around basic GLFW and OpenGL functionality.
+  This is a framework for experimenting with OpenGL.  It's a continual work in progress, and at any given time any given feature may or may not work...
 
-This library allows creating OpenGL objects by subclassing opengl-object or geometry and creating a viewer.
+  The basic idea is to create newgl:opengl-objects and display them in newgl:viewers.
 
-To draw using OpenGL, subclass opengl-object or geometry and implement the apropriate methods.
+  #+BEGIN_SRC lisp
+    (ql:quickload :newgl)
+    (defparameter *sphere* (make-instance 'newgl:sphere))
+    (defparameter *viewer* (newgl:create-rotating-viewer))
+    (newgl:display *sphere* *viewer*)
+  #+END_SRC
 
-** Opening the Viewer
-To open an empty viewer, run:
+  #+RESULTS:
+  : NIL
 
-#+BEGIN_SRC lisp
-(ql:quickload :newgl)
-(newgl:display)
-#+END_SRC
-
-#+RESULTS:
-: #<SIMPLE-TASKS:CALL-TASK :FUNC #<CLOSURE (LAMBDA () :IN NEWGL:VIEWER) {1005D9117B}> :STATUS :SCHEDULED {1005D911E3}>
-
-** Examples
-For an example object, see the [[https://github.com/jl2/gl-fractals][gl-fractals]] repository.
-#+BEGIN_SRC lisp
-(ql:quickload :newgl)
-
-(newgl:display (make-instance 'newgl:tri-mesh :indices #(0 1 2) :vertices
-                                      #(0.0f0 0.0f0 0.0f0
-                                        0.0f0 1.0f0 0.0f0
-                                        1.0f0 0.0f0 0.0f0 1.0f0
-                                        0.5f0 0.0f0 0.0f0
-                                        0.0f0 1.0f0 0.0f0
-                                        1.0f0 0.0f0 0.0f0 1.0f0
-                                        0.5f0 0.5f0 0.0f0
-                                        0.0f0 1.0f0 0.0f0
-                                        1.0f0 0.0f0 0.0f0 1.0f0)))
-#+END_SRC
-
-#+RESULTS:
-: #<SIMPLE-TASKS:CALL-TASK :FUNC #<CLOSURE (LAMBDA () :IN NEWGL:VIEWER) {101CE0F41B}> :STATUS :SCHEDULED {101CE0F483}>
-
-#+BEGIN_SRC lisp
-(ql:quickload :stl)
-(ql:quickload :newgl)
-
-(newgl:view-stl "~/cube.stl")
-
-#+END_SRC
-
-#+RESULTS:
-: #<SIMPLE-TASKS:CALL-TASK :FUNC #<CLOSURE (LAMBDA () :IN NEWGL:VIEWER) {1014C9174B}> :STATUS :SCHEDULED {1014C917B3}>
+  ** E
 
 ** License
 ISC
@@ -68,7 +27,6 @@ Copyright (c) 2021 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 * TODOs
 ** TODO Wavefront OBJ load and render
 ** TODO Collada load and render
-** TODO Parametric surfaces?
 
 
 * DONEs

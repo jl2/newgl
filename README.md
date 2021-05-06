@@ -1,9 +1,9 @@
 # newgl
 ### _Jeremiah LaRocco <jeremiah_larocco@fastmail.com>_
 
-A CLOS wrapper around basic GLFW and OpenGL functionality.
+A library for playing with OpenGL.
 
-For more information, see [project.org](https://github.com/jl2/newgl/project.org)
+For more information, see [project.org](https://github.com/jl2/newgl/blob/master/project.org)
 
 ## License
 

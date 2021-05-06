@@ -26,37 +26,34 @@
 
 (defmethod newgl:initialize-buffers ((object complex-window) &key)
   (multiple-value-bind (real-min real-max imag-min imag-max) (compute-min-max object)
-      (newgl:add-buffer object
-              (make-instance
-               'newgl:attribute-buffer
-               :count (* 4 5)
-               :pointer (newgl:to-gl-array
-                         :float
-                         20 
-                         (list -1.0f0  1.0f0 0.0f0
-                               real-min imag-max
-                            ,(coerce real-min 'single-float) ,(coerce imag-max 'single-float)
+    (use-buffer object
+                :vertices
+                (make-instance
+                 'attribute-buffer
+                 :count (* 4 5)
+                 :pointer (newgl:to-gl-array
+                           :float
+                           20
+                           (list -1.0f0  1.0f0 0.0f0
+                                       real-min imag-max
 
-                            -1.0f0 -1.0f0 0.0f0
-                            ,(coerce real-min 'single-float) ,(coerce imag-min 'single-float)
+                                       -1.0f0 -1.0f0 0.0f0
+                                       real-min imag-min
 
-                            1.0f0  1.0f0 0.0f0
-                            ,(coerce real-max 'single-float) ,(coerce imag-max 'single-float)
+                                       1.0f0  1.0f0 0.0f0
+                                       real-max imag-max
 
-                            1.0f0 -1.0f0 0.0f0
-                            ,(coerce real-max 'single-float) ,(coerce imag-min 'single-float)))
-               :stride nil
-               :attributes '(("in_position" . :vec3) ("in_uv" . :vec2))
-               :usage :static-draw
-               :free nil)))
-  (newgl:add-buffer object
-              (make-instance
-               'newgl:index-buffer
-               :count 6
-               :pointer (newgl:to-gl-array :unsigned-int #(0 1 2 1 3 2))
-               :stride nil
-               :usage :static-draw
-               :free nil)))
+                                       1.0f0 -1.0f0 0.0f0
+                                       real-max imag-min))
+                 :attributes '(("in_position" . :vec3) ("in_uv" . :vec2))
+                 :free t)))
+  (use-buffer object
+              :indices
+              (make-instance 'newgl:index-buffer
+                             :idx-count 6
+                             :pointer (newgl:to-gl-array :unsigned-int #(0 1 2 1 3 2))
+                             :free t))
+  )
 
 (defmethod newgl:initialize-uniforms ((object complex-window) &key)
   (with-slots (max-iterations) object

@@ -32,6 +32,9 @@
                    :initarg :instance-count))
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
+(defclass instanced-opengl-object (opengl-object)
+  ((instance-count :initform 1 :initarg :instance-count)))
+
 (defgeneric build-shader-program (object)
   (:documentation "Build this object's shader programs.  Binding correct VAO is handled by before and after methods."))
 
@@ -297,11 +300,23 @@
       (use-uniform (cdr uniform) program))
 
     (when (> instance-count 0)
+      (gl:draw-elements primitive-type
+                        (gl:make-null-gl-array :unsigned-int)
+                        :count (idx-count (assoc-value buffers :indices))))))
+
+(defmethod render ((object instanced-opengl-object))
+  (with-slots (program buffers uniforms primitive-type instance-count) object
+    (gl:use-program program)
+    (bind object)
+
+    (dolist (uniform uniforms)
+      (use-uniform (cdr uniform) program))
+
+    (when (> instance-count 0)
       (gl:draw-elements-instanced  primitive-type
                                    (gl:make-null-gl-array :unsigned-int)
                                    instance-count
                                    :count (idx-count (assoc-value buffers :indices))))))
-
 (defun use-buffer (object buffer-name buffer)
   (declare (type opengl-object object)
            (type buffer buffer))

@@ -144,6 +144,16 @@
    (shader-from-file "position-normal-color-vertex.glsl")
    (shader-from-file "plastic-fragment.glsl")))
 
+(defun normal-shader ()
+  (list
+   (shader-from-file "position-normal-vertex.glsl")
+   (shader-from-file "normal-fragment.glsl")))
+
+(defun position-shader ()
+  (list
+   (shader-from-file "position-normal-vertex.glsl")
+   (shader-from-file "position-fragment.glsl")))
+
 (defun painted-plastic ()
   (list
    (shader-from-file "position-normal-uv-vertex.glsl")

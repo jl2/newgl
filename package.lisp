@@ -84,6 +84,8 @@
            #:plastic
            #:painted-plastic
            #:circled-plastic
+           #:normal-shader
+           #:position-shader
            #:point-shader
            #:blend2d-texture
            #:make-st-quad

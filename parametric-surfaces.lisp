@@ -4,7 +4,7 @@
 
 (in-package #:newgl)
 
-(defclass parametric-surface (opengl-object)
+(defclass parametric-surface (instanced-opengl-object)
   ((color :initform (vec4 0.0 0.9 0.0 1.0) :initarg :color)
    (u-steps :initform 16 :initarg :u-steps)
    (v-steps :initform 16 :initarg :v-steps)
