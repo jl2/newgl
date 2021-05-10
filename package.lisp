@@ -36,7 +36,7 @@
 
            #:gl-shader
            #:gl-file-shader
-           #:shader-from-file
+           #:read-shader
            #:newgl-shader
            #:set-uniform
            #:draw-image
@@ -54,14 +54,16 @@
            #:initialize-textures
            #:initialize-uniforms
            #:pointer
-           #:use-buffer
-           #:use-uniform
-           #:use-texture
+           #:set-buffer
+           #:set-uniform
+           #:set-texture
+           #:set-style
            #:to-gl-array
            #:reload
            #:cleanup
            #:update
            #:render
+           #:styles
            #:shaders
            #:buffers
            #:objects
@@ -81,12 +83,14 @@
 
            #:line-axis
            #:st-quad
-           #:plastic
-           #:painted-plastic
-           #:circled-plastic
-           #:normal-shader
-           #:position-shader
-           #:point-shader
+           #:plastic-style
+           #:painted-plastic-style
+           #:circled-plastic-style
+           #:normal-style
+           #:position-style
+           #:point-style
+           #:wireframe-style
+
            #:blend2d-texture
            #:make-st-quad
            #:simple-texture
@@ -114,4 +118,8 @@
            #:stl
            #:rotating-stl-viewer
            #:get-stl-info
+           #:*viewer*
+           #:*obj*
+           #:show-viewer
+           #:reset-viewer
            ))

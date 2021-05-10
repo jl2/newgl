@@ -13,9 +13,6 @@ out vec2 uv;
 
 void main()
 {
-    // Modified from
-//https://www.mathematik.uni-marburg.de/~thormae/lectures/graphics1/code/WebGLShaderLightMat/ShaderLightMat.html
-
      mat4 final_transform = view_transform * obj_transform;
      mat3 norm_view_transform = transpose(inverse(mat3(final_transform)));
 

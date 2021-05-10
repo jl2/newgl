@@ -8,7 +8,6 @@ in vec4 diffuse_color;
 
 out vec4 out_color;
 
-void main()
-{
-    out_color = diffuse_color;
+void main() {
+     out_color = vec4(0.0, 1.0, 0.0, 1.0);
 }

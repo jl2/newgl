@@ -7,14 +7,10 @@
 (defclass opengl-object ()
   ((vao :initform 0 :type fixnum)
    (name :initform "GL Object" :initarg :name)
-   (program :initform 0
-            :accessor program
-            :type fixnum)
-
-   (shaders :initform nil
+   (styles :initform nil
             :type (or null list)
-            :accessor shaders
-            :initarg :shaders)
+            :accessor styles
+            :initarg :styles)
    (textures :initform nil
              :type (or null list)
              :accessor textures
@@ -29,13 +25,16 @@
              :initarg :uniforms)
    (primitive-type :initform :triangles)
    (instance-count :initform 1
-                   :initarg :instance-count))
+                   :initarg :instance-count)
+   (active-style :initform nil
+                 :accessor active-style
+                 :initarg :active-style))
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
 (defclass instanced-opengl-object (opengl-object)
   ((instance-count :initform 1 :initarg :instance-count)))
 
-(defgeneric build-shader-program (object)
+(defgeneric build-style (object)
   (:documentation "Build this object's shader programs.  Binding correct VAO is handled by before and after methods."))
 
 (defgeneric set-uniform (object name value type &key overwrite)
@@ -48,45 +47,13 @@
   (let ((this-ws (indent-whitespace indent))
         (plus-ws (indent-whitespace (+ 1 indent)))
         (plus-plus-ws (indent-whitespace (+ 2 indent))))
+    (declare (ignorable plus-plus-ws plus-ws))
     (format t "~aObject:~%" this-ws)
-    (show-slots plus-ws object '(name vao shaders textures program instance-count))
+    (show-slots plus-ws object '(name vao styles textures instance-count))
 
-    (with-slots (program) object
-      (format t "~aProgram ~a:~%" plus-ws program)
-      (dolist (attrib '(:delete-status
-                        :link-status
-                        :validate-status
-                        :info-log-length
-                        :attached-shaders
-                        :active-atomic-counter-buffers
-                        :active-attributes
-                        :active-attribute-max-length
-                        :active-uniforms
-                        :active-uniform-blocks
-                        :active-uniform-block-max-name-length
-                        :active-uniform-max-length
-                        ;; :compute-work-group-size
-                        :program-binary-length
-                        :transform-feedback-buffer-mode
-                        :transform-feedback-varyings
-                        :transform-feedback-varying-max-length
-                        ;; :geometry-vertices-out
-                        ;; :geometry-input-type
-                        ;; :geometry-output-type
-                        ))
-        (format t "~a~a : ~a~%" plus-plus-ws attrib (gl:get-program program attrib)))
-      (dotimes (idx (gl:get-program program :active-attributes))
-        (multiple-value-bind (size type name) (gl:get-active-attrib program idx)
-          (format t "~aAttrib ~a ~a size ~a~%" plus-plus-ws name type size)))
-
-
-      (let ((gl-shaders (gl:get-attached-shaders program)))
-        (format t "~aOpenGL Shaders: ~a~%" plus-ws gl-shaders)
-        (dolist (shader gl-shaders)
-        (format t "~aShader ~a~%" plus-ws shader)
-        (dolist (attrib '(:shader-type
-                          :delete-status :compile-status :info-log-length :shader-source-length))
-          (format t "~a~a : ~a~%" plus-plus-ws attrib (gl:get-shader shader attrib))))))
+    (dolist (style (styles object))
+      (format t "~a~a~%" this-ws (car style))
+      (show-info (cdr style) :indent (1+ indent)))
     (dolist (buffer (buffers object))
       (format t "~a~a~%" this-ws (car buffer))
       (show-info (cdr buffer) :indent (1+ indent)))
@@ -117,47 +84,6 @@
   (declare (ignorable object elapsed-seconds))
   nil)
 
-(define-condition shader-link-error (shader-error) ())
-(define-condition shader-validate-error (shader-error) ())
-
-
-(defmethod build-shader-program ((object opengl-object))
-  "Compile and link a shader program, including validation."
-
-  (with-slots (program) object
-    ;; Compile all shaders
-    (when (zerop program)
-      (setf program (gl:create-program)))
-
-    (dolist (gl-shader (shaders object))
-      (when (and (not (zerop (shader gl-shader))) (not (zerop program)))
-        (gl:detach-shader program (shader gl-shader)))
-      (initialize gl-shader)
-      (gl:attach-shader program (shader gl-shader)))
-
-    ;; Link
-    (gl:link-program program)
-
-    ;; Check for errors and validate program
-    (let ((status (gl:get-program program :link-status)))
-      (when (not (eq t status))
-        (error 'shader-link-error
-               :status status
-               :object program
-               :info-log (gl:get-program-info-log program))))
-
-    (gl:validate-program program)
-    (let ((status (gl:get-program program :validate-status)))
-      (when (not (eq t status))
-        (restart-case
-            (error 'shader-link-error
-                   :status status
-                   :object program
-                   :info-log (gl:get-program-info-log program))
-          (ignore-validation-error () t))))
-    program))
-
-
 (defmethod set-uniform ((obj opengl-object) name value type &key (overwrite t))
   (with-slots (uniforms) obj
     (if-let (previous (assoc name uniforms :test #'string=))
@@ -179,16 +105,18 @@
     (setf vao (gl:gen-vertex-array))
     (gl:bind-vertex-array vao)
 
-    (initialize-shaders object)
+    (initialize-styles object)
 
     (initialize-buffers object)
     (initialize-uniforms object)
     (initialize-textures object)))
 
-(defmethod initialize-shaders ((object opengl-object) &key)
-  (when (null (shaders object))
-    (setf (shaders object) (point-shader)))
-  (build-shader-program object))
+(defmethod initialize-styles ((object opengl-object) &key)
+  (with-slots (styles) object
+    (when (null styles)
+      (set-style object :position (normal-style)))
+    (loop for style in styles do
+      (build-style (cdr style)))))
 
 (defmethod initialize-uniforms ((object opengl-object) &key)
   t)
@@ -196,7 +124,7 @@
 (defmethod initialize-buffers ((object opengl-object) &key)
   (when (buffers object)
     (error "Object buffers already setup!"))
-  (use-buffer object
+  (set-buffer object
               :vertices
               (make-instance
                'attribute-buffer
@@ -215,7 +143,7 @@
                :attributes '(("in_position" . :vec3) ("in_color" . :vec4))
                :usage :static-draw
                :free nil))
-  (use-buffer object
+  (set-buffer object
               :indices
               (make-instance
                'index-buffer
@@ -224,14 +152,14 @@
                :stride nil
                :usage :static-draw
                :free nil))
-  (use-buffer object
+  (set-buffer object
               :transform (make-instance
                           'instance-buffer
                           :pointer (to-gl-array :float 16 (meye 4))
                           :stride nil
                           :usage :static-draw
                           :free t))
-  (use-buffer object
+  (set-buffer object
               :transform (make-instance
                           'instance-buffer
                           :pointer (to-gl-array :float 4 (vec4 0.0 1.0 0.0 1.0))
@@ -246,19 +174,14 @@
   nil)
 
 (defmethod cleanup ((object opengl-object))
-  (with-slots (vao program shaders buffers textures uniforms) object
+  (with-slots (vao buffers textures uniforms styles) object
 
     (when (/= 0 vao)
       (gl:bind-vertex-array vao)
 
-      (when (not (zerop program))
-        (gl:delete-program program)
-        (setf program 0))
-
       (when textures
         (dolist (texture textures)
           (cleanup texture)))
-      (setf textures nil)
 
       (when uniforms
         (dolist (uniform uniforms)
@@ -267,15 +190,10 @@
       (when buffers
         (dolist (buffer buffers)
           (cleanup (cdr buffer))))
-      (setf buffers nil)
 
-      (when shaders
-        (dolist (shade shaders)
-          (with-slots (shader) shade
-            (when (and (not (zerop shader))
-                       (not (zerop program)))
-              (gl:detach-shader program shader)))
-          (cleanup shade)))
+      (when styles
+        (dolist (style styles)
+          (cleanup (cdr style))))
 
       (gl:bind-vertex-array 0)
       (gl:delete-vertex-arrays (list vao))
@@ -292,46 +210,67 @@
       (bind texture))))
 
 (defmethod render ((object opengl-object))
-  (with-slots (program buffers uniforms primitive-type instance-count) object
-    (gl:use-program program)
+  (with-slots (buffers uniforms primitive-type instance-count styles) object
     (bind object)
+    (loop
+      for (name . style) in styles
+      when (enabledp style) do
+        (use-style style)
 
-    (dolist (uniform uniforms)
-      (use-uniform (cdr uniform) program))
 
-    (when (> instance-count 0)
-      (gl:draw-elements primitive-type
-                        (gl:make-null-gl-array :unsigned-int)
-                        :count (idx-count (assoc-value buffers :indices))))))
+        (dolist (uniform uniforms)
+          (use-uniform (cdr uniform) (program style)))
+
+        (when (> instance-count 0)
+          (gl:draw-elements primitive-type
+                            (gl:make-null-gl-array :unsigned-int)
+                            :count (idx-count (assoc-value buffers :indices))))
+        (unuse-style style))))
 
 (defmethod render ((object instanced-opengl-object))
-  (with-slots (program buffers uniforms primitive-type instance-count) object
-    (gl:use-program program)
+  (with-slots (buffers uniforms primitive-type instance-count styles) object
     (bind object)
+    (loop
+      for (name . style) in styles
+      when (enabledp style)  do
+        (dolist (uniform uniforms)
+          (use-uniform (cdr uniform) (program style)))
+        (use-style style)
 
-    (dolist (uniform uniforms)
-      (use-uniform (cdr uniform) program))
+        (when (> instance-count 0)
+          (gl:draw-elements-instanced  primitive-type
+                                       (gl:make-null-gl-array :unsigned-int)
+                                       instance-count
+                                       :count (idx-count (assoc-value buffers :indices))))
+        (unuse-style style))))
 
-    (when (> instance-count 0)
-      (gl:draw-elements-instanced  primitive-type
-                                   (gl:make-null-gl-array :unsigned-int)
-                                   instance-count
-                                   :count (idx-count (assoc-value buffers :indices))))))
-(defun use-buffer (object buffer-name buffer)
+(defun set-buffer (object buffer-name buffer)
   (declare (type opengl-object object)
            (type buffer buffer))
-  (with-slots (target) buffer
-    (with-slots (buffers idx-count program) object
+  (with-slots (buffers styles idx-count) object
+    (if-let  ((location (assoc buffer-name buffers)))
+      (progn
+        (cleanup (cdr location))
+        (rplacd location buffer))
 
-      (if-let  ((location (assoc buffer-name buffers)))
-        (progn
-          (cleanup (cdr location))
-          (rplacd location buffer))
+      (push (cons buffer-name buffer) buffers))
 
-        (push (cons buffer-name buffer) buffers))
+    (bind buffer)
+    (loop for style in styles do
+      (associate-attributes buffer (program (cdr style))))))
 
-      (bind buffer)
-      (associate-attributes buffer program))))
+(defun set-style (object style-name style)
+  (declare (type opengl-object object)
+           (type style style))
+  (with-slots (styles) object
+    (if-let  ((location (assoc style-name styles)))
+      (progn
+        (cleanup (cdr location))
+        (rplacd location style))
+
+      (push (cons style-name style) styles))))
+
+
 
 (defun get-buffer (object buffer-name)
   (assoc (buffers object) buffer-name))
@@ -341,7 +280,3 @@
            (type texture texture))
   (push texture (textures object)))
 
-(defun use-shader (object shader)
-  (declare (type opengl-object object)
-           (type gl-shader shader))
-  (push shader (shaders object)))

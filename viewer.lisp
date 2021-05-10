@@ -308,7 +308,7 @@
                       :polygon-smooth
                       :depth-test
                       )
-           (gl:depth-func :less
+           (gl:depth-func :lequal
                           )
 
            ;; The event loop

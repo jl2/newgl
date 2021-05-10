@@ -26,7 +26,7 @@
 
 (defmethod newgl:initialize-buffers ((object complex-window) &key)
   (multiple-value-bind (real-min real-max imag-min imag-max) (compute-min-max object)
-    (use-buffer object
+    (set-buffer object
                 :vertices
                 (make-instance
                  'attribute-buffer
@@ -47,7 +47,7 @@
                                        real-max imag-min))
                  :attributes '(("in_position" . :vec3) ("in_uv" . :vec2))
                  :free t)))
-  (use-buffer object
+  (set-buffer object
               :indices
               (make-instance 'newgl:index-buffer
                              :idx-count 6

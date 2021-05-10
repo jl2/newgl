@@ -15,7 +15,7 @@ const float light_power = 90.0;
 const vec3 ambient_color = vec3(0.00, 0.01, 0.000);
 const vec3 spec_color = vec3(1.0, 1.0, 1.0);
 const float shininess = 128.0;
-const float screen_gamma = 1.3; // ssume the monitor is calibrated to the sRGB color space
+const float screen_gamma = 1.3; // Assume the monitor is calibrated to the sRGB color space
 
 void main() {
 

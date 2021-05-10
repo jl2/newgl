@@ -46,6 +46,8 @@
                (:file "axis")
                (:file "uniforms")
                (:file "gl-shader")
+               (:file "style")
+               (:file "utilities")
                (:file "buffer")
                (:file "texture")
                (:file "opengl-object")

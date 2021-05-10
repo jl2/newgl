@@ -98,7 +98,7 @@
            :tess-control-shader))))
 
 
-(defun shader-from-file (file-name &optional type)
+(defun read-shader (file-name &optional type)
   "Read a shader language file and parse out basic information, like type and layout"
   (let ((stype (if type type (lookup-shader-type file-name)))
         (real-name (if (uiop:file-exists-p file-name)
@@ -139,37 +139,3 @@
                :object shadr
                :info-log (gl:get-shader-info-log shader))))))
 
-(defun plastic ()
-  (list
-   (shader-from-file "position-normal-color-vertex.glsl")
-   (shader-from-file "plastic-fragment.glsl")))
-
-(defun normal-shader ()
-  (list
-   (shader-from-file "position-normal-vertex.glsl")
-   (shader-from-file "normal-fragment.glsl")))
-
-(defun position-shader ()
-  (list
-   (shader-from-file "position-normal-vertex.glsl")
-   (shader-from-file "position-fragment.glsl")))
-
-(defun painted-plastic ()
-  (list
-   (shader-from-file "position-normal-uv-vertex.glsl")
-   (shader-from-file "textured-plastic-fragment.glsl")))
-
-(defun circled-plastic ()
-  (list
-   (shader-from-file "position-normal-uv-vertex.glsl")
-   (shader-from-file "circle-fragment.glsl")))
-
-(defun point-shader ()
-  (list
-   (shader-from-file "position-color-vertex.glsl")
-   (shader-from-file "point-fragment.glsl")))
-
-(defun simple-texture ()
-  (list
-   (shader-from-file "position-uv-vertex.glsl")
-   (shader-from-file "simple-texture-fragment.glsl")))

@@ -64,13 +64,13 @@
                           (emit st1)
                           (emit st2)
                           (emit st3)))))
-    (use-buffer obj :uv (make-instance 'attribute-buffer
+    (set-buffer obj :uv (make-instance 'attribute-buffer
                                    :pointer vertices
                                    :stride nil
                                    :attributes '(("in_uv" . :vec2))
                                    :usage :static-draw
                                    :free t))
-    (use-buffer obj :indices (make-instance 'index-buffer
+    (set-buffer obj :indices (make-instance 'index-buffer
                                    :idx-count (*  2 3 s-steps t-steps)
                                    :pointer indices
                                    :stride nil
@@ -84,16 +84,16 @@
              )
 
 
-        ;; (use-buffer obj (make-instance 'instance-buffer
+        ;; (set-buffer obj (make-instance 'instance-buffer
         ;;                                :count inst-count
         ;;                                :pointer (to-gl-array :float (* 2 inst-count) in-radi)
         ;;                                :attributes '(("in_radi" . :vec2))
         ;;                                :free t))
-        (use-buffer obj :transforms (make-instance 'instance-buffer
+        (set-buffer obj :transforms (make-instance 'instance-buffer
                                        :pointer (to-gl-array :float (* 16 inst-count) mats)
                                        :free t
                                        :attributes '(("obj_transform" . :mat4))))
-        (use-buffer obj :colors (make-instance 'instance-buffer
+        (set-buffer obj :colors (make-instance 'instance-buffer
                                        :pointer (to-gl-array :float (* 4 inst-count) colors)
                                        :attributes '(("in_color" . :vec4))
                                        :free t))

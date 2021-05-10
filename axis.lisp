@@ -40,18 +40,18 @@
     (fill-buffer (loop for i below 12 collecting i)
                  indices
                  0)
-    (use-buffer obj :vertices (make-instance 'attribute-buffer
+    (set-buffer obj :vertices (make-instance 'attribute-buffer
                                              :pointer vertices
                                              :attributes '(("in_position" . :vec3)
                                                            ("in_color" . :vec4))
                                              :free t))
-    (use-buffer obj :indices (make-instance 'index-buffer
+    (set-buffer obj :indices (make-instance 'index-buffer
                                             :idx-count 12
                                             :pointer indices
                                             :free t))
       (with-slots (matrices instance-count) obj
         (setf instance-count (length matrices))
-        (use-buffer obj :transforms (make-instance 'instance-buffer
+        (set-buffer obj :transforms (make-instance 'instance-buffer
                                                    :pointer (to-gl-array :float (* 16 instance-count) matrices)
                                                    :free t)))))
 #+spacenav
@@ -69,7 +69,7 @@
                                (* radial-scale sn:rz))
                     (mrotation (vec3 0 1 0)
                                (* 1.0 radial-scale sn:ry))))))
-    (use-buffer obj :transforms (make-instance 'instance-buffer
+    (set-buffer obj :transforms (make-instance 'instance-buffer
                                                :pointer (to-gl-array :float (* 16 instance-count) matrices)
                                                :free t)))
 

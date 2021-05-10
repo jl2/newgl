@@ -5,8 +5,7 @@
 (in-package #:newgl)
 
 (defclass parametric-surface (instanced-opengl-object)
-  ((color :initform (vec4 0.0 0.9 0.0 1.0) :initarg :color)
-   (u-steps :initform 16 :initarg :u-steps)
+  ((u-steps :initform 16 :initarg :u-steps)
    (v-steps :initform 16 :initarg :v-steps)
    (u-min :initform (- pi) :initarg :u-min)
    (u-max :initform pi :initarg :u-max)
@@ -22,7 +21,6 @@
    (emit-position :initform t :initarg :emit-position)
    (emit-normal :initform t :initarg :emit-normal)
    (emit-uv :initform nil :initarg :emit-uv)
-   (shaders :initform (newgl:plastic) :initarg :shaders)
   ))
 
 (defmethod show-info ((object parametric-surface) &key (indent 0))
@@ -126,7 +124,7 @@
                           (emit pt1 n1 st1)
                           (emit pt2 n2 st2)
                           (emit pt3 n3 st3)))))
-    (use-buffer obj :vertices (make-instance 'attribute-buffer
+    (set-buffer obj :vertices (make-instance 'attribute-buffer
                                     :pointer vertices
                                    :stride nil
                                    :attributes (concatenate 'list
@@ -138,7 +136,7 @@
                                                               '(("in_uv" . :vec2))))
                                    :usage :static-draw
                                    :free t))
-    (use-buffer obj :indices (make-instance 'index-buffer
+    (set-buffer obj :indices (make-instance 'index-buffer
                                    :idx-count (*  2 3 u-steps v-steps)
                                    :pointer indices
                                    :stride nil
@@ -148,7 +146,7 @@
       (let* ((inst-count 2000)
              (colors (loop for i below inst-count collecting (vec4-random 0.25 1.0)))
              (mats (loop for i below inst-count collecting
-                                                (m* 
+                                                (m*
                                                     (mtranslation (spherical-2-cartesian (vec3 (- (random 4.0f0) 2 )
                                                                                                (random (* 2 pi)) (random pi))))
                                                     (mrotation (vec3 1.0 0.0 0.0) (random (/ pi 2)))
@@ -157,10 +155,10 @@
                                                     (mscaling (vec3 0.0125 0.0125 0.0125))
                                                     ))))
 
-          (use-buffer obj :transforms (make-instance 'instance-buffer
+          (set-buffer obj :transforms (make-instance 'instance-buffer
                                          :pointer (to-gl-array :float (* 16 inst-count) mats)
                                          :free t))
-          (use-buffer obj :colors (make-instance 'instance-buffer
+          (set-buffer obj :colors (make-instance 'instance-buffer
                                          :pointer (to-gl-array :float (* 4 inst-count) colors)
                                          :attributes '(("in_color" . :vec4))
                                          :free t))

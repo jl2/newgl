@@ -7,7 +7,6 @@
 (defclass stl (opengl-object)
   ((file-name :type string :initarg :file-name)
    (tri-count :type fixnum :initform 0)
-   (shaders :initform (newgl:plastic) :initarg :shaders)
    (primitive-type :initform :triangles)
    (colors :initform (list (vec4 0 1 0 1)) :initarg :colors)
    (matrices :initform (list (meye 4)) :initarg :matrices)
@@ -133,22 +132,22 @@
 
                      (setf cur-offset (fill-buffer norm vertices cur-offset))))))
       (fill-buffer (loop for i below (* 2 3 tri-count) collecting i) indices 0)
-      (use-buffer obj :vertices (make-instance 'attribute-buffer
+      (set-buffer obj :vertices (make-instance 'attribute-buffer
                                                :pointer vertices
                                                :attributes '(("in_position" . :vec3)
                                                              ("in_normal" . :vec3))
                                                :free t))
-      (use-buffer obj :indices (make-instance 'index-buffer
+      (set-buffer obj :indices (make-instance 'index-buffer
                                               :idx-count (* 3 tri-count)
                                               :pointer indices
                                               :free t))
       (with-slots (matrices colors instance-count) obj
         (setf instance-count (length matrices))
-        (use-buffer obj :colors (make-instance 'instance-buffer
+        (set-buffer obj :colors (make-instance 'instance-buffer
                                                :pointer (to-gl-array :float (* 4 instance-count) colors)
                                                :attributes '(("in_color" . :vec4))
                                                :free t))
-        (use-buffer obj :transforms (make-instance 'instance-buffer
+        (set-buffer obj :transforms (make-instance 'instance-buffer
                                                    :pointer (to-gl-array :float (* 16 instance-count) matrices)
                                                    :free t))))))
 (defun rotating-stl-viewer (&key (instance-count 100)

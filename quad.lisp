@@ -17,7 +17,7 @@
   (when (buffers object)
     (error "Initializing an object that's already initialized! Cleanup first! ~a" object))
   (with-slots (s-min s-max t-min t-max) object
-    (use-buffer object
+    (set-buffer object
                 :vertices
               (make-instance
                'attribute-buffer
@@ -39,7 +39,7 @@
                :attributes '(("in_position" . :vec3) ("in_uv" . :vec2))
                :usage :static-draw
                :free nil)))
-  (use-buffer object
+  (set-buffer object
               :indices
               (make-instance
                'index-buffer
@@ -48,10 +48,10 @@
                :stride nil
                :usage :static-draw
                :free nil))
-  (use-buffer object :transforms (make-instance 'instance-buffer
+  (set-buffer object :transforms (make-instance 'instance-buffer
                                                    :pointer (to-gl-array :float 16 (list (meye 4)))
                                                    :free t))
-  (use-buffer object :color (make-instance 'instance-buffer
+  (set-buffer object :color (make-instance 'instance-buffer
                                                    :pointer (to-gl-array :float 4 (vec4 0.1 1.0 0.1 1.0))
                                                    :free t
                                                    :attributes '(("in_color" . :vec4)))))
