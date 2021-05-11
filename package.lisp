@@ -63,7 +63,7 @@
            #:cleanup
            #:update
            #:render
-           #:styles
+           #:style
            #:shaders
            #:buffers
            #:objects
