@@ -118,8 +118,4 @@
            #:stl
            #:rotating-stl-viewer
            #:get-stl-info
-           #:*viewer*
-           #:*obj*
-           #:show-viewer
-           #:reset-viewer
            ))

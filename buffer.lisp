@@ -69,12 +69,13 @@
 
 (defmethod cleanup ((buffer buffer))
   (with-slots (bo target free pointer) buffer
-    (gl:bind-buffer target 0)
-    (gl:delete-buffers (list bo))
-    (setf bo nil)
-    (when (and free pointer)
-      (free-gl-array pointer))
-    (setf pointer nil)))
+    (when (and bo (> bo 0))
+      (gl:bind-buffer target 0)
+      (gl:delete-buffers (list bo))
+      (setf bo nil)
+      (when (and free pointer)
+        (free-gl-array pointer))
+      (setf pointer nil))))
 
 
 

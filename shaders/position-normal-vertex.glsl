@@ -13,7 +13,7 @@ out vec3 position;
 void main()
 {
      mat4 final_transform = view_transform * obj_transform;
-     mat3 norm_view_transform = mat3(transpose(inverse(final_transform)));
+     mat3 norm_view_transform = mat3(transpose(inverse(obj_transform)));
 
      vec4 pos4 = final_transform * vec4(in_position, 1.0);
      obj_position = in_position;

@@ -14,7 +14,7 @@ out vec2 uv;
 void main()
 {
      mat4 final_transform = view_transform * obj_transform;
-     mat3 norm_view_transform = transpose(inverse(mat3(final_transform)));
+     mat3 norm_view_transform = transpose(inverse(mat3(obj_transform)));
 
      vec4 pos4 = final_transform * vec4(in_position, 1.0);
 

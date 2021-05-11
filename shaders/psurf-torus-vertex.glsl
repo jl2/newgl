@@ -20,7 +20,7 @@ void main()
      float tv = in_uv.t;
 
      mat4 final_transform = view_transform * obj_transform;
-     mat3 norm_view_transform = transpose(inverse(mat3(final_transform)));
+     mat3 norm_view_transform = transpose(inverse(mat3(obj_transform)));
      float rcost = outer + inner * cos(sv);
      vec4 pos = final_transform * vec4(rcost * cos(tv),
                                        rcost * sin(tv),
@@ -28,6 +28,6 @@ void main()
      diffuse_color = in_color;
      position = pos.xyz;
      gl_Position = pos;
-     normal = pos.xyz; // normalize(norm_view_transform * -pos.xyz);
+     normal = normalize(norm_view_transform * -pos.xyz);
      uv = in_uv;
 }

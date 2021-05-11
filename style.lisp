@@ -6,7 +6,8 @@
 
 (defclass style ()
   ((name :initform "Default Style"
-         :initarg :name)
+         :initarg :name
+         :accessor name)
    (enabled :initform t
             :initarg :enabled
             :accessor enabledp)
@@ -157,7 +158,7 @@
   (make-style "point" 'style "position-color-vertex.glsl" "point-fragment.glsl"))
 
 (defun plastic-style ()
-  (make-style "plastic"
+  (make-style "plastic" 'style
               "position-normal-color-vertex.glsl"
               "plastic-fragment.glsl"))
 

@@ -150,17 +150,16 @@
         (set-buffer obj :transforms (make-instance 'instance-buffer
                                                    :pointer (to-gl-array :float (* 16 instance-count) matrices)
                                                    :free t))))))
-(defun rotating-stl-viewer (&key (instance-count 100)
-                              (file-name "/home/jeremiah/data/3d-models/cube.stl"))
-  (newgl:display
-   (make-instance
-    'newgl:stl
-    :colors (loop for i below instance-count collecting (v+ (vec4 0 0 0 1) (vxyz_ (vec3-random 0.5 1.0))))
-    :matrices (loop for i below instance-count collecting (m* (mtranslation (vec3-random -12.0 12.0))
-                                                   (mscaling (vec3 0.125 0.125 0.125))
-                                                   (mrotation +vx+ (random (* 2 pi)))
-                                                   (mrotation +vy+ (random (* 2 pi)))
-                                                   (mrotation +vz+ (random (* 2 pi)))))
-    :file-name file-name)
-   ;;   (make-instance '3d-mouse-nav-viewer)))
-   (newgl:create-rotating-viewer :radius 32.0 :dt (/ 1.0 2))))
+(defun rotating-stl-viewer (&key
+                              (style (newgl:plastic-style))
+                              (file-name "/home/jeremiah/data/3d-models/cube.stl")
+                              (radius 32.0)
+                              (dt (/ 1.0 2)))
+  (let ((stl (make-instance 'newgl:stl
+                            :file-name file-name
+                            :style style))
+        (viewer (create-rotating-viewer :radius radius :dt dt)))
+    (if (probe-file file-name)
+        (newgl:display stl viewer)
+        (format t "STL file '~a' does not exist." file-name))
+    (values stl viewer)))

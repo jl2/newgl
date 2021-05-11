@@ -7,10 +7,10 @@
 (defclass opengl-object ()
   ((vao :initform 0 :type fixnum)
    (name :initform "GL Object" :initarg :name)
-   (styles :initform nil
-            :type (or null list)
-            :accessor styles
-            :initarg :styles)
+   (style :initform (point-style)
+          :type style
+          :accessor style
+          :initarg :style)
    (textures :initform nil
              :type (or null list)
              :accessor textures
@@ -49,11 +49,10 @@
         (plus-plus-ws (indent-whitespace (+ 2 indent))))
     (declare (ignorable plus-plus-ws plus-ws))
     (format t "~aObject:~%" this-ws)
-    (show-slots plus-ws object '(name vao styles textures instance-count))
+    (show-slots plus-ws object '(name vao style textures instance-count))
 
-    (dolist (style (styles object))
-      (format t "~a~a~%" this-ws (car style))
-      (show-info (cdr style) :indent (1+ indent)))
+    (format t "~a~a~%" this-ws (name (style object)))
+    (show-info (style object) :indent (1+ indent))
     (dolist (buffer (buffers object))
       (format t "~a~a~%" this-ws (car buffer))
       (show-info (cdr buffer) :indent (1+ indent)))
@@ -105,18 +104,15 @@
     (setf vao (gl:gen-vertex-array))
     (gl:bind-vertex-array vao)
 
-    (initialize-styles object)
+    (initialize-style object)
 
     (initialize-buffers object)
     (initialize-uniforms object)
     (initialize-textures object)))
 
-(defmethod initialize-styles ((object opengl-object) &key)
-  (with-slots (styles) object
-    (when (null styles)
-      (set-style object :position (normal-style)))
-    (loop for style in styles do
-      (build-style (cdr style)))))
+(defmethod initialize-style ((object opengl-object) &key)
+  (with-slots (style) object
+    (build-style style)))
 
 (defmethod initialize-uniforms ((object opengl-object) &key)
   t)
@@ -174,7 +170,7 @@
   nil)
 
 (defmethod cleanup ((object opengl-object))
-  (with-slots (vao buffers textures uniforms styles) object
+  (with-slots (vao buffers textures uniforms style) object
 
     (when (/= 0 vao)
       (gl:bind-vertex-array vao)
@@ -191,9 +187,8 @@
         (dolist (buffer buffers)
           (cleanup (cdr buffer))))
 
-      (when styles
-        (dolist (style styles)
-          (cleanup (cdr style))))
+      (when style
+        (cleanup style))
 
       (gl:bind-vertex-array 0)
       (gl:delete-vertex-arrays (list vao))
@@ -210,44 +205,38 @@
       (bind texture))))
 
 (defmethod render ((object opengl-object))
-  (with-slots (buffers uniforms primitive-type instance-count styles) object
+  (with-slots (buffers uniforms primitive-type instance-count style) object
     (bind object)
-    (loop
-      for (name . style) in styles
-      when (enabledp style) do
-        (use-style style)
+    (use-style style)
 
+    (dolist (uniform uniforms)
+      (use-uniform (cdr uniform) (program style)))
 
-        (dolist (uniform uniforms)
-          (use-uniform (cdr uniform) (program style)))
-
-        (when (> instance-count 0)
-          (gl:draw-elements primitive-type
-                            (gl:make-null-gl-array :unsigned-int)
-                            :count (idx-count (assoc-value buffers :indices))))
-        (unuse-style style))))
+    (when (> instance-count 0)
+      (gl:draw-elements primitive-type
+                        (gl:make-null-gl-array :unsigned-int)
+                        :count (idx-count (assoc-value buffers :indices))))
+    (unuse-style style)))
 
 (defmethod render ((object instanced-opengl-object))
-  (with-slots (buffers uniforms primitive-type instance-count styles) object
+  (with-slots (buffers uniforms primitive-type instance-count style) object
     (bind object)
-    (loop
-      for (name . style) in styles
-      when (enabledp style)  do
-        (dolist (uniform uniforms)
-          (use-uniform (cdr uniform) (program style)))
-        (use-style style)
+    (use-style style)
+    (dolist (uniform uniforms)
+      (use-uniform (cdr uniform) (program style)))
 
-        (when (> instance-count 0)
-          (gl:draw-elements-instanced  primitive-type
-                                       (gl:make-null-gl-array :unsigned-int)
-                                       instance-count
-                                       :count (idx-count (assoc-value buffers :indices))))
-        (unuse-style style))))
+
+    (when (> instance-count 0)
+      (gl:draw-elements-instanced  primitive-type
+                                   (gl:make-null-gl-array :unsigned-int)
+                                   instance-count
+                                   :count (idx-count (assoc-value buffers :indices))))
+    (unuse-style style)))
 
 (defun set-buffer (object buffer-name buffer)
   (declare (type opengl-object object)
            (type buffer buffer))
-  (with-slots (buffers styles idx-count) object
+  (with-slots (buffers style idx-count) object
     (if-let  ((location (assoc buffer-name buffers)))
       (progn
         (cleanup (cdr location))
@@ -256,21 +245,15 @@
       (push (cons buffer-name buffer) buffers))
 
     (bind buffer)
-    (loop for style in styles do
-      (associate-attributes buffer (program (cdr style))))))
+      (associate-attributes buffer (program style))))
 
-(defun set-style (object style-name style)
+(defun set-style (object new-style)
   (declare (type opengl-object object)
            (type style style))
-  (with-slots (styles) object
-    (if-let  ((location (assoc style-name styles)))
-      (progn
-        (cleanup (cdr location))
-        (rplacd location style))
-
-      (push (cons style-name style) styles))))
-
-
+  (with-slots (style) object
+    (when style
+      (cleanup style))
+    (setf style new-style)))
 
 (defun get-buffer (object buffer-name)
   (assoc (buffers object) buffer-name))

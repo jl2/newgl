@@ -5,7 +5,7 @@
 (in-package #:newgl)
 
 (defclass line-axis (opengl-object)
-  ((shaders :initform (point-shader))
+  ((style :initform (point-style))
    (primitive-type :initform :lines)
    (matrices :initform (list (meye 4)) :initarg :matrices)))
 
