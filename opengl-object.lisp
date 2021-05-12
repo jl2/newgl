@@ -245,11 +245,11 @@
       (push (cons buffer-name buffer) buffers))
 
     (bind buffer)
-      (associate-attributes buffer (program style))))
+    (associate-attributes buffer (program style))))
 
 (defun set-style (object new-style)
   (declare (type opengl-object object)
-           (type style style))
+           (type style new-style))
   (with-slots (style) object
     (when style
       (cleanup style))

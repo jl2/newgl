@@ -15,8 +15,7 @@
     (show-slots this-ws object '(shaders primitive-type matrices))))
 
 (defmethod initialize-buffers ((obj line-axis) &key)
-  (let* (
-         (vertices (allocate-gl-array :float (* 8 12)))
+  (let* ((vertices (allocate-gl-array :float (* 8 12)))
          (indices (allocate-gl-array :unsigned-int 12 )))
     (fill-buffer (list (vec3 1.0 0.0 0.0) (vec4 1.0 0.0 0.0 1.0)
                        (vec3 0.0 0.0 0.0) (vec4 1.0 0.0 0.0 1.0)
