@@ -12,22 +12,39 @@
 
 (defmethod draw-image ((obj blend2d-texture) img ctx size)
   (declare (ignorable obj img ctx size))
-  (bl:context-set-fill-style-rgba32 ctx #16r000000ff)
+  (bl:context-set-fill-style-rgba32 ctx #16r00ff00ff)
   (bl:context-fill-all ctx)
-
+  (format t "Drawing texture...~%")
   (bl:with-objects
-      ((circle bl:circle))
-    (dotimes (i 80)
-      (let* ((sx (random size))
-             (sy (random size))
-             (radius (random 70.0)))
+      ((rect round-rect)
+       (grad gradient-core)
+       (linear linear-gradient-values))
 
-        (setf (bl:circle.cx circle) (coerce sx 'double-float))
-        (setf (bl:circle.cy circle) (coerce sy 'double-float))
-        (setf (bl:circle.r circle) (coerce radius 'double-float))
-        (bl:lookup-error (bl:context-set-comp-op ctx bl:+comp-op-src-over+))
-        (bl:lookup-error (bl:context-set-fill-style-rgba32 ctx (random #16rffffffff)))
-        (bl:lookup-error (bl:context-fill-geometry ctx bl:+geometry-type-circle+ circle))))))
+    (setf (bl:linear-gradient-values.x0 linear) 0.0d0)
+    (setf (bl:linear-gradient-values.y0 linear) 0.0d0)
+    (setf (bl:linear-gradient-values.x1 linear) 0.0d0)
+    (setf (bl:linear-gradient-values.y1 linear) 480.0d0)
+
+    (bl:lookup-error (bl:gradient-init-as grad
+                                          bl:+gradient-type-linear+
+                                          linear
+                                          bl:+extend-mode-pad+
+                                          (bl:nullp) 0  (bl:nullp)))
+    (bl:lookup-error (bl:gradient-add-stop-rgba32 grad 0.0d0 #16rffffffff))
+    (bl:lookup-error (bl:gradient-add-stop-rgba32 grad 0.5d0 #16rff5fafdf))
+    (bl:lookup-error (bl:gradient-add-stop-rgba32 grad 1.0d0 #16rff2f5fdf))
+
+    (bl:lookup-error (bl:context-set-comp-op ctx bl:+comp-op-src-over+))
+    (bl:lookup-error (bl:context-set-fill-style-object ctx grad))
+
+    (setf (bl:round-rect.x rect) 40.0d0)
+    (setf (bl:round-rect.y rect) 40.0d0)
+    (setf (bl:round-rect.w rect) 400.0d0)
+    (setf (bl:round-rect.h rect) 400.0d0)
+    (setf (bl:round-rect.rx rect) 45.0d0)
+    (setf (bl:round-rect.ry rect) 45.0d0)
+
+    (bl:lookup-error (bl:context-fill-geometry ctx bl:+geometry-type-round-rect+ rect))))
 
 (defmethod fill-texture ((obj blend2d-texture))
   (with-slots (size tex-type textures) obj

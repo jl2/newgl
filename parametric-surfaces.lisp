@@ -87,7 +87,6 @@
                  (when emit-normal
                    (setf cur-offset (fill-buffer norm vertices cur-offset)))
                  (when emit-uv
-                   (format t "Emitting: ~a~%" uv)
                    (setf cur-offset (fill-buffer uv vertices cur-offset)))
                  (when (or emit-uv emit-normal emit-position)
                    (gl-iset indices cur-idx-idx cur-idx-idx)

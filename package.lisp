@@ -56,7 +56,7 @@
            #:pointer
            #:set-buffer
            #:set-uniform
-           #:set-texture
+           #:add-texture
            #:set-style
            #:to-gl-array
            #:reload

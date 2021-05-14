@@ -168,7 +168,7 @@
 (defun position-style ()
   (make-style "position" 'style "position-vertex.glsl" "position-fragment.glsl"))
 
-(defun painted-plastic ()
+(defun painted-plastic-style ()
   (make-style "painted" 'style "position-normal-uv-vertex.glsl" "textured-plastic-fragment.glsl"))
 
 (defun circled-plastic-style ()

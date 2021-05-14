@@ -14,8 +14,6 @@
   (:documentation "Base class for all objects that can be rendered in a scene."))
 
 (defmethod initialize-buffers ((object st-quad) &key)
-  (when (buffers object)
-    (error "Initializing an object that's already initialized! Cleanup first! ~a" object))
   (with-slots (s-min s-max t-min t-max) object
     (set-buffer object
                 :vertices
@@ -35,19 +33,15 @@
 
                             1.0f0 -1.0f0 0.0f0
                             ,s-max ,t-min))
-               :stride nil
                :attributes '(("in_position" . :vec3) ("in_uv" . :vec2))
-               :usage :static-draw
-               :free nil)))
+               :free t)))
   (set-buffer object
               :indices
               (make-instance
                'index-buffer
                :idx-count 6
                :pointer (to-gl-array :unsigned-int 6 #(0 1 2 1 3 2))
-               :stride nil
-               :usage :static-draw
-               :free nil))
+               :free t))
   (set-buffer object :transforms (make-instance 'instance-buffer
                                                    :pointer (to-gl-array :float 16 (list (meye 4)))
                                                    :free t))

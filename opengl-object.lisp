@@ -167,7 +167,8 @@
 
 (defmethod initialize-textures ((object opengl-object) &key)
   (declare (ignorable object))
-  nil)
+  (loop for texture in (textures object) do
+        (initialize texture)))
 
 (defmethod cleanup ((object opengl-object))
   (with-slots (vao buffers textures uniforms style) object
@@ -258,7 +259,7 @@
 (defun get-buffer (object buffer-name)
   (assoc (buffers object) buffer-name))
 
-(defun use-texture (object texture)
+(defun add-texture (object texture)
   (declare (type opengl-object object)
            (type texture texture))
   (push texture (textures object)))
