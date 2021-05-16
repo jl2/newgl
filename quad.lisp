@@ -5,8 +5,8 @@
 (in-package #:newgl)
 
 (defclass st-quad (opengl-object)
-  ((s-min :initarg :s-min :initform -1.0f0)
-   (t-min :initarg :t-min :initform -1.0f0)
+  ((s-min :initarg :s-min :initform 0.0f0)
+   (t-min :initarg :t-min :initform 0.0f0)
    (s-max :initarg :s-max :initform 1.0f0)
    (t-max :initarg :t-max :initform 1.0f0)
    (primitive-type :initform :triangles)

@@ -16,9 +16,9 @@
   (bl:context-fill-all ctx)
   (format t "Drawing texture...~%")
   (bl:with-objects
-      ((rect round-rect)
-       (grad gradient-core)
-       (linear linear-gradient-values))
+      ((rect bl:round-rect)
+       (grad bl:gradient-core)
+       (linear bl:linear-gradient-values))
 
     (setf (bl:linear-gradient-values.x0 linear) 0.0d0)
     (setf (bl:linear-gradient-values.y0 linear) 0.0d0)

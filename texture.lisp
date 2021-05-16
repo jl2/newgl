@@ -28,11 +28,11 @@
     (when textures
       (error "Initializing texture twice ~a" tex))
     (setf textures (gl:gen-textures 1))
+    (bind tex)
     (fill-texture tex)))
 
 (defmethod fill-texture ((object texture))
   (with-slots (parameters tex-type textures) object
-    (gl:bind-texture tex-type (car textures))
     (dolist (param parameters)
       (gl:tex-parameter tex-type (car param) (cdr param)))
     (gl:tex-image-2d tex-type 0 :rgba 1 1 0 :rgba :unsigned-byte #(255 0 0 255))
